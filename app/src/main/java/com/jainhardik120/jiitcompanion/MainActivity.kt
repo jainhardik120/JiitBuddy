@@ -8,7 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
-import com.jainhardik120.jiitcompanion.presentation.login.NavGraphs
+import com.jainhardik120.jiitcompanion.presentation.NavGraphs
 import com.jainhardik120.jiitcompanion.ui.theme.JIITBuddyTheme
 import com.ramcosta.composedestinations.DestinationsNavHost
 import dagger.hilt.android.AndroidEntryPoint

@@ -1,9 +1,10 @@
-package com.jainhardik120.jiitcompanion.data.local
+package com.jainhardik120.jiitcompanion.data.local.entity
 
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
 @Entity(tableName = "user_table")
+@kotlinx.serialization.Serializable
 data class UserEntity(
     val password: String,
     val clientid: String,
@@ -26,4 +27,3 @@ data class UserEntity(
     val studentpersonalemailid: String,
     val lastAttendanceRegistrationId : String? = null
 )
-

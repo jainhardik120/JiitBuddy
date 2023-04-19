@@ -1,6 +1,7 @@
 package com.jainhardik120.jiitcompanion.data.local
 
 import androidx.room.*
+import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 
 @Dao
 interface PortalDao {
