@@ -3,13 +3,13 @@ package com.jainhardik120.jiitcompanion.data.local.entity
 import androidx.room.Entity
 import androidx.room.PrimaryKey
 
-@Entity(tableName = "user_table")
+@Entity(tableName = "user_table", primaryKeys = arrayOf("enrollmentno", "password"))
 @kotlinx.serialization.Serializable
 data class UserEntity(
     val password: String,
     val clientid: String,
     val enrollmentno: String,
-    @PrimaryKey val memberid: String,
+    val memberid: String,
     val membertype: String,
     val instituteLabel: String,
     val instituteValue: String,
