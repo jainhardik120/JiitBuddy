@@ -1,27 +1,19 @@
 package com.jainhardik120.jiitcompanion.presentation.login
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
-import com.jainhardik120.jiitcompanion.presentation.destinations.HomeScreenDestination
-import com.jainhardik120.jiitcompanion.presentation.home.HomeScreen
-import com.jainhardik120.jiitcompanion.presentation.home.ProfileCard
 import com.jainhardik120.jiitcompanion.uitl.UiEvent
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
-import kotlinx.coroutines.flow.collect
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
-@Destination(start = true)
 fun LoginScreen(
-    navigator: DestinationsNavigator,
+    onNavigate: (UiEvent.Navigate) -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     val state = viewModel.state
@@ -29,7 +21,7 @@ fun LoginScreen(
         viewModel.uiEvent.collect{
             when(it){
                 is UiEvent.Navigate->{
-                    navigator.navigate(it.destination)
+                    onNavigate(it)
                 }
             }
         }
@@ -37,9 +29,10 @@ fun LoginScreen(
     Column(
         Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center) {
-        Card(Modifier) {
-            Column() {
+        Card(Modifier.fillMaxWidth().padding(16.dp)) {
+            Column(Modifier.padding(16.dp)) {
                 OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
                     value = state.enrollmentNo,
                     label = {
                             Text(text = "Enrollment No")
@@ -50,6 +43,7 @@ fun LoginScreen(
                     )
                 })
                 OutlinedTextField(
+                    modifier = Modifier.fillMaxWidth(),
                     value = state.password,
                     label = {
                         Text(text = "Password")

@@ -5,12 +5,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
-import com.jainhardik120.jiitcompanion.presentation.NavGraphs
+import androidx.navigation.compose.NavHost
+import androidx.navigation.compose.composable
+import androidx.navigation.compose.rememberNavController
+import com.jainhardik120.jiitcompanion.presentation.home.HomeScreen
+import com.jainhardik120.jiitcompanion.presentation.login.LoginScreen
 import com.jainhardik120.jiitcompanion.ui.theme.JIITBuddyTheme
-import com.ramcosta.composedestinations.DestinationsNavHost
+import com.jainhardik120.jiitcompanion.uitl.Routes
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -24,7 +26,20 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    DestinationsNavHost(navGraph = NavGraphs.root)
+                    val navController = rememberNavController()
+                    NavHost(
+                        navController = navController,
+                        startDestination = Routes.LOGIN_SCREEN
+                    ) {
+                        composable(Routes.LOGIN_SCREEN){
+                            LoginScreen(onNavigate = {
+                                navController.navigate(it.route)
+                            })
+                        }
+                        composable(Routes.HOME_SCREEN){
+                            HomeScreen()
+                        }
+                    }
                 }
             }
         }

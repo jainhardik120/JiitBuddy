@@ -9,13 +9,9 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.presentation.login.LoginViewModel
-import com.ramcosta.composedestinations.annotation.Destination
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 
 @Composable
-@Destination
 fun HomeScreen(
-    navigator: DestinationsNavigator,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
     Column(Modifier.fillMaxSize(),

@@ -6,13 +6,10 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jainhardik120.jiitcompanion.core.util.Resource
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
-import com.jainhardik120.jiitcompanion.presentation.destinations.HomeScreenDestination
-import com.jainhardik120.jiitcompanion.presentation.home.HomeScreen
+import com.jainhardik120.jiitcompanion.uitl.Routes
 import com.jainhardik120.jiitcompanion.uitl.UiEvent
-import com.ramcosta.composedestinations.navigation.DestinationsNavigator
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
-import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -51,7 +48,7 @@ class LoginViewModel @Inject constructor(
                 when(result){
                     is Resource.Success ->{
                         Log.d(TAG, "login: Success Resource")
-                        sendUiEvent(UiEvent.Navigate(HomeScreenDestination))
+                        sendUiEvent(UiEvent.Navigate(Routes.HOME_SCREEN))
                     }
                     is Resource.Error -> {
 
