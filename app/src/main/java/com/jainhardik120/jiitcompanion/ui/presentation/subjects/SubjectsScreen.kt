@@ -7,9 +7,7 @@ import com.jainhardik120.jiitcompanion.ui.presentation.grades.GradesViewModel
 
 @Composable
 fun SubjectsScreen(
-    userInfo: UserEntity,
-    viewModel: GradesViewModel = hiltViewModel(),
-    token: String? = null
+    viewModel: GradesViewModel = hiltViewModel()
 ) {
 
 }

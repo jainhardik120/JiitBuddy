@@ -1,14 +1,21 @@
 package com.jainhardik120.jiitcompanion.ui.presentation.grades
 
+import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.runtime.Composable
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 
 @Composable
 fun GradesScreen(
-    userInfo: UserEntity,
-    viewModel: GradesViewModel = hiltViewModel(),
-    token: String? = null
+    viewModel: GradesViewModel = hiltViewModel()
 ) {
+    val state = viewModel.state
+
+}
+
+@Composable
+fun ResultItem(){
 
 }

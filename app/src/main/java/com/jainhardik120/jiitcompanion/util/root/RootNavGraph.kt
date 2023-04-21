@@ -11,10 +11,26 @@ import com.jainhardik120.jiitcompanion.ui.presentation.home.HomeScreen
 import com.jainhardik120.jiitcompanion.ui.presentation.login.LoginScreen
 import com.squareup.moshi.Moshi
 
+object PortalNavArguments {
+    var arguments = listOf(
+        navArgument("userInfo") {
+            type = NavType.StringType
+            nullable = false
+        }, navArgument("token") {
+            type = NavType.StringType
+            nullable = true
+        }
+    )
+}
+
 @Composable
 fun RootNavigationGraph(navController: NavHostController) {
-    NavHost(navController = navController, route = Graph.ROOT, startDestination = Screen.LoginScreen.route){
-        composable(route = Screen.LoginScreen.route){
+    NavHost(
+        navController = navController,
+        route = Graph.ROOT,
+        startDestination = Screen.LoginScreen.route
+    ) {
+        composable(route = Screen.LoginScreen.route) {
             LoginScreen(onNavigate = {
                 navController.popBackStack()
                 navController.navigate(it.route)
@@ -22,16 +38,8 @@ fun RootNavigationGraph(navController: NavHostController) {
         }
         composable(
             route = Screen.HomeScreen.route + "/{userInfo}/{token}",
-            arguments = listOf(
-                navArgument("userInfo"){
-                    type = NavType.StringType
-                    nullable = false
-                }, navArgument("token"){
-                    type = NavType.StringType
-                    nullable = true
-                }
-            )
-        ){
+            arguments = PortalNavArguments.arguments
+        ) {
             val userJson = it.arguments?.getString("userInfo")
             val userObject = userJson?.let { it1 ->
                 Moshi.Builder().build().adapter(UserEntity::class.java).lenient().fromJson(
@@ -44,6 +52,7 @@ fun RootNavigationGraph(navController: NavHostController) {
         }
     }
 }
-object Graph{
+
+object Graph {
     const val ROOT = "root_graph"
 }

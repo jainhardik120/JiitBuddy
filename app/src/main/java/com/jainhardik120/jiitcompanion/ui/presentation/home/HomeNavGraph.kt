@@ -1,22 +1,22 @@
 package com.jainhardik120.jiitcompanion.ui.presentation.home
 
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.PaddingValues
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
 import androidx.compose.material3.ElevatedCard
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
+import androidx.navigation.navArgument
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.ui.presentation.attendance.AttendanceScreen
 import com.jainhardik120.jiitcompanion.ui.presentation.exams.ExamsScreen
 import com.jainhardik120.jiitcompanion.ui.presentation.grades.GradesScreen
 import com.jainhardik120.jiitcompanion.ui.presentation.subjects.SubjectsScreen
+import com.jainhardik120.jiitcompanion.util.root.PortalNavArguments
 
 @Composable
 fun HomeNavGraph(
@@ -27,22 +27,34 @@ fun HomeNavGraph(
 ) {
     NavHost(
         navController = navController,
-        startDestination = BottomBarScreen.Home.route
+        startDestination = BottomBarScreen.Home.route + "/{userInfo}/{token}"
     ){
-        composable(route = BottomBarScreen.Home.route){
-            ProfileCard(userEntity = userEntity)
+        composable(route = BottomBarScreen.Home.route + "/{userInfo}/{token}",
+            arguments = PortalNavArguments.arguments
+        ){
+            Column(Modifier.fillMaxSize().padding(paddingValues)) {
+                ProfileCard(userEntity = userEntity)
+            }
         }
-        composable(route = BottomBarScreen.Attendance.route){
-            AttendanceScreen(userInfo = userEntity, token = token)
+        composable(route = BottomBarScreen.Attendance.route + "/{userInfo}/{token}",
+            arguments = PortalNavArguments.arguments
+        ){
+            AttendanceScreen()
         }
-        composable(route = BottomBarScreen.ExamSchedule.route){
-            ExamsScreen(userInfo = userEntity, token = token)
+        composable(route = BottomBarScreen.ExamSchedule.route + "/{userInfo}/{token}",
+            arguments = PortalNavArguments.arguments
+        ){
+            ExamsScreen()
         }
-        composable(route = BottomBarScreen.Performance.route){
-            GradesScreen(userInfo = userEntity, token = token)
+        composable(route = BottomBarScreen.Performance.route + "/{userInfo}/{token}",
+            arguments = PortalNavArguments.arguments
+        ){
+            GradesScreen()
         }
-        composable(route = BottomBarScreen.Subjects.route){
-            SubjectsScreen(userInfo = userEntity, token = token)
+        composable(route = BottomBarScreen.Subjects.route + "/{userInfo}/{token}",
+            arguments = PortalNavArguments.arguments
+        ){
+            SubjectsScreen()
         }
     }
 }

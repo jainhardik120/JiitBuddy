@@ -6,9 +6,7 @@ import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 
 @Composable
 fun AttendanceScreen(
-    userInfo : UserEntity,
-    viewModel: AttendanceViewModel = hiltViewModel(),
-    token: String? = null
+    viewModel: AttendanceViewModel = hiltViewModel()
 ){
 
 }

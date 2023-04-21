@@ -1,12 +1,15 @@
 package com.jainhardik120.jiitcompanion.ui.presentation.home
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
+import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
+import com.squareup.moshi.Moshi
 
 private const val TAG = "HomeScreen"
 
@@ -18,7 +21,15 @@ fun HomeScreen(
     navController: NavHostController = rememberNavController()
 ) {
     var selectedItem by remember { mutableStateOf(0) }
-    Scaffold(bottomBar = {
+    val json = Moshi.Builder().build().adapter(UserEntity::class.java).lenient().toJson(
+        userInfo
+    )
+    Log.d(TAG, "HomeScreen: Composed")
+    Scaffold(topBar = {
+        TopAppBar(title= {
+            Text(text = "JIIT Buddy")
+        })
+    },bottomBar = {
         val screens = listOf(
             BottomBarScreen.Home,
             BottomBarScreen.Attendance,
@@ -34,7 +45,7 @@ fun HomeScreen(
                     selected = selectedItem == index,
                     onClick = {
                         selectedItem = index
-                        navController.navigate(screen.route){
+                        navController.navigate("${screen.route}/${json}/${token}"){
                             popUpTo(navController.graph.findStartDestination().id)
                             launchSingleTop = true
                         }
