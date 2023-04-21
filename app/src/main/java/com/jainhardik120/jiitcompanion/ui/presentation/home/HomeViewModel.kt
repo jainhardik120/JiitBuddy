@@ -1,4 +1,4 @@
-package com.jainhardik120.jiitcompanion.presentation.home
+package com.jainhardik120.jiitcompanion.ui.presentation.home
 
 import android.util.Log
 import androidx.lifecycle.ViewModel

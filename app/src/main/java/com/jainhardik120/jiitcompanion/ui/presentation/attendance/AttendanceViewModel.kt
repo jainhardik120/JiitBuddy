@@ -1,4 +1,4 @@
-package com.jainhardik120.jiitcompanion.presentation.attendance
+package com.jainhardik120.jiitcompanion.ui.presentation.attendance
 
 import android.util.Log
 import androidx.lifecycle.ViewModel

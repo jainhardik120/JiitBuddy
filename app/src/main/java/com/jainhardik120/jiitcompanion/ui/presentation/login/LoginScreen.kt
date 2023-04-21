@@ -1,4 +1,4 @@
-package com.jainhardik120.jiitcompanion.presentation.login
+package com.jainhardik120.jiitcompanion.ui.presentation.login
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
@@ -6,7 +6,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.jainhardik120.jiitcompanion.uitl.UiEvent
+import com.jainhardik120.jiitcompanion.util.UiEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable

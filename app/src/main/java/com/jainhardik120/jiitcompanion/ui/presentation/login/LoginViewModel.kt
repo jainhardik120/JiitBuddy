@@ -1,20 +1,16 @@
-package com.jainhardik120.jiitcompanion.presentation.login
+package com.jainhardik120.jiitcompanion.ui.presentation.login
 
-import android.content.Context
-import android.content.SharedPreferences
 import android.util.Log
 import androidx.compose.runtime.*
-import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jainhardik120.jiitcompanion.core.util.Resource
+import com.jainhardik120.jiitcompanion.util.Resource
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
-import com.jainhardik120.jiitcompanion.uitl.Screen
-import com.jainhardik120.jiitcompanion.uitl.UiEvent
+import com.jainhardik120.jiitcompanion.util.Screen
+import com.jainhardik120.jiitcompanion.util.UiEvent
 import com.squareup.moshi.Moshi
 import dagger.hilt.android.lifecycle.HiltViewModel
-import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -41,13 +37,13 @@ class LoginViewModel @Inject constructor(
     }
     fun onEvent(event: LoginScreenEvent){
         when(event){
-            is LoginScreenEvent.OnEnrollmentNoChange->{
+            is LoginScreenEvent.OnEnrollmentNoChange ->{
                 state = state.copy(enrollmentNo = event.enrollmentno)
             }
-            is LoginScreenEvent.OnPasswordChange->{
+            is LoginScreenEvent.OnPasswordChange ->{
                 state = state.copy(password = event.password)
             }
-            is LoginScreenEvent.OnLoginClicked->{
+            is LoginScreenEvent.OnLoginClicked ->{
                 Log.d(TAG, "onEvent: Came Here")
                 if(state.enrollmentNo.isNotEmpty() && state.password.isNotEmpty()){
                     login(state.enrollmentNo, state.password)

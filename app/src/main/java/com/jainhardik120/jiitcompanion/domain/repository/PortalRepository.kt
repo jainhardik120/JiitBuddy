@@ -1,6 +1,6 @@
 package com.jainhardik120.jiitcompanion.domain.repository
 
-import com.jainhardik120.jiitcompanion.core.util.Resource
+import com.jainhardik120.jiitcompanion.util.Resource
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceRegistrationEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import kotlinx.coroutines.flow.Flow

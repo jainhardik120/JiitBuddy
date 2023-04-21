@@ -2,12 +2,12 @@ package com.jainhardik120.jiitcompanion.data.repository
 
 import android.content.SharedPreferences
 import android.util.Log
-import com.jainhardik120.jiitcompanion.core.util.Resource
 import com.jainhardik120.jiitcompanion.data.local.PortalDatabase
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceRegistrationEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.data.remote.PortalApi
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
+import com.jainhardik120.jiitcompanion.util.Resource
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.flow
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
@@ -32,7 +32,7 @@ class PortalRepositoryImpl @Inject constructor(
         studentid: String,
         membertype: String,
         token: String
-    ): Flow<Resource<List<StudentAttendanceRegistrationEntity>>> = flow { 
+    ): Flow<Resource<List<StudentAttendanceRegistrationEntity>>> = flow {
         emit(Resource.Loading())
         val oldData = dao.getStudentAttendanceRegistrationDetails(studentid)
         if(oldData.isNotEmpty()){
@@ -43,7 +43,7 @@ class PortalRepositoryImpl @Inject constructor(
                 "{\"clientid\":\"${clientid}\",\"instituteid\":\"${instituteid}\",\"studentid\":\"${studentid}\",\"membertype\":\"${membertype}\"}\n"
             )
             val registrationData = api.registrationForAttendance(RequestBody(payload), "Bearer $token")
-            Log.d(TAG, "getAttendanceRegistrationDetails: ${registrationData.toString()}")
+            Log.d(TAG, "getAttendanceRegistrationDetails: ${registrationData}")
         
         } catch (e: HttpException) {
             Log.d(TAG, "attendanceRegistration: HTTP Exception : ${e.message()}")
@@ -142,7 +142,7 @@ class PortalRepositoryImpl @Inject constructor(
                 emit(
                     Resource.Error(
                         message = "Oops, something went wrong!",
-                        data = Pair<UserEntity, String>(requiredUser!!, token)
+                        data = Pair(requiredUser!!, token)
                     )
                 )
             } catch (e: IOException) {
@@ -150,7 +150,7 @@ class PortalRepositoryImpl @Inject constructor(
                 emit(
                     Resource.Error(
                         message = "Couldn't reach server, check your internet connection.",
-                        data = Pair<UserEntity, String>(requiredUser!!, token)
+                        data = Pair(requiredUser!!, token)
                     )
                 )
             } catch (e: Exception) {
@@ -158,7 +158,7 @@ class PortalRepositoryImpl @Inject constructor(
                 emit(
                     Resource.Error(
                         message = e.message.toString(),
-                        data = Pair<UserEntity, String>(requiredUser!!, token)
+                        data = Pair(requiredUser!!, token)
                     )
                 )
             }
@@ -167,12 +167,12 @@ class PortalRepositoryImpl @Inject constructor(
                 requiredUser = newAllUsers[0]
             }
             if(requiredUser!=null){
-                emit(Resource.Success(data = Pair<UserEntity, String>(requiredUser, token)))
+                emit(Resource.Success(data = Pair(requiredUser, token)))
             }
         }
 
     override fun lastUser(): Resource<Pair<String, String>> {
-        val data = Pair<String, String>(sharedPreferences.getString("enroll", "null")!!, sharedPreferences.getString("password", "null")!!)
+        val data = Pair(sharedPreferences.getString("enroll", "null")!!, sharedPreferences.getString("password", "null")!!)
         return Resource.Success(data = data)
     }
 }

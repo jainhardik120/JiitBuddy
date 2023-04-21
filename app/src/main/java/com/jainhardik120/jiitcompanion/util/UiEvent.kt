@@ -1,4 +1,4 @@
-package com.jainhardik120.jiitcompanion.uitl
+package com.jainhardik120.jiitcompanion.util
 
 sealed class UiEvent {
     data class Navigate(val route: String) : UiEvent()
