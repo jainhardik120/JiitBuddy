@@ -4,6 +4,7 @@ import android.content.SharedPreferences
 import android.util.Log
 import com.jainhardik120.jiitcompanion.data.local.PortalDatabase
 import com.jainhardik120.jiitcompanion.data.local.entity.ResultEntity
+import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceRegistrationEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.data.remote.PortalApi
@@ -31,11 +32,17 @@ class PortalRepositoryImpl @Inject constructor(
     private val dao = db.dao
 
     override fun lastUser(): Resource<Pair<String, String>> {
-        val data = Pair(sharedPreferences.getString("enroll", "null")!!, sharedPreferences.getString("password", "null")!!)
+        val data = Pair(
+            sharedPreferences.getString("enroll", "null")!!,
+            sharedPreferences.getString("password", "null")!!
+        )
         return Resource.Success(data = data)
     }
 
-    override fun loginUser(enrollmentno: String, password: String): Flow<Resource<Pair<UserEntity, String>>> =
+    override fun loginUser(
+        enrollmentno: String,
+        password: String
+    ): Flow<Resource<Pair<UserEntity, String>>> =
         flow {
             emit(Resource.Loading())
             val allUsers = dao.getUserByEnrollPass(enrollmentno, password)
@@ -49,7 +56,7 @@ class PortalRepositoryImpl @Inject constructor(
                 var jsonObject =
                     JSONObject("{\"otppwd\":\"PWD\",\"username\":\"$enrollmentno\",\"passwordotpvalue\":\"$password\",\"Modulename\":\"STUDENTMODULE\"}")
                 val regdata = api.login(RequestBody(jsonObject), "Bearer")
-                with(sharedPreferences.edit()){
+                with(sharedPreferences.edit()) {
                     clear()
                     putString("enroll", enrollmentno)
                     putString("password", password)
@@ -123,7 +130,7 @@ class PortalRepositoryImpl @Inject constructor(
             if (newAllUsers.isNotEmpty()) {
                 requiredUser = newAllUsers[0]
             }
-            if(requiredUser!=null){
+            if (requiredUser != null) {
                 emit(Resource.Success(data = Pair(requiredUser, token)))
             }
         }
@@ -137,16 +144,26 @@ class PortalRepositoryImpl @Inject constructor(
     ): Flow<Resource<List<StudentAttendanceRegistrationEntity>>> = flow {
         emit(Resource.Loading())
         val oldData = dao.getStudentAttendanceRegistrationDetails(studentid)
-        if(oldData.isNotEmpty()){
-            emit(Resource.Loading(data= oldData))
+        if (oldData.isNotEmpty()) {
+            emit(Resource.Loading(data = oldData))
         }
-        try{
+        try {
             val payload = JSONObject(
                 "{\"clientid\":\"${clientid}\",\"instituteid\":\"${instituteid}\",\"studentid\":\"${studentid}\",\"membertype\":\"${membertype}\"}\n"
             )
-            val registrationData = api.registrationForAttendance(RequestBody(payload), "Bearer $token")
-            Log.d(TAG, "getAttendanceRegistrationDetails: ${registrationData}")
-        
+            val registrationData =
+                api.registrationForAttendance(RequestBody(payload), "Bearer $token")
+            val data =
+                JSONObject(registrationData).getJSONObject("response").getJSONArray("semlist")
+            val registrationList = List(data.length()) {
+                StudentAttendanceRegistrationEntity(
+                    studentid,
+                    data.getJSONObject(it).getString("registrationcode"),
+                    data.getJSONObject(it).getString("registrationid")
+                )
+            }
+            emit(Resource.Success(data = registrationList))
+
         } catch (e: HttpException) {
             Log.d(TAG, "attendanceRegistration: HTTP Exception : ${e.message()}")
             emit(
@@ -174,6 +191,60 @@ class PortalRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getAttendanceDetails(
+        clientid: String,
+        instituteid: String,
+        studentid: String,
+        stynumber: Int,
+        registrationid: String,
+        token: String
+    ): Flow<Resource<List<StudentAttendanceEntity>>> = flow {
+        emit(Resource.Loading())
+        try {
+            val payload = JSONObject(
+                "{\"clientid\":\"${clientid}\",\"instituteid\":\"${instituteid}\",\"studentid\":\"${studentid}\",\"stynumber\":\"$stynumber\",\"registrationid\":\"${registrationid}\"}"
+            )
+            val attendanceData = api.attendanceDetail(RequestBody(payload), "Bearer $token")
+            val array =
+                JSONObject(attendanceData).getJSONObject("response").getJSONArray("studentattendancelist")
+            val adapter = Moshi.Builder().build().adapter(StudentAttendanceEntity::class.java).lenient()
+            val resultList = List<StudentAttendanceEntity>(array.length()) { it ->
+                val jsonObject = array.getJSONObject(it)
+                StudentAttendanceEntity(
+                    studentid,
+                    registrationid,
+                    if(jsonObject.getString("Lsubjectcomponentcode")=="L" && jsonObject.getString("Tsubjectcomponentcode")=="T") { jsonObject.getDouble("LTpercantage")} else {0.0},
+                    if(jsonObject.getString("Lsubjectcomponentcode")=="L") { jsonObject.getDouble("Lpercentage")} else {0.0},
+                    jsonObject.getString("Lsubjectcomponentcode")?:"",
+                    jsonObject.getString("Lsubjectcomponentid")?:"",
+                    if(jsonObject.getString("Lsubjectcomponentcode")=="L") { jsonObject.getDouble("Ltotalclass")} else {0.0},
+                    if(jsonObject.getString("Lsubjectcomponentcode")=="L") { jsonObject.getDouble("Ltotalpres")} else {0.0},
+                    if(jsonObject.getString("Psubjectcomponentcode")=="P") { jsonObject.getDouble("Ppercentage")} else {0.0},
+                    jsonObject.getString("Psubjectcomponentcode")?:"",
+                    jsonObject.getString("Psubjectcomponentid")?:"",
+                    if(jsonObject.getString("Tsubjectcomponentcode")=="T") { jsonObject.getDouble("Tpercentage")} else {0.0},
+                    jsonObject.getString("Tsubjectcomponentcode")?:"",
+                    jsonObject.getString("Tsubjectcomponentid")?:"",
+                    if(jsonObject.getString("Tsubjectcomponentcode")=="T") { jsonObject.getDouble("Ttotalclass")} else {0.0},
+                    if(jsonObject.getString("Tsubjectcomponentcode")=="T") { jsonObject.getDouble("Ttotalpres")} else {0.0},
+                    (jsonObject.getString("abseent")?:"0.0").toDouble(),
+                    jsonObject.getInt("slno"),
+                    jsonObject.getString("subjectcode")?:"",
+                    jsonObject.getString("subjectid")?:""
+                )
+            }
+            emit(Resource.Success(data = resultList))
+        } catch (e: HttpException) {
+            Log.d(TAG, "getStudentResultData: HTTP Exception : ${e.message()}")
+
+        } catch (e: IOException) {
+            Log.d(TAG, "getStudentResultData: IO Exception : ${e.message}")
+
+        } catch (e: Exception) {
+            Log.d(TAG, "getStudentResultData: Kotlin Exception : ${e.message}")
+        }
+    }
+
     override fun getStudentResultData(
         instituteid: String,
         studentid: String,
@@ -186,10 +257,11 @@ class PortalRepositoryImpl @Inject constructor(
                 "{\"instituteid\":\"${instituteid}\",\"studentid\":\"${studentid}\",\"stynumber\":\"${stynumber}\"}\n"
             )
             val registrationData = api.studentResultData(RequestBody(payload), "Bearer $token")
-            val array = JSONObject(registrationData).getJSONObject("response").getJSONArray("semesterList")
+            val array =
+                JSONObject(registrationData).getJSONObject("response").getJSONArray("semesterList")
 //            var resultList:List<ResultEntity> = emptyList()
             val adapter = Moshi.Builder().build().adapter(ResultEntity::class.java).lenient()
-            val resultList = List<ResultEntity>(array.length()){it->
+            val resultList = List<ResultEntity>(array.length()) { it ->
                 adapter.fromJson(array.getJSONObject(it).toString())!!
             }
             emit(Resource.Success(data = resultList))

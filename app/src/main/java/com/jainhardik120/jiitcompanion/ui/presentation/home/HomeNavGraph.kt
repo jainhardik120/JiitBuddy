@@ -32,29 +32,52 @@ fun HomeNavGraph(
         composable(route = BottomBarScreen.Home.route + "/{userInfo}/{token}",
             arguments = PortalNavArguments.arguments
         ){
-            Column(Modifier.fillMaxSize().padding(paddingValues)) {
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)) {
                 ProfileCard(userEntity = userEntity)
             }
         }
         composable(route = BottomBarScreen.Attendance.route + "/{userInfo}/{token}",
             arguments = PortalNavArguments.arguments
         ){
-            AttendanceScreen()
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)) {
+                AttendanceScreen()
+            }
         }
         composable(route = BottomBarScreen.ExamSchedule.route + "/{userInfo}/{token}",
             arguments = PortalNavArguments.arguments
         ){
-            ExamsScreen()
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)) {
+                ExamsScreen()
+            }
         }
         composable(route = BottomBarScreen.Performance.route + "/{userInfo}/{token}",
             arguments = PortalNavArguments.arguments
         ){
-            GradesScreen()
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)) {
+                GradesScreen()
+            }
         }
         composable(route = BottomBarScreen.Subjects.route + "/{userInfo}/{token}",
             arguments = PortalNavArguments.arguments
         ){
-            SubjectsScreen()
+            Column(
+                Modifier
+                    .fillMaxSize()
+                    .padding(paddingValues)) {
+                SubjectsScreen()
+            }
         }
     }
 }
