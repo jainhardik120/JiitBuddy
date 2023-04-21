@@ -1,11 +1,15 @@
 package com.jainhardik120.jiitcompanion.presentation.login
 
+import android.content.Context
+import android.content.SharedPreferences
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Shape
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jainhardik120.jiitcompanion.uitl.UiEvent
@@ -29,7 +33,10 @@ fun LoginScreen(
     Column(
         Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center) {
-        Card(Modifier.fillMaxWidth().padding(16.dp)) {
+        Card(
+            Modifier
+                .fillMaxWidth()
+                .padding(16.dp)) {
             Column(Modifier.padding(16.dp)) {
                 OutlinedTextField(
                     modifier = Modifier.fillMaxWidth(),

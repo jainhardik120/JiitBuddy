@@ -1,5 +1,6 @@
 package com.jainhardik120.jiitcompanion.data.repository
 
+import android.content.SharedPreferences
 import android.util.Log
 import com.jainhardik120.jiitcompanion.core.util.Resource
 import com.jainhardik120.jiitcompanion.data.local.PortalDatabase
@@ -20,7 +21,8 @@ import javax.inject.Singleton
 @Singleton
 class PortalRepositoryImpl @Inject constructor(
     private val api: PortalApi,
-    private val db: PortalDatabase
+    private val db: PortalDatabase,
+    private val sharedPreferences: SharedPreferences
 ) : PortalRepository {
     private val TAG = "PortalRepositoryDebug"
 
@@ -35,17 +37,18 @@ class PortalRepositoryImpl @Inject constructor(
             emit(Resource.Loading())
 
             val allUsers = dao.getUserByEnrollPass(enrollmentno, password)
-            var requiredUser : UserEntity? = null
+            var requiredUser: UserEntity? = null
             if (allUsers.isNotEmpty()) {
                 requiredUser = allUsers[0]
                 Log.d(TAG, "loginUser: ${requiredUser.toString()}")
             }
             emit(Resource.Loading(data = requiredUser))
-            try{
+            try {
                 var jsonObject =
                     JSONObject("{\"otppwd\":\"PWD\",\"username\":\"$enrollmentno\",\"passwordotpvalue\":\"$password\",\"Modulename\":\"STUDENTMODULE\"}")
                 val regdata = api.login(RequestBody(jsonObject), "Bearer")
-                val loginDetails = JSONObject(regdata).getJSONObject("response").getJSONObject("regdata")
+                val loginDetails =
+                    JSONObject(regdata).getJSONObject("response").getJSONObject("regdata")
                 val token = loginDetails.getString("token")
                 Log.d(TAG, "login Success: $regdata")
                 jsonObject = JSONObject(
@@ -58,7 +61,8 @@ class PortalRepositoryImpl @Inject constructor(
                     RequestBody(jsonObject),
                     "Bearer $token"
                 )
-                val generalInformation = JSONObject(generalInfo).getJSONObject("response").getJSONObject("generalinformation")
+                val generalInformation = JSONObject(generalInfo).getJSONObject("response")
+                    .getJSONObject("generalinformation")
                 val loggedInUser = UserEntity(
                     password,
                     loginDetails.getString("clientid"),
@@ -82,24 +86,30 @@ class PortalRepositoryImpl @Inject constructor(
                 )
                 dao.insertUser(loggedInUser)
                 Log.d(TAG, "loginUser: $generalInfo")
-            } catch(e: HttpException){
+            } catch (e: HttpException) {
                 Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
-                emit(Resource.Error(
-                    message = "Oops, something went wrong!",
-                    data = requiredUser
-                ))
-            } catch(e: IOException){
+                emit(
+                    Resource.Error(
+                        message = "Oops, something went wrong!",
+                        data = requiredUser
+                    )
+                )
+            } catch (e: IOException) {
                 Log.d(TAG, "loginUser: IO Exception : ${e.message}")
-                emit(Resource.Error(
-                    message = "Couldn't reach server, check your internet connection.",
-                    data = requiredUser
-                ))
-            } catch (e: Exception){
+                emit(
+                    Resource.Error(
+                        message = "Couldn't reach server, check your internet connection.",
+                        data = requiredUser
+                    )
+                )
+            } catch (e: Exception) {
                 Log.d(TAG, "loginUser: Kotlin Exception : ${e.message}")
-                emit(Resource.Error(
-                    message = e.message.toString(),
-                    data = requiredUser
-                ))
+                emit(
+                    Resource.Error(
+                        message = e.message.toString(),
+                        data = requiredUser
+                    )
+                )
             }
             val newAllUsers = dao.getUserByEnrollPass(enrollmentno, password)
             if (newAllUsers.isNotEmpty()) {
@@ -108,4 +118,8 @@ class PortalRepositoryImpl @Inject constructor(
             emit(Resource.Success(data = requiredUser))
         }
 
+    override fun lastUser(): Resource<Pair<String, String>> {
+        val data = Pair<String, String>(sharedPreferences.getString("enroll", "21103185")!!, sharedPreferences.getString("password", "E1CAEE")!!)
+        return Resource.Success(data = data)
+    }
 }

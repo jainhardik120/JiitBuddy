@@ -1,6 +1,8 @@
 package com.jainhardik120.jiitcompanion.di
 
 import android.app.Application
+import android.content.Context
+import android.content.SharedPreferences
 import androidx.room.Room
 import com.jainhardik120.jiitcompanion.data.local.PortalDatabase
 import com.jainhardik120.jiitcompanion.data.remote.PortalApi
@@ -37,5 +39,10 @@ object AppModule {
     @Singleton
     fun providePortalDatabase(app:Application):PortalDatabase{
         return Room.databaseBuilder(app, PortalDatabase::class.java, "portal_database").build()
+    }
+
+    @Provides
+    fun provideSharedPreferences(app: Application):SharedPreferences{
+        return app.getSharedPreferences("sharedpreferences", Context.MODE_PRIVATE)
     }
 }

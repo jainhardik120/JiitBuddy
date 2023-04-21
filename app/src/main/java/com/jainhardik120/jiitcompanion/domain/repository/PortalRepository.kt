@@ -8,5 +8,6 @@ import kotlinx.coroutines.flow.Flow
 interface PortalRepository {
 
     fun loginUser(enrollmentno: String, password: String): Flow<Resource<UserEntity>>
+    fun lastUser(): Resource<Pair<String, String>>
 
 }

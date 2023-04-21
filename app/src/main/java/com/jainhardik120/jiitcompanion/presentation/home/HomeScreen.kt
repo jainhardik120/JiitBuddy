@@ -1,43 +1,28 @@
 package com.jainhardik120.jiitcompanion.presentation.home
 
+import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.presentation.login.LoginViewModel
 
+private const val TAG = "HomeScreen"
+
 @Composable
 fun HomeScreen(
+    userInfo : UserEntity,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
+    Log.d(TAG, "HomeScreen: $userInfo")
     Column(Modifier.fillMaxSize(),
         verticalArrangement = Arrangement.Center) {
-        ProfileCard(userEntity = UserEntity(
-            "E1CAEE",
-            "JAYPEE",
-            "21103185",
-            "JIAC2202375",
-            "S",
-            "JAYPEE INSTITUTE OF INFORMATION TECHNOLOGY",
-            "11IN1902J000001",
-            "HARDIK JAIN",
-            "2003-10-17",
-            "USID2109A0000458",
-            "2122",
-            "B7",
-            "CSE",
-            "M",
-            "JIIT",
-            "B.T",
-            4,
-            "7983121194",
-            "JAINHARDIK120@GMAIL.COM"
-        )
-        )
+        ProfileCard(userEntity = userInfo)
     }
 }
 

@@ -1,13 +1,18 @@
 package com.jainhardik120.jiitcompanion.presentation.login
 
+import android.content.Context
+import android.content.SharedPreferences
 import android.util.Log
 import androidx.compose.runtime.*
+import androidx.compose.ui.platform.LocalContext
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jainhardik120.jiitcompanion.core.util.Resource
+import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
-import com.jainhardik120.jiitcompanion.uitl.Routes
+import com.jainhardik120.jiitcompanion.uitl.Screen
 import com.jainhardik120.jiitcompanion.uitl.UiEvent
+import com.squareup.moshi.Moshi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
@@ -23,9 +28,13 @@ class LoginViewModel @Inject constructor(
 
     private val _uiEvent =  Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
-    
+
     private val TAG = "LoginViewModel"
 
+    init {
+        val lastUser = repository.lastUser()
+        Log.d(TAG, "lastUser: ${lastUser.data?.first}")
+    }
     fun onEvent(event: LoginScreenEvent){
         when(event){
             is LoginScreenEvent.OnEnrollmentNoChange->{
@@ -47,8 +56,8 @@ class LoginViewModel @Inject constructor(
                 result->
                 when(result){
                     is Resource.Success ->{
-                        Log.d(TAG, "login: Success Resource")
-                        sendUiEvent(UiEvent.Navigate(Routes.HOME_SCREEN))
+                        val json = Moshi.Builder().build().adapter(UserEntity::class.java).lenient().toJson(result.data)
+                        sendUiEvent(UiEvent.Navigate(Screen.HomeScreen.withArgs(json)))
                     }
                     is Resource.Error -> {
 

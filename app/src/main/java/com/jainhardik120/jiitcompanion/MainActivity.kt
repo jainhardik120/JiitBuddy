@@ -6,13 +6,17 @@ import androidx.activity.compose.setContent
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.material3.*
 import androidx.compose.ui.Modifier
+import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navArgument
+import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.presentation.home.HomeScreen
 import com.jainhardik120.jiitcompanion.presentation.login.LoginScreen
 import com.jainhardik120.jiitcompanion.ui.theme.JIITBuddyTheme
-import com.jainhardik120.jiitcompanion.uitl.Routes
+import com.jainhardik120.jiitcompanion.uitl.Screen
+import com.squareup.moshi.Moshi
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint
@@ -29,15 +33,30 @@ class MainActivity : ComponentActivity() {
                     val navController = rememberNavController()
                     NavHost(
                         navController = navController,
-                        startDestination = Routes.LOGIN_SCREEN
+                        startDestination = Screen.LoginScreen.route
                     ) {
-                        composable(Routes.LOGIN_SCREEN){
+                        composable(route = Screen.LoginScreen.route){
                             LoginScreen(onNavigate = {
                                 navController.navigate(it.route)
                             })
                         }
-                        composable(Routes.HOME_SCREEN){
-                            HomeScreen()
+                        composable(route = Screen.HomeScreen.route + "/{userInfo}",
+                        arguments = listOf(
+                            navArgument("userInfo"){
+                                type = NavType.StringType
+                                nullable = false
+                            }
+                        )
+                        ){
+                            val userJson = it.arguments?.getString("userInfo")
+                            val userObject = userJson?.let { it1 ->
+                                Moshi.Builder().build().adapter(UserEntity::class.java).lenient().fromJson(
+                                    it1
+                                )
+                            }
+                            if (userObject != null) {
+                                HomeScreen(userInfo = userObject)
+                            }
                         }
                     }
                 }
