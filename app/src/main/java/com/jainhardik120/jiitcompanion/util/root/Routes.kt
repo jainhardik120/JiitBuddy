@@ -1,4 +1,4 @@
-package com.jainhardik120.jiitcompanion.util
+package com.jainhardik120.jiitcompanion.util.root
 
 sealed class Screen(val route: String){
     object LoginScreen : Screen("login_screen")

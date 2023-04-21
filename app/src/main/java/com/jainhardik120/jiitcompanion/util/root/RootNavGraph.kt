@@ -1,4 +1,4 @@
-package com.jainhardik120.jiitcompanion.util
+package com.jainhardik120.jiitcompanion.util.root
 
 import androidx.compose.runtime.Composable
 import androidx.navigation.NavHostController

@@ -7,7 +7,7 @@ import androidx.lifecycle.viewModelScope
 import com.jainhardik120.jiitcompanion.util.Resource
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
-import com.jainhardik120.jiitcompanion.util.Screen
+import com.jainhardik120.jiitcompanion.util.root.Screen
 import com.jainhardik120.jiitcompanion.util.UiEvent
 import com.squareup.moshi.Moshi
 import dagger.hilt.android.lifecycle.HiltViewModel

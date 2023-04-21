@@ -8,7 +8,7 @@ import androidx.compose.material3.*
 import androidx.compose.ui.Modifier
 import androidx.navigation.compose.rememberNavController
 import com.jainhardik120.jiitcompanion.ui.theme.JIITBuddyTheme
-import com.jainhardik120.jiitcompanion.util.RootNavigationGraph
+import com.jainhardik120.jiitcompanion.util.root.RootNavigationGraph
 import dagger.hilt.android.AndroidEntryPoint
 
 @AndroidEntryPoint

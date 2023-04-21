@@ -1,9 +1,7 @@
-package com.jainhardik120.jiitcompanion.util
+package com.jainhardik120.jiitcompanion.ui.presentation.home
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Person
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.filled.*
 import androidx.compose.ui.graphics.vector.ImageVector
 
 sealed class BottomBarScreen(
@@ -14,30 +12,30 @@ sealed class BottomBarScreen(
     object Home : BottomBarScreen(
         route = "home",
         title = "Home",
-        icon = Icons.Default.Home
+        icon = Icons.Filled.Person
     )
 
     object Attendance : BottomBarScreen(
         route = "attendance",
         title = "Attendance",
-        icon = Icons.Default.Person
+        icon = Icons.Filled.Monitor
     )
 
     object Performance : BottomBarScreen(
         route = "performance",
         title = "Grades",
-        icon = Icons.Default.Settings
+        icon = Icons.Filled.Insights
     )
 
     object ExamSchedule : BottomBarScreen(
         route = "exam_schedule",
         title = "Exams",
-        icon = Icons.Default.Settings
+        icon = Icons.Filled.Event
     )
 
     object Subjects : BottomBarScreen(
         route = "subjects",
         title = "Subjects",
-        icon = Icons.Default.Settings
+        icon = Icons.Filled.School
     )
 }
