@@ -4,6 +4,8 @@ sealed class Screen(val route: String){
     object LoginScreen : Screen("login_screen")
     object HomeScreen : Screen("home_screen")
 
+    object AttendanceScreen : Screen("attendance_screen")
+
     fun withArgs(vararg args: String):String{
         return buildString {
             append(route)

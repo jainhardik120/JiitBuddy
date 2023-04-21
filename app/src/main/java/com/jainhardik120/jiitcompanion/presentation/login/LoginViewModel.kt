@@ -14,6 +14,7 @@ import com.jainhardik120.jiitcompanion.uitl.Screen
 import com.jainhardik120.jiitcompanion.uitl.UiEvent
 import com.squareup.moshi.Moshi
 import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.cancel
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
@@ -32,8 +33,11 @@ class LoginViewModel @Inject constructor(
     private val TAG = "LoginViewModel"
 
     init {
+        Log.d(TAG, "LoginViewModel: Initialized")
         val lastUser = repository.lastUser()
-        Log.d(TAG, "lastUser: ${lastUser.data?.first}")
+        if(!lastUser.data?.first.equals("null")){
+            lastUser.data?.first?.let { lastUser.data.second.let { it1 -> login(it, it1) } }
+        }
     }
     fun onEvent(event: LoginScreenEvent){
         when(event){
@@ -45,7 +49,12 @@ class LoginViewModel @Inject constructor(
             }
             is LoginScreenEvent.OnLoginClicked->{
                 Log.d(TAG, "onEvent: Came Here")
-                login(state.enrollmentNo, state.password)
+                if(state.enrollmentNo.isNotEmpty() && state.password.isNotEmpty()){
+                    login(state.enrollmentNo, state.password)
+                } else {
+                    sendUiEvent(UiEvent.ShowSnackbar("Enter Enrollment No and Password"))
+                }
+
             }
         }
     }
@@ -56,11 +65,14 @@ class LoginViewModel @Inject constructor(
                 result->
                 when(result){
                     is Resource.Success ->{
-                        val json = Moshi.Builder().build().adapter(UserEntity::class.java).lenient().toJson(result.data)
-                        sendUiEvent(UiEvent.Navigate(Screen.HomeScreen.withArgs(json)))
+                        val json = Moshi.Builder().build().adapter(UserEntity::class.java).lenient().toJson(
+                            result.data?.first
+                        )
+                        result.data?.let { Screen.HomeScreen.withArgs(json, it.second) }
+                            ?.let { UiEvent.Navigate(it) }?.let { sendUiEvent(it) }
                     }
                     is Resource.Error -> {
-
+                        result.message?.let { UiEvent.ShowSnackbar(it) }?.let { sendUiEvent(it) }
                     }
                     is Resource.Loading -> {
 

@@ -17,7 +17,8 @@ private const val TAG = "HomeScreen"
 @Composable
 fun HomeScreen(
     userInfo : UserEntity,
-    viewModel: LoginViewModel = hiltViewModel()
+    viewModel: HomeViewModel = hiltViewModel(),
+    token: String? = null
 ) {
     Log.d(TAG, "HomeScreen: $userInfo")
     Column(Modifier.fillMaxSize(),

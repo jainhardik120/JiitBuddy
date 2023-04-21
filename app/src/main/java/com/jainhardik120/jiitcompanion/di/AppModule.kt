@@ -38,7 +38,7 @@ object AppModule {
     @Provides
     @Singleton
     fun providePortalDatabase(app:Application):PortalDatabase{
-        return Room.databaseBuilder(app, PortalDatabase::class.java, "portal_database").build()
+        return Room.databaseBuilder(app, PortalDatabase::class.java, "portal_database").fallbackToDestructiveMigration().build()
     }
 
     @Provides

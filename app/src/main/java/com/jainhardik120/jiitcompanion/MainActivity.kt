@@ -40,11 +40,14 @@ class MainActivity : ComponentActivity() {
                                 navController.navigate(it.route)
                             })
                         }
-                        composable(route = Screen.HomeScreen.route + "/{userInfo}",
+                        composable(route = Screen.HomeScreen.route + "/{userInfo}/{token}",
                         arguments = listOf(
                             navArgument("userInfo"){
                                 type = NavType.StringType
                                 nullable = false
+                            }, navArgument("token"){
+                                type = NavType.StringType
+                                nullable = true
                             }
                         )
                         ){
