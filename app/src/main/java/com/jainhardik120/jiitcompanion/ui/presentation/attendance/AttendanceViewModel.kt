@@ -32,6 +32,7 @@ class AttendanceViewModel @Inject constructor(
             token = savedStateHandle.get<String>("token") ?: return@launch
             user = Moshi.Builder().build().adapter(UserEntity::class.java).lenient()
                 .fromJson(savedStateHandle.get<String>("userInfo") ?: return@launch)!!
+            Log.d(TAG, "UserInfo: ${savedStateHandle.get<String>("userInfo")}")
             repository.getAttendanceRegistrationDetails(
                 user.clientid,
                 user.instituteValue,
@@ -43,6 +44,13 @@ class AttendanceViewModel @Inject constructor(
                     when (result) {
                         is Resource.Success -> {
                             state = result.data?.let { state.copy(registrations = it) }!!
+                            for (i in state.registrations){
+                                Log.d(TAG, "AttendanceMatching: ${i.registrationid}:${user.lastAttendanceRegistrationId}")
+                                if(i.registrationid==user.lastAttendanceRegistrationId){
+                                    state = state.copy(selectedSemesterCode = i.registrationcode, selectedSemesterId = i.registrationid)
+                                    loadAttendanceDetails()
+                                }
+                            }
                         }
                         is Resource.Loading -> {
 
@@ -63,6 +71,9 @@ class AttendanceViewModel @Inject constructor(
                     selectedSemesterId = event.semester.registrationid
                 )
                 loadAttendanceDetails()
+                viewModelScope.launch {
+                    repository.updateUserLastAttendanceRegistrationId(user.enrollmentno, event.semester.registrationid)
+                }
             }
         }
     }
@@ -80,6 +91,7 @@ class AttendanceViewModel @Inject constructor(
                 when (result) {
                     is Resource.Success -> {
                         state = result.data?.let { state.copy(attendanceData = it) }!!
+                        Log.d(TAG, "loadAttendanceDetails: ${result.data}")
                     }
                     is Resource.Loading -> {
 

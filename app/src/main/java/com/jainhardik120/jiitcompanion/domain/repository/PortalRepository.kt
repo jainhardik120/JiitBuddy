@@ -14,6 +14,8 @@ interface PortalRepository {
 
     fun loginUser(enrollmentno: String, password: String): Flow<Resource<Pair<UserEntity, String>>>
 
+    suspend fun updateUserLastAttendanceRegistrationId(enrollmentno: String, registrationid: String)
+
     fun getAttendanceRegistrationDetails(
         clientid: String,
         instituteid: String,

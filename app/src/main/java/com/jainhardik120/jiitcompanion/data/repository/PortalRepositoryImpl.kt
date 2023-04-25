@@ -39,6 +39,13 @@ class PortalRepositoryImpl @Inject constructor(
         return Resource.Success(data = data)
     }
 
+    override suspend fun updateUserLastAttendanceRegistrationId(
+        enrollmentno: String,
+        registrationid: String
+    ) {
+        dao.updateUserLastAttendanceRegistration(enrollmentno, registrationid)
+    }
+
     override fun loginUser(
         enrollmentno: String,
         password: String

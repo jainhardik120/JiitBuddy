@@ -21,4 +21,7 @@ interface PortalDao {
 
     @Query("SELECT * FROM attendance_registration_table WHERE studentid = :studentid")
     suspend fun getStudentAttendanceRegistrationDetails(studentid: String):List<StudentAttendanceRegistrationEntity>
+
+    @Query("UPDATE user_table SET lastAttendanceRegistrationId = :registrationId WHERE enrollmentno = :enrollmentno")
+    suspend fun updateUserLastAttendanceRegistration(enrollmentno: String, registrationId: String)
 }
