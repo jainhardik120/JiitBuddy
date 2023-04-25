@@ -4,6 +4,10 @@ import android.util.Log
 import androidx.compose.foundation.layout.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
+import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextOverflow
+import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
@@ -16,20 +20,20 @@ private const val TAG = "HomeScreen"
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun HomeScreen(
-    userInfo : UserEntity,
+    userInfo: UserEntity,
     token: String? = null,
     navController: NavHostController = rememberNavController()
 ) {
-    var selectedItem by remember { mutableStateOf(0) }
     val json = Moshi.Builder().build().adapter(UserEntity::class.java).lenient().toJson(
         userInfo
     )
-    Log.d(TAG, "HomeScreen: Composed")
+    val navBackStackEntry by navController.currentBackStackEntryAsState()
+    val currentDestination = navBackStackEntry?.destination
     Scaffold(topBar = {
-        TopAppBar(title= {
+        TopAppBar(title = {
             Text(text = "JIIT Buddy")
         })
-    },bottomBar = {
+    }, bottomBar = {
         val screens = listOf(
             BottomBarScreen.Home,
             BottomBarScreen.Attendance,
@@ -38,14 +42,17 @@ fun HomeScreen(
             BottomBarScreen.Subjects
         )
         NavigationBar {
-            screens.forEachIndexed{index, screen->
+            screens.forEachIndexed { index, screen ->
                 NavigationBarItem(
                     icon = { Icon(screen.icon, contentDescription = screen.title) },
-                    label = { Text(screen.title) },
-                    selected = selectedItem == index,
+                    label = {
+                        Text(text = screen.title, maxLines = 1, overflow = TextOverflow.Ellipsis)
+                    },
+                    selected = currentDestination?.hierarchy?.any {
+                        it.route?.contains(screen.route) ?: false
+                    } == true,
                     onClick = {
-                        selectedItem = index
-                        navController.navigate("${screen.route}/${json}/${token}"){
+                        navController.navigate("${screen.route}/${json}/${token}") {
                             popUpTo(navController.graph.findStartDestination().id)
                             launchSingleTop = true
                         }
@@ -54,8 +61,11 @@ fun HomeScreen(
             }
         }
     }) {
-        HomeNavGraph(navController = navController, userEntity = userInfo, token = token, paddingValues = it)
+        HomeNavGraph(
+            navController = navController,
+            userEntity = userInfo,
+            token = token,
+            paddingValues = it
+        )
     }
 }
-
-

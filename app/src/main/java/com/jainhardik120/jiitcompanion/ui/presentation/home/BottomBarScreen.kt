@@ -11,7 +11,7 @@ sealed class BottomBarScreen(
 ){
     object Home : BottomBarScreen(
         route = "home",
-        title = "Home",
+        title = "Profile",
         icon = Icons.Filled.Person
     )
 
