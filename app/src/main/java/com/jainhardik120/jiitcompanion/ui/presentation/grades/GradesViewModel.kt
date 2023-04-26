@@ -22,26 +22,24 @@ class GradesViewModel @Inject constructor(
 ) : ViewModel() {
     private val TAG = "GradesViewModel"
     var state by mutableStateOf(GradesState())
+
     init {
         viewModelScope.launch {
             val token = savedStateHandle.get<String>("token") ?: return@launch
             val user = Moshi.Builder().build().adapter(UserEntity::class.java).lenient()
                 .fromJson(savedStateHandle.get<String>("userInfo") ?: return@launch)
             if (user != null) {
-                repository.getStudentResultData(user.instituteValue, user.memberid, 4, token)
-                    .collect { result ->
-                        when(result){
-                            is Resource.Success->{
-                                state = result.data?.let { state.copy(results = it) }!!
-                            }
-                            is Resource.Loading->{
-
-                            }
-                            is Resource.Error->{
-
-                            }
-                        }
+                val result =
+                    repository.getStudentResultData(user.instituteValue, user.memberid, 4, token)
+                when (result) {
+                    is Resource.Success -> {
+                        state = result.data?.let { state.copy(results = it) }!!
                     }
+                    is Resource.Error -> {
+
+                    }
+                }
+
             }
         }
     }

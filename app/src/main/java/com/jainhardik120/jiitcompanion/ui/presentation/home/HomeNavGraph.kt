@@ -16,7 +16,7 @@ import com.jainhardik120.jiitcompanion.ui.presentation.attendance.AttendanceScre
 import com.jainhardik120.jiitcompanion.ui.presentation.exams.ExamsScreen
 import com.jainhardik120.jiitcompanion.ui.presentation.grades.GradesScreen
 import com.jainhardik120.jiitcompanion.ui.presentation.subjects.SubjectsScreen
-import com.jainhardik120.jiitcompanion.util.root.PortalNavArguments
+import com.jainhardik120.jiitcompanion.ui.presentation.root.PortalNavArguments
 
 @Composable
 fun HomeNavGraph(

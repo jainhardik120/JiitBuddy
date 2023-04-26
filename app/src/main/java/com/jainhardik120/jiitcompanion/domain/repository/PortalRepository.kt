@@ -12,26 +12,26 @@ interface PortalRepository {
 
     fun lastUser(): Resource<Pair<String, String>>
 
-    fun loginUser(enrollmentno: String, password: String): Flow<Resource<Pair<UserEntity, String>>>
+    suspend fun loginUser(enrollmentno: String, password: String): Resource<Pair<UserEntity, String>>
 
     suspend fun updateUserLastAttendanceRegistrationId(enrollmentno: String, registrationid: String)
 
-    fun getAttendanceRegistrationDetails(
+    suspend fun getAttendanceRegistrationDetails(
         clientid: String,
         instituteid: String,
         studentid: String,
         membertype: String, token: String
-    ): Flow<Resource<List<StudentAttendanceRegistrationEntity>>>
+    ): Resource<List<StudentAttendanceRegistrationEntity>>
 
-    fun getStudentResultData(
+    suspend fun getStudentResultData(
         instituteid: String,
         studentid: String, stynumber: Int, token: String
-    ): Flow<Resource<List<ResultEntity>>>
+    ): Resource<List<ResultEntity>>
 
-    fun getAttendanceDetails(
+    suspend fun getAttendanceDetails(
         clientid: String,
         instituteid: String,
         studentid: String,
         stynumber: Int, registrationid: String, token: String
-    ): Flow<Resource<List<StudentAttendanceEntity>>>
+    ): Resource<List<StudentAttendanceEntity>>
 }

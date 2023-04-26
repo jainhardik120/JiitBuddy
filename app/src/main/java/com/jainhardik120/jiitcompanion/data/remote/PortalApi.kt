@@ -21,6 +21,7 @@ interface PortalApi {
     companion object{
         const val BASE_URL = "https://webportal.jiit.ac.in:6011/StudentPortalAPI/"
     }
+
     @POST("token/generate-token1")
     suspend fun login(@Body body: RequestBody, @Header("Authorization") authorization: String): String
 

@@ -36,7 +36,7 @@ class PortalRepositoryImpl @Inject constructor(
             sharedPreferences.getString("enroll", "null")!!,
             sharedPreferences.getString("password", "null")!!
         )
-        return Resource.Success(data = data)
+        return Resource.Success(data = data, true)
     }
 
     override suspend fun updateUserLastAttendanceRegistrationId(
@@ -46,114 +46,91 @@ class PortalRepositoryImpl @Inject constructor(
         dao.updateUserLastAttendanceRegistration(enrollmentno, registrationid)
     }
 
-    override fun loginUser(
+    override suspend fun loginUser(
         enrollmentno: String,
         password: String
-    ): Flow<Resource<Pair<UserEntity, String>>> =
-        flow {
-            emit(Resource.Loading())
-            val allUsers = dao.getUserByEnrollPass(enrollmentno, password)
-            var token = "offline"
-            var requiredUser: UserEntity? = null
-            if (allUsers.isNotEmpty()) {
-                requiredUser = allUsers[0]
-                emit(Resource.Loading(data = Pair<UserEntity, String>(requiredUser, token)))
-            }
-            try {
-                var jsonObject =
-                    JSONObject("{\"otppwd\":\"PWD\",\"username\":\"$enrollmentno\",\"passwordotpvalue\":\"$password\",\"Modulename\":\"STUDENTMODULE\"}")
-                val regdata = api.login(RequestBody(jsonObject), "Bearer")
-                with(sharedPreferences.edit()) {
-                    clear()
-                    putString("enroll", enrollmentno)
-                    putString("password", password)
-                    apply()
-                }
-                val loginDetails =
-                    JSONObject(regdata).getJSONObject("response").getJSONObject("regdata")
-                token = loginDetails.getString("token")
-                Log.d(TAG, "login Success: $regdata")
-                jsonObject = JSONObject(
-                    "{\"clientid\":\"SOAU\",\"memberid\":\"${loginDetails.getString("memberid")}\",\"instituteid\":\"${
-                        loginDetails.getJSONArray("institutelist").getJSONObject(0)
-                            .getString("value")
-                    }\"}"
-                )
-                val generalInfo = api.personalInformation(
-                    RequestBody(jsonObject),
-                    "Bearer $token"
-                )
-                val generalInformation = JSONObject(generalInfo).getJSONObject("response")
-                    .getJSONObject("generalinformation")
-                val loggedInUser = UserEntity(
-                    password,
-                    loginDetails.getString("clientid"),
-                    loginDetails.getString("enrollmentno"),
-                    loginDetails.getString("memberid"),
-                    loginDetails.getString("membertype"),
-                    loginDetails.getJSONArray("institutelist").getJSONObject(0).getString("label"),
-                    loginDetails.getJSONArray("institutelist").getJSONObject(0).getString("value"),
-                    loginDetails.getString("name"),
-                    loginDetails.getString("userDOB"),
-                    loginDetails.getString("userid"),
-                    generalInformation.getString("admissionyear"),
-                    generalInformation.getString("batch"),
-                    generalInformation.getString("branch"),
-                    generalInformation.getString("gender"),
-                    generalInformation.getString("institutecode"),
-                    generalInformation.getString("programcode"),
-                    generalInformation.getInt("semester"),
-                    generalInformation.getString("studentcellno"),
-                    generalInformation.getString("studentpersonalemailid")
-                )
-                dao.insertUser(loggedInUser)
-                Log.d(TAG, "loginUser: $generalInfo")
-            } catch (e: HttpException) {
-                Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
-                emit(
-                    Resource.Error(
-                        message = "Oops, something went wrong!",
-                        data = Pair(requiredUser!!, token)
-                    )
-                )
-            } catch (e: IOException) {
-                Log.d(TAG, "loginUser: IO Exception : ${e.message}")
-                emit(
-                    Resource.Error(
-                        message = "Couldn't reach server, check your internet connection.",
-                        data = Pair(requiredUser!!, token)
-                    )
-                )
-            } catch (e: Exception) {
-                Log.d(TAG, "loginUser: Kotlin Exception : ${e.message}")
-                emit(
-                    Resource.Error(
-                        message = e.message.toString(),
-                        data = Pair(requiredUser!!, token)
-                    )
-                )
-            }
-            val newAllUsers = dao.getUserByEnrollPass(enrollmentno, password)
-            if (newAllUsers.isNotEmpty()) {
-                requiredUser = newAllUsers[0]
-            }
-            if (requiredUser != null) {
-                emit(Resource.Success(data = Pair(requiredUser, token)))
-            }
+    ): Resource<Pair<UserEntity, String>> {
+        val allUsers = dao.getUserByEnrollPass(enrollmentno, password)
+        var token = "offline"
+        var requiredUser: UserEntity? = null
+        if (allUsers.isNotEmpty()) {
+            requiredUser = allUsers[0]
         }
+        var isOnline = false
+        try {
+            var jsonObject =
+                JSONObject("{\"otppwd\":\"PWD\",\"username\":\"$enrollmentno\",\"passwordotpvalue\":\"$password\",\"Modulename\":\"STUDENTMODULE\"}")
+            val regdata = api.login(RequestBody(jsonObject), "Bearer")
+            with(sharedPreferences.edit()) {
+                clear()
+                putString("enroll", enrollmentno)
+                putString("password", password)
+                apply()
+            }
+            val loginDetails =
+                JSONObject(regdata).getJSONObject("response").getJSONObject("regdata")
+            token = loginDetails.getString("token")
+            Log.d(TAG, "login Success: $regdata")
+            jsonObject = JSONObject(
+                "{\"clientid\":\"SOAU\",\"memberid\":\"${loginDetails.getString("memberid")}\",\"instituteid\":\"${
+                    loginDetails.getJSONArray("institutelist").getJSONObject(0)
+                        .getString("value")
+                }\"}"
+            )
+            val generalInfo = api.personalInformation(
+                RequestBody(jsonObject),
+                "Bearer $token"
+            )
+            val generalInformation = JSONObject(generalInfo).getJSONObject("response")
+                .getJSONObject("generalinformation")
+            val loggedInUser = UserEntity(
+                password,
+                loginDetails.getString("clientid"),
+                loginDetails.getString("enrollmentno"),
+                loginDetails.getString("memberid"),
+                loginDetails.getString("membertype"),
+                loginDetails.getJSONArray("institutelist").getJSONObject(0).getString("label"),
+                loginDetails.getJSONArray("institutelist").getJSONObject(0).getString("value"),
+                loginDetails.getString("name"),
+                loginDetails.getString("userDOB"),
+                loginDetails.getString("userid"),
+                generalInformation.getString("admissionyear"),
+                generalInformation.getString("batch"),
+                generalInformation.getString("branch"),
+                generalInformation.getString("gender"),
+                generalInformation.getString("institutecode"),
+                generalInformation.getString("programcode"),
+                generalInformation.getInt("semester"),
+                generalInformation.getString("studentcellno"),
+                generalInformation.getString("studentpersonalemailid")
+            )
+            isOnline = true
+            dao.insertUser(loggedInUser)
+        } catch (e: HttpException) {
+            Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
+        } catch (e: IOException) {
+            Log.d(TAG, "loginUser: IO Exception : ${e.message}")
+        } catch (e: Exception) {
+            Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
+        }
+        val newAllUsers = dao.getUserByEnrollPass(enrollmentno, password)
+        if (newAllUsers.isNotEmpty()) {
+            requiredUser = newAllUsers[0]
+        }
+        if (requiredUser != null) {
+            return (Resource.Success(data = Pair(requiredUser, token), isOnline = isOnline))
+        }
+        return Resource.Error("Not Found")
+    }
 
-    override fun getAttendanceRegistrationDetails(
+    override suspend fun getAttendanceRegistrationDetails(
         clientid: String,
         instituteid: String,
         studentid: String,
         membertype: String,
         token: String
-    ): Flow<Resource<List<StudentAttendanceRegistrationEntity>>> = flow {
-        emit(Resource.Loading())
+    ): Resource<List<StudentAttendanceRegistrationEntity>> {
         val oldData = dao.getStudentAttendanceRegistrationDetails(studentid)
-        if (oldData.isNotEmpty()) {
-            emit(Resource.Loading(data = oldData))
-        }
         try {
             val payload = JSONObject(
                 "{\"clientid\":\"${clientid}\",\"instituteid\":\"${instituteid}\",\"studentid\":\"${studentid}\",\"membertype\":\"${membertype}\"}\n"
@@ -169,44 +146,30 @@ class PortalRepositoryImpl @Inject constructor(
                     data.getJSONObject(it).getString("registrationid")
                 )
             }
-            emit(Resource.Success(data = registrationList))
-
+            dao.insertAttendanceRegistrations(registrationList)
+           return Resource.Success(data = registrationList, true)
         } catch (e: HttpException) {
             Log.d(TAG, "attendanceRegistration: HTTP Exception : ${e.message()}")
-            emit(
-                Resource.Error(
-                    message = "Oops, something went wrong!",
-                    data = oldData
-                )
-            )
         } catch (e: IOException) {
             Log.d(TAG, "attendanceRegistration: IO Exception : ${e.message}")
-            emit(
-                Resource.Error(
-                    message = "Couldn't reach server, check your internet connection.",
-                    data = oldData
-                )
-            )
         } catch (e: Exception) {
             Log.d(TAG, "attendanceRegistration: Kotlin Exception : ${e.message}")
-            emit(
-                Resource.Error(
-                    message = e.message.toString(),
-                    data = oldData
-                )
-            )
         }
+        if(oldData.size>0){
+            return Resource.Success(data = oldData, false)
+        }
+        return Resource.Error("Not Found")
     }
 
-    override fun getAttendanceDetails(
+    override suspend fun getAttendanceDetails(
         clientid: String,
         instituteid: String,
         studentid: String,
         stynumber: Int,
         registrationid: String,
         token: String
-    ): Flow<Resource<List<StudentAttendanceEntity>>> = flow {
-        emit(Resource.Loading())
+    ): Resource<List<StudentAttendanceEntity>>{
+        val oldData = dao.getStudentAttendanceOfRegistrationId(studentid, registrationid)
         try {
             val payload = JSONObject(
                 "{\"clientid\":\"${clientid}\",\"instituteid\":\"${instituteid}\",\"studentid\":\"${studentid}\",\"stynumber\":\"$stynumber\",\"registrationid\":\"${registrationid}\"}"
@@ -214,8 +177,7 @@ class PortalRepositoryImpl @Inject constructor(
             val attendanceData = api.attendanceDetail(RequestBody(payload), "Bearer $token")
             val array =
                 JSONObject(attendanceData).getJSONObject("response").getJSONArray("studentattendancelist")
-            val adapter = Moshi.Builder().build().adapter(StudentAttendanceEntity::class.java).lenient()
-            val resultList = List<StudentAttendanceEntity>(array.length()) { it ->
+            val resultList = List(array.length()) { it ->
                 val jsonObject = array.getJSONObject(it)
                 StudentAttendanceEntity(
                     studentid,
@@ -240,25 +202,27 @@ class PortalRepositoryImpl @Inject constructor(
                     jsonObject.getString("subjectid")?:""
                 )
             }
-            emit(Resource.Success(data = resultList))
+            dao.insertAttendanceEntities(resultList)
+            return Resource.Success(data = resultList, true)
         } catch (e: HttpException) {
             Log.d(TAG, "getStudentResultData: HTTP Exception : ${e.message()}")
-
         } catch (e: IOException) {
             Log.d(TAG, "getStudentResultData: IO Exception : ${e.message}")
-
         } catch (e: Exception) {
             Log.d(TAG, "getStudentResultData: Kotlin Exception : ${e.message}")
         }
+        if(oldData.size>0){
+            return Resource.Success(data = oldData, false)
+        }
+        return Resource.Error(message = "Not Found")
     }
 
-    override fun getStudentResultData(
+    override suspend fun getStudentResultData(
         instituteid: String,
         studentid: String,
         stynumber: Int,
         token: String
-    ): Flow<Resource<List<ResultEntity>>> = flow {
-        emit(Resource.Loading())
+    ): Resource<List<ResultEntity>> {
         try {
             val payload = JSONObject(
                 "{\"instituteid\":\"${instituteid}\",\"studentid\":\"${studentid}\",\"stynumber\":\"${stynumber}\"}\n"
@@ -266,13 +230,11 @@ class PortalRepositoryImpl @Inject constructor(
             val registrationData = api.studentResultData(RequestBody(payload), "Bearer $token")
             val array =
                 JSONObject(registrationData).getJSONObject("response").getJSONArray("semesterList")
-//            var resultList:List<ResultEntity> = emptyList()
             val adapter = Moshi.Builder().build().adapter(ResultEntity::class.java).lenient()
-            val resultList = List<ResultEntity>(array.length()) { it ->
+            val resultList = List(array.length()) {
                 adapter.fromJson(array.getJSONObject(it).toString())!!
             }
-            emit(Resource.Success(data = resultList))
-            Log.d(TAG, "getStudentResultData: $registrationData")
+            return Resource.Success(data = resultList, true)
         } catch (e: HttpException) {
             Log.d(TAG, "getStudentResultData: HTTP Exception : ${e.message()}")
 
@@ -282,6 +244,7 @@ class PortalRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Log.d(TAG, "getStudentResultData: Kotlin Exception : ${e.message}")
         }
+        return Resource.Error(message = "Not Found")
     }
 
     private fun RequestBody(jsonObject: JSONObject): RequestBody {
