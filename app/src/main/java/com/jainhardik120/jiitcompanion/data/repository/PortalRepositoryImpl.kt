@@ -8,6 +8,7 @@ import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceRegistrationEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.data.remote.PortalApi
+import com.jainhardik120.jiitcompanion.data.repository.model.AttendanceEntry
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
 import com.jainhardik120.jiitcompanion.util.Resource
 import com.squareup.moshi.Moshi
@@ -147,7 +148,7 @@ class PortalRepositoryImpl @Inject constructor(
                 )
             }
             dao.insertAttendanceRegistrations(registrationList)
-           return Resource.Success(data = registrationList, true)
+            return Resource.Success(data = registrationList, true)
         } catch (e: HttpException) {
             Log.d(TAG, "attendanceRegistration: HTTP Exception : ${e.message()}")
         } catch (e: IOException) {
@@ -155,7 +156,7 @@ class PortalRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Log.d(TAG, "attendanceRegistration: Kotlin Exception : ${e.message}")
         }
-        if(oldData.size>0){
+        if (oldData.size > 0) {
             return Resource.Success(data = oldData, false)
         }
         return Resource.Error("Not Found")
@@ -168,7 +169,7 @@ class PortalRepositoryImpl @Inject constructor(
         stynumber: Int,
         registrationid: String,
         token: String
-    ): Resource<List<StudentAttendanceEntity>>{
+    ): Resource<List<StudentAttendanceEntity>> {
         val oldData = dao.getStudentAttendanceOfRegistrationId(studentid, registrationid)
         try {
             val payload = JSONObject(
@@ -176,30 +177,66 @@ class PortalRepositoryImpl @Inject constructor(
             )
             val attendanceData = api.attendanceDetail(RequestBody(payload), "Bearer $token")
             val array =
-                JSONObject(attendanceData).getJSONObject("response").getJSONArray("studentattendancelist")
+                JSONObject(attendanceData).getJSONObject("response")
+                    .getJSONArray("studentattendancelist")
             val resultList = List(array.length()) { it ->
                 val jsonObject = array.getJSONObject(it)
                 StudentAttendanceEntity(
                     studentid,
                     registrationid,
-                    if(jsonObject.getString("Lsubjectcomponentcode")=="L" && jsonObject.getString("Tsubjectcomponentcode")=="T") { jsonObject.getDouble("LTpercantage")} else {0.0},
-                    if(jsonObject.getString("Lsubjectcomponentcode")=="L") { jsonObject.getDouble("Lpercentage")} else {0.0},
-                    jsonObject.getString("Lsubjectcomponentcode")?:"",
-                    jsonObject.getString("Lsubjectcomponentid")?:"",
-                    if(jsonObject.getString("Lsubjectcomponentcode")=="L") { jsonObject.getDouble("Ltotalclass")} else {0.0},
-                    if(jsonObject.getString("Lsubjectcomponentcode")=="L") { jsonObject.getDouble("Ltotalpres")} else {0.0},
-                    if(jsonObject.getString("Psubjectcomponentcode")=="P") { jsonObject.getDouble("Ppercentage")} else {0.0},
-                    jsonObject.getString("Psubjectcomponentcode")?:"",
-                    jsonObject.getString("Psubjectcomponentid")?:"",
-                    if(jsonObject.getString("Tsubjectcomponentcode")=="T") { jsonObject.getDouble("Tpercentage")} else {0.0},
-                    jsonObject.getString("Tsubjectcomponentcode")?:"",
-                    jsonObject.getString("Tsubjectcomponentid")?:"",
-                    if(jsonObject.getString("Tsubjectcomponentcode")=="T") { jsonObject.getDouble("Ttotalclass")} else {0.0},
-                    if(jsonObject.getString("Tsubjectcomponentcode")=="T") { jsonObject.getDouble("Ttotalpres")} else {0.0},
-                    (jsonObject.getString("abseent")?:"0.0").toDouble(),
+                    if (jsonObject.getString("Lsubjectcomponentcode") == "L" && jsonObject.getString(
+                            "Tsubjectcomponentcode"
+                        ) == "T"
+                    ) {
+                        jsonObject.getDouble("LTpercantage")
+                    } else {
+                        0.0
+                    },
+                    if (jsonObject.getString("Lsubjectcomponentcode") == "L") {
+                        jsonObject.getDouble("Lpercentage")
+                    } else {
+                        0.0
+                    },
+                    jsonObject.getString("Lsubjectcomponentcode") ?: "",
+                    jsonObject.getString("Lsubjectcomponentid") ?: "",
+                    if (jsonObject.getString("Lsubjectcomponentcode") == "L") {
+                        jsonObject.getDouble("Ltotalclass")
+                    } else {
+                        0.0
+                    },
+                    if (jsonObject.getString("Lsubjectcomponentcode") == "L") {
+                        jsonObject.getDouble("Ltotalpres")
+                    } else {
+                        0.0
+                    },
+                    if (jsonObject.getString("Psubjectcomponentcode") == "P") {
+                        jsonObject.getDouble("Ppercentage")
+                    } else {
+                        0.0
+                    },
+                    jsonObject.getString("Psubjectcomponentcode") ?: "",
+                    jsonObject.getString("Psubjectcomponentid") ?: "",
+                    if (jsonObject.getString("Tsubjectcomponentcode") == "T") {
+                        jsonObject.getDouble("Tpercentage")
+                    } else {
+                        0.0
+                    },
+                    jsonObject.getString("Tsubjectcomponentcode") ?: "",
+                    jsonObject.getString("Tsubjectcomponentid") ?: "",
+                    if (jsonObject.getString("Tsubjectcomponentcode") == "T") {
+                        jsonObject.getDouble("Ttotalclass")
+                    } else {
+                        0.0
+                    },
+                    if (jsonObject.getString("Tsubjectcomponentcode") == "T") {
+                        jsonObject.getDouble("Ttotalpres")
+                    } else {
+                        0.0
+                    },
+                    (jsonObject.getString("abseent") ?: "0.0").toDouble(),
                     jsonObject.getInt("slno"),
-                    jsonObject.getString("subjectcode")?:"",
-                    jsonObject.getString("subjectid")?:""
+                    jsonObject.getString("subjectcode") ?: "",
+                    jsonObject.getString("subjectid") ?: ""
                 )
             }
             dao.insertAttendanceEntities(resultList)
@@ -211,7 +248,7 @@ class PortalRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Log.d(TAG, "getStudentResultData: Kotlin Exception : ${e.message}")
         }
-        if(oldData.size>0){
+        if (oldData.size > 0) {
             return Resource.Success(data = oldData, false)
         }
         return Resource.Error(message = "Not Found")
@@ -250,5 +287,48 @@ class PortalRepositoryImpl @Inject constructor(
     private fun RequestBody(jsonObject: JSONObject): RequestBody {
         return jsonObject.toString()
             .toRequestBody("application/json".toMediaTypeOrNull())
+    }
+
+    override suspend fun getSubjectAttendanceDetails(
+        clientid: String,
+        instituteid: String,
+        studentid: String,
+        subjectId: String,
+        registrationid: String,
+        cmpidkey: String,
+        token: String
+    ): Resource<List<AttendanceEntry>> {
+        try {
+            val postParams = JSONObject(
+                "{\"clientid\":\"${
+                    clientid
+                }\",\"instituteid\":\"${
+                    instituteid
+                }\",\"registrationid\":\"${
+                    registrationid
+                }\",\"studentid\":\"${
+                    studentid
+                }\",\"subjectid\":\"${
+                    subjectId
+                }\",\"cmpidkey\":[${cmpidkey}]}"
+            )
+            val data = api.subjectSubjectAttendanceDetail(RequestBody(postParams), "Bearer $token")
+            val array =
+                JSONObject(data).getJSONObject("response").getJSONArray("studentAttdsummarylist")
+            val adapter = Moshi.Builder().build().adapter(AttendanceEntry::class.java).lenient()
+            val resultList = List(array.length()) {
+                adapter.fromJson(array.getJSONObject(it).toString())!!
+            }
+            return Resource.Success(data = resultList, isOnline = true)
+        } catch (e: HttpException) {
+            Log.d(TAG, "getStudentResultData: HTTP Exception : ${e.message()}")
+
+        } catch (e: IOException) {
+            Log.d(TAG, "getStudentResultData: IO Exception : ${e.message}")
+
+        } catch (e: Exception) {
+            Log.d(TAG, "getStudentResultData: Kotlin Exception : ${e.message}")
+        }
+        return Resource.Error(message = "Unknown")
     }
 }

@@ -23,14 +23,15 @@ class AttendanceViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val repository: PortalRepository
 ) : ViewModel() {
-    companion object{
+    companion object {
         private const val TAG = "AttendanceViewModel"
     }
+
     var state by mutableStateOf(AttendanceScreenState())
     private lateinit var token: String
     private lateinit var user: UserEntity
 
-    fun getRegistrations(){
+    fun getRegistrations() {
         viewModelScope.launch(Dispatchers.IO) {
             token = savedStateHandle.get<String>("token") ?: return@launch
             user = Moshi.Builder().build().adapter(UserEntity::class.java).lenient()
@@ -60,6 +61,7 @@ class AttendanceViewModel @Inject constructor(
                         }
                     }
                 }
+
                 is Resource.Error -> {
                 }
             }
@@ -83,8 +85,43 @@ class AttendanceViewModel @Inject constructor(
                     )
                 }
             }
-            is AttendanceScreenEvent.OnAttendanceItemClicked -> {
 
+            is AttendanceScreenEvent.OnAttendanceItemClicked -> {
+                state = state.copy(isDetailDataReady = false, isBottomSheetExpanded = true)
+                loadSubjectAttendanceDetails(event.attendanceItem)
+            }
+        }
+    }
+
+    private fun loadSubjectAttendanceDetails(attendanceItem: AttendanceItem) {
+        viewModelScope.launch(Dispatchers.IO) {
+            var componentIdString = ""
+            for (i in attendanceItem.componentIdText) {
+                if (componentIdString != "") {
+                    componentIdString += ","
+                }
+                componentIdString += "{\"subjectcomponentid\":\"${
+                    i
+                }\"}"
+            }
+            val result = repository.getSubjectAttendanceDetails(
+                user.clientid,
+                user.instituteValue,
+                user.memberid,
+                attendanceItem.subjectId,
+                state.selectedSemesterId,
+                componentIdString,
+                token
+            )
+            when (result) {
+                is Resource.Success -> {
+                    if(result.data!=null){
+                        state = state.copy(attendanceEntries = result.data, isDetailDataReady = true)
+                    }
+                }
+                is Resource.Error -> {
+
+                }
             }
         }
     }
@@ -202,7 +239,7 @@ class AttendanceViewModel @Inject constructor(
                 }
 
                 is Resource.Error -> {
-
+                    state = state.copy(attendanceData = listOf())
                 }
             }
         }

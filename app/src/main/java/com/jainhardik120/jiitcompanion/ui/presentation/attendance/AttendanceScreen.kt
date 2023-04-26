@@ -19,6 +19,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
@@ -94,13 +95,11 @@ fun AttendanceScreen(
                     onClick = {
                         viewModel.onEvent(AttendanceScreenEvent.OnAttendanceItemClicked(state.attendanceData[it]))
                     })
-                Divider()
+                if(it!=state.attendanceData.size-1){
+                    Divider(Modifier.padding(horizontal = 12.dp))
+                }
             }
         }
-    }
-
-    if(state.isDetailDataReady && state.isBottomSheetExpanded){
-
     }
 }
 
@@ -140,20 +139,24 @@ fun AttendanceItem(attendanceItem: AttendanceItem, enabled: Boolean, onClick: ()
                 text = attendanceItem.subjectDesc.substringBefore("(", "("),
                 style = MaterialTheme.typography.bodyLarge
             )
+            Spacer(modifier = Modifier.height(4.dp))
             Text(text = attendanceItem.attendanceDetailText.substringBeforeLast("\n"))
         }
-        Column(Modifier.fillMaxWidth(0.2f)) {
-            Text(text = attendanceItem.attendanceFractionText)
+        Column(
+            Modifier
+                .fillMaxWidth(0.25f)
+                .align(Alignment.CenterVertically)) {
+            Text(text = attendanceItem.attendanceFractionText, textAlign = TextAlign.Center)
         }
         Column(
             Modifier
                 .align(Alignment.CenterVertically)
-                .fillMaxWidth()) {
-            Box(modifier = Modifier.size(48.dp)) {
+                .fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+            Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
                 Text(text = "${attendanceItem.attendancePercentage}")
                 CircularProgressIndicator(
                     (attendanceItem.attendancePercentage / 100.0).toFloat(),
-                    modifier = Modifier.size(30.dp)
+                    modifier = Modifier.size(36.dp)
                 )
             }
             if (attendanceItem.warningNumber > 0) {
