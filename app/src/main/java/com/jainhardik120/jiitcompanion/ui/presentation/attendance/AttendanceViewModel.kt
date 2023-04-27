@@ -85,10 +85,12 @@ class AttendanceViewModel @Inject constructor(
                     )
                 }
             }
-
             is AttendanceScreenEvent.OnAttendanceItemClicked -> {
                 state = state.copy(isDetailDataReady = false, isBottomSheetExpanded = true)
                 loadSubjectAttendanceDetails(event.attendanceItem)
+            }
+            AttendanceScreenEvent.DismissBottomSheet -> {
+                state = state.copy(isBottomSheetExpanded = false)
             }
         }
     }

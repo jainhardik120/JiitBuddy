@@ -4,6 +4,7 @@ import android.util.Log
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -25,6 +26,7 @@ import androidx.compose.ui.unit.TextUnit
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.jainhardik120.jiitcompanion.data.repository.model.AttendanceEntry
 import com.jainhardik120.jiitcompanion.domain.model.AttendanceItem
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -32,10 +34,13 @@ import com.jainhardik120.jiitcompanion.domain.model.AttendanceItem
 fun AttendanceScreen(
     viewModel: AttendanceViewModel = hiltViewModel()
 ) {
-    LaunchedEffect(key1 = true){
+    LaunchedEffect(key1 = true) {
         viewModel.getRegistrations()
     }
     var expanded by remember { mutableStateOf(false) }
+    val bottomSheetState = rememberModalBottomSheetState(
+        skipPartiallyExpanded = true
+    )
     var dropMenuSize by remember {
         mutableStateOf(Size.Zero)
     }
@@ -88,17 +93,54 @@ fun AttendanceScreen(
 
         LazyColumn {
             items(state.attendanceData.size) {
-                Log.d("TAG", "AttendanceScreen: ${state.attendanceData[it]}")
                 AttendanceItem(
                     attendanceItem = state.attendanceData[it],
                     enabled = true,
                     onClick = {
                         viewModel.onEvent(AttendanceScreenEvent.OnAttendanceItemClicked(state.attendanceData[it]))
                     })
-                if(it!=state.attendanceData.size-1){
+                if (it != state.attendanceData.size - 1) {
                     Divider(Modifier.padding(horizontal = 12.dp))
                 }
             }
+        }
+    }
+
+    if (state.isBottomSheetExpanded && state.isDetailDataReady) {
+        ModalBottomSheet(onDismissRequest = {
+            viewModel.onEvent(AttendanceScreenEvent.DismissBottomSheet)
+        }, sheetState = bottomSheetState) {
+            LazyColumn{
+                items(state.attendanceEntries.size){
+                    AttendanceEntryItem(state.attendanceEntries[it])
+                    Divider()
+                }
+            }
+        }
+    }
+}
+
+@Preview(showBackground = true)
+@Composable
+fun AttendanceEntryPreview() {
+    AttendanceEntryItem(attendanceEntry = AttendanceEntry(
+        attendanceby = "ARADHANA NARANG",
+        classtype = "REGULAR",
+        datetime = "21/04/2023 (09:00:AM - 09:50 AM)",
+        present = "Present",
+    ))
+}
+
+@Composable
+fun AttendanceEntryItem(attendanceEntry: AttendanceEntry) {
+    Row(Modifier.padding(8.dp)) {
+        Column(Modifier.weight(1f).padding(start = 8.dp)){
+            Text(text = attendanceEntry.attendanceby)
+            Text(text = attendanceEntry.classtype)
+            Text(text = attendanceEntry.datetime)
+        }
+        Column(Modifier.align(Alignment.CenterVertically).padding(end = 8.dp)) {
+            Text(text = attendanceEntry.present)
         }
     }
 }
@@ -145,13 +187,15 @@ fun AttendanceItem(attendanceItem: AttendanceItem, enabled: Boolean, onClick: ()
         Column(
             Modifier
                 .fillMaxWidth(0.25f)
-                .align(Alignment.CenterVertically)) {
+                .align(Alignment.CenterVertically)
+        ) {
             Text(text = attendanceItem.attendanceFractionText, textAlign = TextAlign.Center)
         }
         Column(
             Modifier
                 .align(Alignment.CenterVertically)
-                .fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally) {
+                .fillMaxWidth(), horizontalAlignment = Alignment.CenterHorizontally
+        ) {
             Box(modifier = Modifier.size(48.dp), contentAlignment = Alignment.Center) {
                 Text(text = "${attendanceItem.attendancePercentage}")
                 CircularProgressIndicator(
