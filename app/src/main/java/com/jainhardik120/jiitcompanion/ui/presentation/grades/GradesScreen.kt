@@ -47,17 +47,17 @@ fun GradesScreen(
         viewModel.uiEvent.collect {
             when (it) {
                 is UiEvent.OpenPdf -> {
-                    val pdfOpenIntent = Intent(Intent.ACTION_VIEW)
-                    pdfOpenIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                    pdfOpenIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                    pdfOpenIntent.setDataAndType(
-                        FileProvider.getUriForFile(
-                            context,
-                            context.applicationContext.packageName + ".provider",
-                            File(it.path)
-                        ), "application/pdf"
-                    )
                     try {
+                        val pdfOpenIntent = Intent(Intent.ACTION_VIEW)
+                        pdfOpenIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
+                        pdfOpenIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
+                        pdfOpenIntent.setDataAndType(
+                            FileProvider.getUriForFile(
+                                context,
+                                context.applicationContext.packageName + ".provider",
+                                File(it.path)
+                            ), "application/pdf"
+                        )
                         launcher.launch(pdfOpenIntent)
                     } catch (e: Exception) {
                         Log.d("myApp", "onCreateView: $e")
