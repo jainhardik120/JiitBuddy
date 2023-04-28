@@ -1,7 +1,5 @@
 package com.jainhardik120.jiitcompanion.data.repository
 
-import android.app.Application
-import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import com.jainhardik120.jiitcompanion.data.local.PortalDatabase
@@ -15,8 +13,6 @@ import com.jainhardik120.jiitcompanion.domain.model.MarksRegistration
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
 import com.jainhardik120.jiitcompanion.util.Resource
 import com.squareup.moshi.Moshi
-import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -34,11 +30,14 @@ import javax.inject.Singleton
 @Singleton
 class PortalRepositoryImpl @Inject constructor(
     private val api: PortalApi,
-    private val db: PortalDatabase,
+    db: PortalDatabase,
     private val sharedPreferences: SharedPreferences,
     @Named("FilesDir") private val externalFilesDir:String
 ) : PortalRepository {
-    private val TAG = "PortalRepositoryDebug"
+    companion object{
+        private const val TAG = "PortalRepositoryDebug"
+    }
+
     private val dao = db.dao
 
     override fun lastUser(): Resource<Pair<String, String>> {
@@ -218,7 +217,7 @@ class PortalRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Log.d(TAG, "attendanceRegistration: Kotlin Exception : ${e.message}")
         }
-        if (oldData.size > 0) {
+        if (oldData.isNotEmpty()) {
             return Resource.Success(data = oldData, false)
         }
         return Resource.Error("Not Found")
@@ -241,7 +240,7 @@ class PortalRepositoryImpl @Inject constructor(
             val array =
                 JSONObject(attendanceData).getJSONObject("response")
                     .getJSONArray("studentattendancelist")
-            val resultList = List(array.length()) { it ->
+            val resultList = List(array.length()) {
                 val jsonObject = array.getJSONObject(it)
                 StudentAttendanceEntity(
                     studentid,
@@ -310,7 +309,7 @@ class PortalRepositoryImpl @Inject constructor(
         } catch (e: Exception) {
             Log.d(TAG, "getStudentResultData: Kotlin Exception : ${e.message}")
         }
-        if (oldData.size > 0) {
+        if (oldData.isNotEmpty()) {
             return Resource.Success(data = oldData, false)
         }
         return Resource.Error(message = "Not Found")

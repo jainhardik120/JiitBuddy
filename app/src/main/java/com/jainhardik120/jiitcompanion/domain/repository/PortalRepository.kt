@@ -7,7 +7,6 @@ import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceRegist
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.data.repository.model.AttendanceEntry
 import com.jainhardik120.jiitcompanion.domain.model.MarksRegistration
-import kotlinx.coroutines.flow.Flow
 
 
 interface PortalRepository {

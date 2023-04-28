@@ -1,31 +1,25 @@
 package com.jainhardik120.jiitcompanion.ui.presentation.grades
 
 import android.graphics.Paint
-import android.graphics.Path
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.material3.Card
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.*
+import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.jainhardik120.jiitcompanion.data.local.entity.ResultEntity
-import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
-import kotlin.math.round
-import kotlin.math.roundToInt
 
 @Preview
 @Composable
 fun GraphExample() {
-    val infoList = listOf<ResultEntity>(
+    val infoList = listOf(
         ResultEntity(
             9.3, 181.0, 65, 181.0, 19.5,
             19.5, 8.8, 1, 19.5, 19.5, 19.5, 65,

@@ -2,7 +2,7 @@ package com.jainhardik120.jiitcompanion.data.local.entity
 
 import androidx.room.Entity
 
-@Entity(tableName = "attendance_detail_table", primaryKeys = arrayOf("studentid", "registrationid", "subjectid"))
+@Entity(tableName = "attendance_detail_table", primaryKeys = ["studentid", "registrationid", "subjectid"])
 data class StudentAttendanceEntity(
     val studentid : String,
     val registrationid: String,
