@@ -3,9 +3,12 @@ package com.jainhardik120.jiitcompanion.data.remote
 import okhttp3.Interceptor
 import okhttp3.RequestBody
 import okhttp3.Response
+import okhttp3.ResponseBody
 import retrofit2.http.Body
+import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
+import retrofit2.http.Url
 
 class RetrofitInterceptor : Interceptor {
     override fun intercept(chain: Interceptor.Chain): Response {
@@ -39,4 +42,11 @@ interface PortalApi {
 
     @POST("studentsgpacgpa/getallsemesterdata")
     suspend fun studentResultData(@Body body: RequestBody, @Header("Authorization") authorization: String) : String
+
+    @POST("studentcommonsontroller/getsemestercode-exammarks")
+    suspend fun studentMarksRegistrations(@Body body: RequestBody, @Header("Authorization") authorization: String) : String
+
+    @GET
+    suspend fun getMarksPdf(@Url url : String, @Header("Authorization") authorization: String): retrofit2.Response<ResponseBody>
+
 }

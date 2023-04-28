@@ -1,5 +1,7 @@
 package com.jainhardik120.jiitcompanion.data.repository
 
+import android.app.Application
+import android.content.Context
 import android.content.SharedPreferences
 import android.util.Log
 import com.jainhardik120.jiitcompanion.data.local.PortalDatabase
@@ -9,25 +11,32 @@ import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceRegist
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.data.remote.PortalApi
 import com.jainhardik120.jiitcompanion.data.repository.model.AttendanceEntry
+import com.jainhardik120.jiitcompanion.domain.model.MarksRegistration
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
 import com.jainhardik120.jiitcompanion.util.Resource
 import com.squareup.moshi.Moshi
-import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.flow
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
+import org.json.JSONArray
 import org.json.JSONObject
 import retrofit2.HttpException
+import java.io.File
+import java.io.FileOutputStream
 import java.io.IOException
 import javax.inject.Inject
+import javax.inject.Named
 import javax.inject.Singleton
+
 
 @Singleton
 class PortalRepositoryImpl @Inject constructor(
     private val api: PortalApi,
     private val db: PortalDatabase,
-    private val sharedPreferences: SharedPreferences
+    private val sharedPreferences: SharedPreferences,
+    @Named("FilesDir") private val externalFilesDir:String
 ) : PortalRepository {
     private val TAG = "PortalRepositoryDebug"
     private val dao = db.dao
@@ -45,6 +54,59 @@ class PortalRepositoryImpl @Inject constructor(
         registrationid: String
     ) {
         dao.updateUserLastAttendanceRegistration(enrollmentno, registrationid)
+    }
+
+    override suspend fun getMarksRegistration(
+        instituteid: String,
+        studentid: String,
+        token: String
+    ): Resource<List<MarksRegistration>> {
+        try {
+            val payload = JSONObject(
+                "{\"instituteid\":\"${instituteid}\",\"studentid\":\"${studentid}\"}\n"
+            )
+            val registrationData =
+                api.studentMarksRegistrations(RequestBody(payload), "Bearer $token")
+            Log.d(TAG, "getMarksRegistration: $registrationData")
+            val array: JSONArray =
+                JSONObject(registrationData).getJSONObject("response").getJSONArray("semestercode")
+            val adapter = Moshi.Builder().build().adapter(MarksRegistration::class.java).lenient()
+            val resultList = List(array.length()) {
+                adapter.fromJson(array.getJSONObject(it).toString())!!
+            }
+            return Resource.Success(data = resultList, true)
+        } catch (e: HttpException) {
+            Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
+        } catch (e: IOException) {
+            Log.d(TAG, "loginUser: IO Exception : ${e.message}")
+        } catch (e: Exception) {
+            Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
+        }
+        return Resource.Error("Not Found")
+    }
+
+    override suspend fun getMarksPdf(
+        studentid: String,
+        instituteid: String,
+        registrationid: String,
+        registrationCode: String,
+        token: String
+    ):Resource<String> {
+        return try {
+            val response = api.getMarksPdf("https://webportal.jiit.ac.in:6011/StudentPortalAPI/studentsexamview/printstudent-exammarks/$studentid/$instituteid/$registrationid/$registrationCode", "Bearer $token")
+            val file = File(externalFilesDir + "/${registrationCode}.pdf")
+            Log.d(TAG, "getMarksPdf: ${file.path}")
+            if(!file.exists()){
+                file.createNewFile()
+            }
+            val fos = FileOutputStream(file)
+            fos.write(response.body()?.bytes() ?: ByteArray(0))
+            fos.close()
+            Resource.Success(data = file.path, true)
+        }catch (e:Exception){
+            Log.d(TAG, "getMarksPdf: ${e.printStackTrace()}")
+            Resource.Error(e.message.toString())
+        }
     }
 
     override suspend fun loginUser(

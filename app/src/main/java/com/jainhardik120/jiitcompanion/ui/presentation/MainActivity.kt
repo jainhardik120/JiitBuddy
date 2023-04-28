@@ -25,23 +25,22 @@ class MainActivity : ComponentActivity() {
         super.onCreate(savedInstanceState)
         installSplashScreen()
         setContent {
-            val systemUiController = rememberSystemUiController()
-            val isSystemInDarkTheme = isSystemInDarkTheme()
-            val navbarScrimColor = MaterialTheme.colorScheme.surface
-            LaunchedEffect(systemUiController, isSystemInDarkTheme, navbarScrimColor) {
-                systemUiController.setNavigationBarColor(
-                    color = if (true) {
-                        navbarScrimColor
-                    } else {
-                        Color.Transparent
-                    },
-//                    darkIcons = !isSystemInDarkTheme,
-//                    navigationBarContrastEnforced = false,
-//                    transformColorForLightContent = { Color.Black },
-                )
-            }
+//            val systemUiController = rememberSystemUiController()
+//            val isSystemInDarkTheme = isSystemInDarkTheme()
+//            val navbarScrimColor = MaterialTheme.colorScheme.surface
+//            LaunchedEffect(systemUiController, isSystemInDarkTheme, navbarScrimColor) {
+//                systemUiController.setNavigationBarColor(
+//                    color = if (true) {
+//                        navbarScrimColor
+//                    } else {
+//                        Color.Transparent
+//                    },
+////                    darkIcons = !isSystemInDarkTheme,
+////                    navigationBarContrastEnforced = false,
+////                    transformColorForLightContent = { Color.Black },
+//                )
+//            }
             JIITBuddyTheme {
-                // A surface container using the 'background' color from the theme
                 Surface(
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background

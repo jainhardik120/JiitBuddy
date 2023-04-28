@@ -43,6 +43,8 @@ fun LoginScreen(
                 is UiEvent.ShowSnackbar -> {
                     snackbarHostState.showSnackbar(it.message)
                 }
+
+                else -> {}
             }
         }
     }
