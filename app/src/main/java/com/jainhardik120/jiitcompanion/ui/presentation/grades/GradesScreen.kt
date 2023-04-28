@@ -11,17 +11,13 @@ import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Button
-import androidx.compose.material3.Divider
-import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedCard
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
-import androidx.compose.runtime.rememberCompositionContext
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.graphics.Shape
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
@@ -34,7 +30,6 @@ import com.jainhardik120.jiitcompanion.domain.model.MarksRegistration
 import com.jainhardik120.jiitcompanion.util.UiEvent
 import java.io.File
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun GradesScreen(
     viewModel: GradesViewModel = hiltViewModel()
@@ -74,7 +69,7 @@ fun GradesScreen(
         Text(text = "View Marks")
     }
     LazyColumn {
-        items(state.results.size) { it ->
+        items(state.results.size) {
             ResultItem(resultEntity = state.results[it])
         }
     }
@@ -103,7 +98,7 @@ fun SubjectMarksDialog(registrations: List<MarksRegistration>, onClick: (registr
         },
         text = {
             LazyColumn(modifier = Modifier.fillMaxWidth(), content = {
-                itemsIndexed(registrations) { index, registration ->
+                itemsIndexed(registrations) { _, registration ->
                     Column(Modifier.clickable(
                         enabled = true,
                         onClick = {
@@ -146,7 +141,7 @@ fun ResultItem(resultEntity: ResultEntity) {
                 .padding(8.dp)
         ) {
             Text(text = resultEntity.stynumber.toString(), fontSize = 24.sp)
-            Column() {
+            Column {
                 Text(text = "SGPA : ${resultEntity.sgpa}")
                 Text(text = "CGPA : ${resultEntity.cgpa}")
             }
