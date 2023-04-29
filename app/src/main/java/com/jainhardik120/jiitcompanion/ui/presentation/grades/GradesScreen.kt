@@ -5,14 +5,19 @@ import android.content.Intent
 import android.util.Log
 import androidx.activity.compose.rememberLauncherForActivityResult
 import androidx.activity.result.contract.ActivityResultContracts
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material3.AlertDialog
-import androidx.compose.material3.Button
+import androidx.compose.material3.Divider
+import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExtendedFloatingActionButton
+import androidx.compose.material3.FloatingActionButtonDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
-import androidx.compose.material3.OutlinedCard
+import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
@@ -22,7 +27,6 @@ import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.sp
 import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jainhardik120.jiitcompanion.data.local.entity.ResultEntity
@@ -34,9 +38,11 @@ import java.io.File
 fun GradesScreen(
     viewModel: GradesViewModel = hiltViewModel()
 ) {
-    val launcher = rememberLauncherForActivityResult(contract = ActivityResultContracts.StartActivityForResult(), onResult = {
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult(),
+        onResult = {
 
-    })
+        })
     val context = LocalContext.current
     LaunchedEffect(key1 = true) {
         viewModel.uiEvent.collect {
@@ -58,21 +64,42 @@ fun GradesScreen(
                         Log.d("myApp", "onCreateView: $e")
                     }
                 }
+
                 else -> {}
             }
         }
     }
     val state = viewModel.state
-    Button(onClick = {
-        viewModel.onEvent(GradesScreenEvent.ButtonViewMarksClicked)
-    }) {
-        Text(text = "View Marks")
+    Scaffold(floatingActionButton = {
+        ExtendedFloatingActionButton(
+            onClick = { viewModel.onEvent(GradesScreenEvent.ButtonViewMarksClicked) },
+            expanded = true,
+            icon = {
+                Icon(
+                    Icons.Outlined.FileDownload,
+                    contentDescription = "Files Download Icon"
+                )
+            },
+            text={
+                Text(text = "View Marks")
+            }
+        )
     }
-    LazyColumn {
-        items(state.results.size) {
-            ResultItem(resultEntity = state.results[it])
+    ) {
+        LazyColumn(
+            Modifier
+                .padding(it)
+                .fillMaxSize()) {
+            items(state.results.size) {index->
+                ResultItem(resultEntity = state.results[index])
+                if(index!=state.results.size-1){
+                    Divider()
+                }
+            }
+
         }
     }
+
     if (state.isMarksDialogOpened && state.isMarksRegistrationsLoaded) {
         SubjectMarksDialog(registrations = state.marksRegistrations, onClick = {
             viewModel.onEvent(GradesScreenEvent.MarksClicked(it))
@@ -84,7 +111,11 @@ fun GradesScreen(
 
 
 @Composable
-fun SubjectMarksDialog(registrations: List<MarksRegistration>, onClick: (registration : MarksRegistration)-> Unit, onDismiss: ()->Unit) {
+fun SubjectMarksDialog(
+    registrations: List<MarksRegistration>,
+    onClick: (registration: MarksRegistration) -> Unit,
+    onDismiss: () -> Unit
+) {
     AlertDialog(
         onDismissRequest = {
             onDismiss()
@@ -99,21 +130,14 @@ fun SubjectMarksDialog(registrations: List<MarksRegistration>, onClick: (registr
         text = {
             LazyColumn(modifier = Modifier.fillMaxWidth(), content = {
                 itemsIndexed(registrations) { _, registration ->
-                    Column(Modifier.clickable(
-                        enabled = true,
-                        onClick = {
-                            onClick(registration)
-                        }
-                    )) {
+                    DropdownMenuItem(text = {
                         Text(
-                            text = registration.registrationdesc,
-                            style = MaterialTheme.typography.headlineSmall,
+                            text = registration.registrationcode,
                             modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(vertical = 4.dp),
+                                .fillMaxWidth(),
                             textAlign = TextAlign.Center
                         )
-                    }
+                    }, onClick = { onClick(registration) })
                 }
             })
         },
@@ -130,26 +154,23 @@ fun SubjectMarksDialog(registrations: List<MarksRegistration>, onClick: (registr
 
 @Composable
 fun ResultItem(resultEntity: ResultEntity) {
-    OutlinedCard(
+    Row(
         Modifier
             .fillMaxWidth()
-            .padding(16.dp)
+            .padding(8.dp)
     ) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(8.dp)
-        ) {
-            Text(text = resultEntity.stynumber.toString(), fontSize = 24.sp)
-            Column {
-                Text(text = "SGPA : ${resultEntity.sgpa}")
-                Text(text = "CGPA : ${resultEntity.cgpa}")
-            }
+        Column() {
+            Text(text = resultEntity.stynumber.toString(), style = MaterialTheme.typography.headlineLarge)
+        }
+        Spacer(Modifier.width(4.dp))
+        Column(verticalArrangement = Arrangement.SpaceAround, modifier = Modifier.weight(1f)) {
+            Text(text = "SGPA : ${resultEntity.sgpa}", style = MaterialTheme.typography.bodyMedium)
+            Text(text = "CGPA : ${resultEntity.cgpa}", style = MaterialTheme.typography.bodyMedium)
         }
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun ResultItemPreview() {
     ResultItem(
