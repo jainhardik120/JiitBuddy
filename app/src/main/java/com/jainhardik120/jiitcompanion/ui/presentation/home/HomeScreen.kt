@@ -64,7 +64,7 @@ fun HomeScreen(
             BottomBarScreen.Subjects
         )
         NavigationBar {
-            screens.forEachIndexed { index, screen ->
+            screens.forEachIndexed { _, screen ->
                 NavigationBarItem(
                     icon = { Icon(screen.icon, contentDescription = screen.title) },
                     label = {

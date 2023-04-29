@@ -1,6 +1,8 @@
 package com.jainhardik120.jiitcompanion.di
 
+import com.jainhardik120.jiitcompanion.data.repository.FeedRepositoryImpl
 import com.jainhardik120.jiitcompanion.data.repository.PortalRepositoryImpl
+import com.jainhardik120.jiitcompanion.domain.repository.FeedRepository
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
 import dagger.Binds
 import dagger.Module
@@ -16,4 +18,10 @@ abstract class RepositoryModule {
     abstract fun bindPortalRepository(
         portalRepositoryImpl: PortalRepositoryImpl
     ) : PortalRepository
+
+    @Binds
+    @Singleton
+    abstract fun bindFeedRepository(
+        feedRepositoryImpl: FeedRepositoryImpl
+    ):FeedRepository
 }

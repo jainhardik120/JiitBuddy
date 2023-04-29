@@ -6,6 +6,7 @@ import android.content.SharedPreferences
 import android.os.Environment
 import androidx.room.Room
 import com.jainhardik120.jiitcompanion.data.local.PortalDatabase
+import com.jainhardik120.jiitcompanion.data.remote.FeedApi
 import com.jainhardik120.jiitcompanion.data.remote.PortalApi
 import com.jainhardik120.jiitcompanion.data.remote.RetrofitInterceptor
 import dagger.Module
@@ -35,6 +36,12 @@ object AppModule {
             .baseUrl(PortalApi.BASE_URL)
             .build()
             .create()
+    }
+
+    @Provides
+    @Singleton
+    fun provideFeedApi():FeedApi{
+        return Retrofit.Builder().addConverterFactory(ScalarsConverterFactory.create()).baseUrl(FeedApi.BASE_URL).build().create()
     }
 
     @Provides
