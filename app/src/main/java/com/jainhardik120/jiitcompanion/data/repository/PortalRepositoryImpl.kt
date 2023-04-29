@@ -108,6 +108,17 @@ class PortalRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun logOut(studentid: String) {
+        dao.deleteAttendanceEntity(studentid)
+        dao.deleteAttendanceRegistrations(studentid)
+        dao.deleteUserEntity(studentid)
+        with(sharedPreferences.edit()){
+            remove("enroll")
+            remove("password")
+            apply()
+        }
+    }
+
     override suspend fun loginUser(
         enrollmentno: String,
         password: String

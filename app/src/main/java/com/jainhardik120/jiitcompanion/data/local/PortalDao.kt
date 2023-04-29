@@ -37,4 +37,13 @@ interface PortalDao {
         studentid: String,
         registrationid: String
     ): List<StudentAttendanceEntity>
+
+    @Query("DELETE FROM user_table WHERE memberid = :studentid")
+    suspend fun deleteUserEntity(studentid: String)
+
+    @Query("DELETE FROM attendance_registration_table WHERE studentid = :studentid")
+    suspend fun deleteAttendanceRegistrations(studentid: String)
+
+    @Query("DELETE FROM attendance_detail_table WHERE studentid = :studentid")
+    suspend fun deleteAttendanceEntity(studentid: String)
 }

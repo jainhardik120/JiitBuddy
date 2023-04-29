@@ -54,4 +54,6 @@ interface PortalRepository {
     suspend fun getMarksPdf(
         studentid: String, instituteid: String, registrationid: String, registrationCode: String, token: String
     ):Resource<String>
+
+    suspend fun logOut(studentid: String)
 }
