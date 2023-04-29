@@ -9,4 +9,6 @@ sealed class UiEvent {
     data class OpenPdf(
         val path:String
     ):UiEvent()
+    data class OpenUrl(val url:String)
+        :UiEvent()
 }

@@ -130,9 +130,6 @@ class PortalRepositoryImpl @Inject constructor(
             requiredUser = allUsers[0]
         }
         var isOnline = false
-        if (requiredUser != null) {
-            return (Resource.Success(data = Pair(requiredUser, token), isOnline = isOnline))
-        }
         try {
             var jsonObject =
                 JSONObject("{\"otppwd\":\"PWD\",\"username\":\"$enrollmentno\",\"passwordotpvalue\":\"$password\",\"Modulename\":\"STUDENTMODULE\"}")

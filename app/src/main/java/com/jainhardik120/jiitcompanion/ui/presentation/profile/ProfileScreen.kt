@@ -1,5 +1,10 @@
 package com.jainhardik120.jiitcompanion.ui.presentation.profile
 
+import android.content.Intent
+import android.net.Uri
+import android.util.Log
+import androidx.activity.compose.rememberLauncherForActivityResult
+import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -28,13 +33,16 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.platform.LocalConfiguration
-import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.jainhardik120.jiitcompanion.data.remote.model.FeedItem
+import com.jainhardik120.jiitcompanion.util.UiEvent
+import kotlinx.coroutines.flow.collect
+import java.io.File
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -42,8 +50,30 @@ fun ProfileScreen(
     viewModel: ProfileViewModel = hiltViewModel()
 ) {
     val state = viewModel.state
+    val launcher = rememberLauncherForActivityResult(
+        contract = ActivityResultContracts.StartActivityForResult(),
+        onResult = {
+
+        })
     LaunchedEffect(key1 = true) {
         viewModel.initialize()
+        viewModel.uiEvent.collect {
+            Log.d("TAG", "ProfileScreen: $it")
+            when (it) {
+                is UiEvent.OpenUrl -> {
+                    Log.d("TAG", "ProfileScreen: $it")
+                    try {
+                        val pdfOpenIntent = Intent(Intent.ACTION_VIEW, Uri.parse(it.url))
+                        launcher.launch(pdfOpenIntent)
+                    } catch (e: Exception) {
+                        Log.d("myApp", "onCreateView: $e")
+                    }
+                }
+                else -> {
+
+                }
+            }
+        }
     }
 
     val configuration = LocalConfiguration.current
@@ -91,7 +121,7 @@ fun ProfileScreen(
                 isPrevAvailable = state.isPrevAvailable,
                 isNextAvailable = state.isNextAvailable,
                 onItemClicked = {
-
+                    viewModel.onEvent(ProfileScreenEvent.OpenInBrowserClicked)
                 }
             )
         }
@@ -106,7 +136,7 @@ fun FeedCard(
     onNextClicked: () -> Unit,
     isPrevAvailable: Boolean,
     isNextAvailable: Boolean,
-    onItemClicked:(url:String)->Unit
+    onItemClicked: () -> Unit
 ) {
     Card(
         shape = RoundedCornerShape(16.dp),
@@ -175,7 +205,7 @@ fun FeedCard(
                         )
                         Spacer(modifier = Modifier.weight(1f))
                         IconButton(onClick = {
-                            onItemClicked(feedItem.webUrl)
+                            onItemClicked()
                         }) {
                             Icon(Icons.Filled.OpenInNew, contentDescription = "Open Link")
                         }

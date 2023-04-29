@@ -9,9 +9,12 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.domain.repository.FeedRepository
+import com.jainhardik120.jiitcompanion.util.UiEvent
 import com.squareup.moshi.Moshi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
@@ -29,6 +32,16 @@ class ProfileViewModel @Inject constructor(
         private const val TAG = "ProfileScreenViewModel"
     }
 
+
+    private val _uiEvent = Channel<UiEvent>()
+    val uiEvent = _uiEvent.receiveAsFlow()
+
+    private fun sendUiEvent(event: UiEvent) {
+        viewModelScope.launch {
+            _uiEvent.send(event)
+        }
+    }
+    
     fun initialize() {
         val user = savedStateHandle.get<String>("userInfo")?.let {
             Moshi.Builder().build().adapter(UserEntity::class.java).lenient()
@@ -75,7 +88,10 @@ class ProfileViewModel @Inject constructor(
             is ProfileScreenEvent.NextButtonClicked -> {
                 updateCurrentIndex(state.currentItemIndex+1)
             }
-            is ProfileScreenEvent.OpenInBrowserClicked -> {}
+            is ProfileScreenEvent.OpenInBrowserClicked -> {
+                Log.d(TAG, "onEvent: ${state.feedItems[state.currentItemIndex].webUrl}")
+                sendUiEvent(UiEvent.OpenUrl(state.feedItems[state.currentItemIndex].webUrl))
+            }
             is ProfileScreenEvent.PrevButtonClicked -> {
                 updateCurrentIndex(state.currentItemIndex-1)
             }
