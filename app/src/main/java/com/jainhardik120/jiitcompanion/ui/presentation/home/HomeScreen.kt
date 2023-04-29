@@ -7,12 +7,14 @@ import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.navigation.compose.hiltViewModel
+import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
+import com.jainhardik120.jiitcompanion.ui.presentation.root.Screen
 import com.jainhardik120.jiitcompanion.util.UiEvent
 import com.squareup.moshi.Moshi
 
@@ -22,23 +24,27 @@ private const val TAG = "HomeScreen"
 @Composable
 fun HomeScreen(
     viewModel: HomeViewModel = hiltViewModel(),
-    userInfo: UserEntity,
-    token: String? = null,
     onNavigateUp: (UiEvent.Navigate) -> Unit,
-    navController: NavHostController = rememberNavController()
+    navController: NavHostController = rememberNavController(),
+    userInfo :String,
+    token:String
 ) {
-    val json = Moshi.Builder().build().adapter(UserEntity::class.java).lenient().toJson(
-        userInfo
-    )
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
     LaunchedEffect(key1 = true, block = {
         viewModel.uiEvent.collect {
             when (it) {
                 is UiEvent.Navigate -> {
-                    onNavigateUp(it)
-                }
+                    if(it.route.contains(Screen.LoginScreen.route)){
+                        onNavigateUp(it)
+                    }else{
+                        navController.navigate(it.route) {
+                            popUpTo(navController.graph.findStartDestination().id)
+                            launchSingleTop = true
+                        }
+                    }
 
+                }
                 else -> {
 
                 }
@@ -74,10 +80,7 @@ fun HomeScreen(
                         it.route?.contains(screen.route) ?: false
                     } == true,
                     onClick = {
-                        navController.navigate("${screen.route}/${json}/${token}") {
-                            popUpTo(navController.graph.findStartDestination().id)
-                            launchSingleTop = true
-                        }
+                        viewModel.onEvent(HomeScreenEvent.bottomNavItemClicked(screen))
                     }
                 )
             }
@@ -85,9 +88,8 @@ fun HomeScreen(
     }) {
         HomeNavGraph(
             navController = navController,
-            userEntity = userInfo,
-            token = token,
-            paddingValues = it
+            paddingValues = it,
+            userInfo, token
         )
     }
 

@@ -4,4 +4,5 @@ sealed class HomeScreenEvent{
     object onLogOutClicked:HomeScreenEvent()
     object onLogOutConfirmed:HomeScreenEvent()
     object onLogOutDismissed:HomeScreenEvent()
+    data class bottomNavItemClicked(val screen:BottomBarScreen):HomeScreenEvent()
 }

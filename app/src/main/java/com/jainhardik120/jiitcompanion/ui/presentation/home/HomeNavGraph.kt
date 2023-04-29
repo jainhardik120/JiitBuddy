@@ -6,19 +6,19 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
-import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.ui.presentation.attendance.AttendanceScreen
 import com.jainhardik120.jiitcompanion.ui.presentation.exams.ExamsScreen
 import com.jainhardik120.jiitcompanion.ui.presentation.grades.GradesScreen
+import com.jainhardik120.jiitcompanion.ui.presentation.profile.ProfileScreen
 import com.jainhardik120.jiitcompanion.ui.presentation.subjects.SubjectsScreen
 import com.jainhardik120.jiitcompanion.ui.presentation.root.PortalNavArguments
 
 @Composable
 fun HomeNavGraph(
     navController: NavHostController,
-    userEntity: UserEntity,
-    token:String?,
-    paddingValues: PaddingValues
+    paddingValues: PaddingValues,
+    userInfo:String,
+    token:String
 ) {
     NavHost(
         navController = navController,
@@ -27,11 +27,13 @@ fun HomeNavGraph(
         composable(route = BottomBarScreen.Home.route + "/{userInfo}/{token}",
             arguments = PortalNavArguments.arguments
         ){
+            it.arguments?.putString("userInfo", userInfo)
+            it.arguments?.putString("token", token)
             Column(
                 Modifier
                     .fillMaxSize()
                     .padding(paddingValues)) {
-                ProfileScreen(userEntity = userEntity)
+                ProfileScreen()
             }
         }
         composable(route = BottomBarScreen.Attendance.route + "/{userInfo}/{token}",

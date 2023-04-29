@@ -25,8 +25,7 @@ import javax.inject.Inject
 @HiltViewModel
 class HomeViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
-    private val repository: PortalRepository,
-    private val feedRepository: FeedRepository
+    private val repository: PortalRepository
 ):ViewModel(){
 
     companion object{
@@ -35,7 +34,6 @@ class HomeViewModel @Inject constructor(
 
     private lateinit var token: String
     private lateinit var user: UserEntity
-
 
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
@@ -53,22 +51,9 @@ class HomeViewModel @Inject constructor(
             token = savedStateHandle.get<String>("token") ?: return@launch
             user = Moshi.Builder().build().adapter(UserEntity::class.java).lenient()
                 .fromJson(savedStateHandle.get<String>("userInfo") ?: return@launch)!!
-            loadFeed()
         }
     }
 
-    private fun loadFeed(){
-        viewModelScope.launch {
-            withContext(Dispatchers.IO){
-                try {
-                    val result = feedRepository.getAllRows()
-                    Log.d(TAG, "feedApi : ${result.data}")
-                }catch (e :Exception){
-                    Log.d(TAG, "Exception: ${e.message}")
-                }
-            }
-        }
-    }
 
     fun onEvent(event: HomeScreenEvent){
         when(event){
@@ -81,9 +66,11 @@ class HomeViewModel @Inject constructor(
                     sendUiEvent(UiEvent.Navigate(Screen.LoginScreen.route))
                 }
             }
-
             HomeScreenEvent.onLogOutDismissed -> {
                 state= state.copy(logOutDialogOpened = false)
+            }
+            is HomeScreenEvent.bottomNavItemClicked -> {
+                sendUiEvent(UiEvent.Navigate("${event.screen.route}/${savedStateHandle.get<String>("userInfo")}/${savedStateHandle.get<String>("token")}"))
             }
         }
     }

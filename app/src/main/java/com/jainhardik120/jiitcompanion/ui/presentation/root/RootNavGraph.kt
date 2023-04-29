@@ -39,22 +39,16 @@ fun RootNavigationGraph(navController: NavHostController) {
         composable(
             route = Screen.HomeScreen.route + "/{userInfo}/{token}",
             arguments = PortalNavArguments.arguments
-        ) { it ->
-            val userJson = it.arguments?.getString("userInfo")
-            val userObject = userJson?.let { it1 ->
-                Moshi.Builder().build().adapter(UserEntity::class.java).lenient().fromJson(
-                    it1
-                )
-            }
-            if (userObject != null) {
-                HomeScreen(
-                    userInfo = userObject,
-                    token = it.arguments?.getString("token"),
-                    onNavigateUp = {event->
-                        navController.popBackStack()
-                        navController.navigate(event.route)
-                })
-            }
+        ) {
+
+            HomeScreen(
+                onNavigateUp = { event ->
+                    navController.popBackStack()
+                    navController.navigate(event.route)
+                },
+                userInfo = it.arguments?.getString("userInfo") ?: "",
+                token = it.arguments?.getString("token") ?: ""
+            )
         }
     }
 }
