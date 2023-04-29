@@ -5,16 +5,6 @@ plugins {
     id 'kotlin-kapt'
 }
 
-kotlin {
-    sourceSets {
-        debug {
-            kotlin.srcDir("build/generated/ksp/debug/kotlin")
-        }
-        release {
-            kotlin.srcDir("build/generated/ksp/release/kotlin")
-        }
-    }
-}
 
 android {
     namespace 'com.jainhardik120.jiitcompanion'

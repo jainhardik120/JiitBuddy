@@ -15,6 +15,8 @@ import com.squareup.moshi.Moshi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
+import java.lang.Integer.parseInt
+import java.time.LocalDate
 import javax.inject.Inject
 import kotlin.math.roundToInt
 
@@ -118,7 +120,9 @@ class AttendanceViewModel @Inject constructor(
             when (result) {
                 is Resource.Success -> {
                     if(result.data!=null){
-                        state = state.copy(attendanceEntries = result.data, isDetailDataReady = true)
+                        state = state.copy(attendanceEntries = result.data)
+                        convertMap()
+                        state = state.copy(isDetailDataReady = true)
                     }
                 }
                 is Resource.Error -> {
@@ -126,6 +130,41 @@ class AttendanceViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun dateTimeStringToLocalDate(dateTime:String):LocalDate{
+        val calendarDate = dateTime.split(" ")[0].split("/")
+        val year = parseInt(calendarDate[2])
+        val month = parseInt(calendarDate[1])
+        val date = parseInt(calendarDate[0])
+        return LocalDate.of(year, month, date)
+    }
+
+    private fun convertMap(){
+        val tempMap: MutableMap<LocalDate, Pair<Int, Int>> = mutableMapOf()
+        for (i in state.attendanceEntries){
+            val localDate = dateTimeStringToLocalDate(i.datetime)
+            if(tempMap.containsKey(localDate)){
+                val tempPair = tempMap[localDate]
+                if(i.present.equals("present", ignoreCase = true)){
+                    if (tempPair != null) {
+                        tempMap[localDate] = Pair(tempPair.first+1,tempPair.second)
+                    }
+                }else{
+                    if (tempPair != null) {
+                        tempMap[localDate] = Pair(tempPair.first,tempPair.second+1)
+                    }
+                }
+            }else{
+                if(i.present.equals("present", ignoreCase = true)){
+                    tempMap[localDate] = Pair(1,0)
+                }else{
+                    tempMap[localDate] = Pair(0,1)
+                }
+            }
+        }
+        Log.d(TAG, "convertMap: $tempMap")
+        state = state.copy(map = tempMap)
     }
 
     private fun loadAttendanceDetails() {

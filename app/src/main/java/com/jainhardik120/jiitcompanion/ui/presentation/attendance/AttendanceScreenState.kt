@@ -3,6 +3,7 @@ package com.jainhardik120.jiitcompanion.ui.presentation.attendance
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceRegistrationEntity
 import com.jainhardik120.jiitcompanion.data.repository.model.AttendanceEntry
 import com.jainhardik120.jiitcompanion.domain.model.AttendanceItem
+import java.time.LocalDate
 
 data class AttendanceScreenState(
     val registrations:List<StudentAttendanceRegistrationEntity> = emptyList(),
@@ -12,5 +13,6 @@ data class AttendanceScreenState(
     val attendanceWarning :Int = 80,
     val isDetailDataReady: Boolean = false,
     val isBottomSheetExpanded: Boolean = false,
-    val attendanceEntries: List<AttendanceEntry> = emptyList()
+    val attendanceEntries: List<AttendanceEntry> = emptyList(),
+    val map: Map<LocalDate, Pair<Int, Int>> = emptyMap()
 )
