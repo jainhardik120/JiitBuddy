@@ -14,5 +14,6 @@ data class AttendanceScreenState(
     val isDetailDataReady: Boolean = false,
     val isBottomSheetExpanded: Boolean = false,
     val attendanceEntries: List<AttendanceEntry> = emptyList(),
-    val map: Map<LocalDate, Pair<Int, Int>> = emptyMap()
+    val map: Map<LocalDate, Pair<Int, Int>> = emptyMap(),
+    val stringMap: Map<LocalDate, List<AttendanceEntry>> = emptyMap()
 )

@@ -1,5 +1,6 @@
 package com.jainhardik120.jiitcompanion.ui.presentation.attendance
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -26,6 +27,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
@@ -146,6 +148,7 @@ fun AttendanceScreen(
             val startMonth = remember(currentDate) { currentMonth.minusMonths(adjacentMonths) }
             val endMonth = remember(currentDate) { currentMonth.plusMonths(adjacentMonths) }
             val daysOfWeek = remember { daysOfWeek() }
+            val context = LocalContext.current
             Column(
                 modifier = Modifier,
             ) {
@@ -177,7 +180,7 @@ fun AttendanceScreen(
                                 errorPercentage = errorPercentage,
                                 isMonthDate = (day.position == DayPosition.MonthDate),
                                 onClick = { clicked ->
-
+                                    Toast.makeText(context, state.stringMap[clicked].toString(), Toast.LENGTH_LONG).show()
                                 })
                         },
                     )

@@ -8,6 +8,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
+import com.jainhardik120.jiitcompanion.data.repository.model.AttendanceEntry
 import com.jainhardik120.jiitcompanion.domain.model.AttendanceItem
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
 import com.jainhardik120.jiitcompanion.util.Resource
@@ -142,8 +143,13 @@ class AttendanceViewModel @Inject constructor(
 
     private fun convertMap(){
         val tempMap: MutableMap<LocalDate, Pair<Int, Int>> = mutableMapOf()
+        val stringMap: MutableMap<LocalDate, MutableList<AttendanceEntry>> = mutableMapOf()
         for (i in state.attendanceEntries){
             val localDate = dateTimeStringToLocalDate(i.datetime)
+            if(stringMap[localDate]==null){
+                stringMap[localDate]= mutableListOf()
+            }
+            stringMap[localDate]?.add(i)
             if(tempMap.containsKey(localDate)){
                 val tempPair = tempMap[localDate]
                 if(i.present.equals("present", ignoreCase = true)){
@@ -163,8 +169,7 @@ class AttendanceViewModel @Inject constructor(
                 }
             }
         }
-        Log.d(TAG, "convertMap: $tempMap")
-        state = state.copy(map = tempMap)
+        state = state.copy(map = tempMap, stringMap = stringMap)
     }
 
     private fun loadAttendanceDetails() {
