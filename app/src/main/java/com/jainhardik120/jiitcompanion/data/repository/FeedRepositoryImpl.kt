@@ -19,9 +19,11 @@ class FeedRepositoryImpl @Inject constructor(
             val items = List(json.length()){
                 val currItem = json.getJSONArray(it)
                 FeedItem(
-                    currItem.getString(0),
-                    currItem.getString(1),
-                    currItem.getString(2),
+                    title=currItem.getString(0),
+                    description = currItem.getString(1),
+                    date=currItem.getString(2),
+                    imageUrl = currItem.getString(3),
+                    webUrl=currItem.getString(4),
                 )
             }
             return Resource.Success(data = items, isOnline = true)

@@ -9,45 +9,75 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.domain.repository.FeedRepository
-import com.jainhardik120.jiitcompanion.ui.presentation.home.HomeViewModel
 import com.squareup.moshi.Moshi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import javax.inject.Inject
+import kotlin.random.Random
 
 @HiltViewModel
 class ProfileViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val feedRepository: FeedRepository
-) : ViewModel(){
+) : ViewModel() {
 
     var state by mutableStateOf(ProfileScreenState())
 
-    fun initialize(){
+    companion object {
+        private const val TAG = "ProfileScreenViewModel"
+    }
+
+    fun initialize() {
         val user = savedStateHandle.get<String>("userInfo")?.let {
             Moshi.Builder().build().adapter(UserEntity::class.java).lenient()
                 .fromJson(it)
         }
-        if(user!=null){
+        if (user != null) {
             state = state.copy(user = user)
         }
-        Log.d("TAG", "initialize: ${state.user}")
         loadFeed()
     }
 
-    private fun loadFeed(){
+
+    private fun loadFeed() {
         viewModelScope.launch {
-            withContext(Dispatchers.IO){
+            withContext(Dispatchers.IO) {
                 try {
                     val result = feedRepository.getAllRows()
-                    if(result.data!=null){
+                    if (result.data != null) {
                         state = state.copy(feedItems = result.data)
                     }
-                }catch (e :Exception){
-                    Log.d("TAG", "Exception: ${e.message}")
+                    updateCurrentIndex(0)
+                    Log.d(TAG, "loadFeed: ${result.data.toString()}")
+                } catch (e: Exception) {
+                    Log.d(TAG, "Exception: ${e.message}")
                 }
+            }
+        }
+    }
+
+    private fun updateCurrentIndex(newIndex: Int) {
+        if (newIndex < state.feedItems.size) {
+            state = state.copy(
+                currentItemIndex = newIndex,
+                isNextAvailable = (newIndex != state.feedItems.size - 1),
+                isPrevAvailable = (newIndex != 0)
+            )
+        } else {
+            return
+        }
+    }
+
+    fun onEvent(event: ProfileScreenEvent) {
+        when (event) {
+            is ProfileScreenEvent.NextButtonClicked -> {
+                updateCurrentIndex(state.currentItemIndex+1)
+            }
+            is ProfileScreenEvent.OpenInBrowserClicked -> {}
+            is ProfileScreenEvent.PrevButtonClicked -> {
+                updateCurrentIndex(state.currentItemIndex-1)
             }
         }
     }
