@@ -9,6 +9,8 @@ import com.jainhardik120.jiitcompanion.util.Resource
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceRegistrationEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.data.repository.model.AttendanceEntry
+import com.jainhardik120.jiitcompanion.data.repository.model.RegisteredSubject
+import com.jainhardik120.jiitcompanion.data.repository.model.SubjectSemesterRegistrations
 import com.jainhardik120.jiitcompanion.domain.model.MarksRegistration
 
 
@@ -75,6 +77,14 @@ interface PortalRepository {
     suspend fun getMarksRegistration(
         instituteid: String, studentid: String, token: String
     ): Resource<List<MarksRegistration>>
+
+    suspend fun getSubjectsRegistrations(
+        instituteid: String, studentid: String, token: String
+    ): Resource<List<SubjectSemesterRegistrations>>
+
+    suspend fun getSubjects(
+        instituteid: String, registrationid: String, studentid: String, token: String
+    ): Resource<List<RegisteredSubject>>
 
     suspend fun getMarksPdf(
         studentid: String, instituteid: String, registrationid: String, registrationCode: String, token: String

@@ -12,6 +12,8 @@ import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceRegist
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.data.remote.PortalApi
 import com.jainhardik120.jiitcompanion.data.repository.model.AttendanceEntry
+import com.jainhardik120.jiitcompanion.data.repository.model.RegisteredSubject
+import com.jainhardik120.jiitcompanion.data.repository.model.SubjectSemesterRegistrations
 import com.jainhardik120.jiitcompanion.domain.model.MarksRegistration
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
 import com.jainhardik120.jiitcompanion.util.Resource
@@ -48,6 +50,65 @@ class PortalRepositoryImpl @Inject constructor(
             sharedPreferences.getString("password", "null")!!
         )
         return Resource.Success(data = data, true)
+    }
+
+    override suspend fun getSubjectsRegistrations(
+        instituteid: String,
+        studentid: String,
+        token: String
+    ): Resource<List<SubjectSemesterRegistrations>> {
+        try {
+            val payload = JSONObject(
+                "{\"instituteid\":\"${instituteid}\",\"studentid\":\"${studentid}\"}\n"
+            )
+            val registrationData =
+                api.getSubjectRegistrationList(RequestBody(payload), "Bearer $token")
+            Log.d(TAG, "getMarksRegistration: $registrationData")
+            val array: JSONArray =
+                JSONObject(registrationData).getJSONObject("response").getJSONArray("registrations")
+            val adapter = Moshi.Builder().build().adapter(SubjectSemesterRegistrations::class.java).lenient()
+            val resultList = List(array.length()) {
+                adapter.fromJson(array.getJSONObject(it).toString())!!
+            }
+            return Resource.Success(data = resultList, true)
+        } catch (e: HttpException) {
+            Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
+        } catch (e: IOException) {
+            Log.d(TAG, "loginUser: IO Exception : ${e.message}")
+        } catch (e: Exception) {
+            Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
+        }
+        return Resource.Error("Not Found")
+    }
+
+    override suspend fun getSubjects(
+        instituteid: String,
+        registrationid: String,
+        studentid: String,
+        token: String
+    ): Resource<List<RegisteredSubject>> {
+        try {
+            val payload = JSONObject(
+                "{\"instituteid\":\"${instituteid}\",\"registrationid\":\"${registrationid}\",\"studentid\":\"${studentid}\"}\n"
+            )
+            val registrationData =
+                api.getFaculties(RequestBody(payload), "Bearer $token")
+            Log.d(TAG, "getMarksRegistration: $registrationData")
+            val array: JSONArray =
+                JSONObject(registrationData).getJSONObject("response").getJSONArray("registrations")
+            val adapter = Moshi.Builder().build().adapter(RegisteredSubject::class.java).lenient()
+            val resultList = List(array.length()) {
+                adapter.fromJson(array.getJSONObject(it).toString())!!
+            }
+            return Resource.Success(data = resultList, true)
+        } catch (e: HttpException) {
+            Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
+        } catch (e: IOException) {
+            Log.d(TAG, "loginUser: IO Exception : ${e.message}")
+        } catch (e: Exception) {
+            Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
+        }
+        return Resource.Error("Not Found")
     }
 
     override suspend fun updateUserLastAttendanceRegistrationId(
