@@ -144,13 +144,19 @@ fun AttendanceScreen(
 
             val adjacentMonths: Long = 500
             val currentDate = remember { LocalDate.now() }
-            val currentMonth = remember(currentDate) { currentDate.yearMonth }
+            val currentMonth = remember(currentDate) {
+                if(state.lastAttendanceDate!=null){
+                    state.lastAttendanceDate.yearMonth
+                }else{
+                    currentDate.yearMonth
+                }
+            }
             val startMonth = remember(currentDate) { currentMonth.minusMonths(adjacentMonths) }
             val endMonth = remember(currentDate) { currentMonth.plusMonths(adjacentMonths) }
             val daysOfWeek = remember { daysOfWeek() }
             val context = LocalContext.current
             Column(
-                modifier = Modifier,
+                modifier = Modifier.fillMaxHeight(0.75f),
             ) {
                 val monthState = rememberCalendarState(
                     startMonth = startMonth,

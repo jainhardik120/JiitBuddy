@@ -144,8 +144,12 @@ class AttendanceViewModel @Inject constructor(
     private fun convertMap(){
         val tempMap: MutableMap<LocalDate, Pair<Int, Int>> = mutableMapOf()
         val stringMap: MutableMap<LocalDate, MutableList<AttendanceEntry>> = mutableMapOf()
+        var maxDate:LocalDate = LocalDate.of(2003,10,17)
         for (i in state.attendanceEntries){
             val localDate = dateTimeStringToLocalDate(i.datetime)
+            if(localDate>maxDate){
+                maxDate = localDate
+            }
             if(stringMap[localDate]==null){
                 stringMap[localDate]= mutableListOf()
             }
@@ -169,7 +173,7 @@ class AttendanceViewModel @Inject constructor(
                 }
             }
         }
-        state = state.copy(map = tempMap, stringMap = stringMap)
+        state = state.copy(map = tempMap, stringMap = stringMap, lastAttendanceDate = maxDate)
     }
 
     private fun loadAttendanceDetails() {
