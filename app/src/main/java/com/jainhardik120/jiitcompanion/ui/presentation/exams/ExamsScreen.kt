@@ -4,9 +4,11 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
@@ -34,6 +36,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -177,6 +180,14 @@ fun ExamsScreen(
     }
 }
 
+@Preview(showBackground = true)
+@Composable
+fun ExamScheduleItemPreview() {
+    ExamScheduleItem(item = ExamScheduleEntity(
+        "JIAC2202375","JIEXV2208A0000005","20/02/2023","01:00 pm to 02:00 pm","PRINCIPLES OF MANAGEMENT (15B1NHS434)","G5","A11"
+    ))
+}
+
 @Composable
 fun ExamScheduleItem(item:ExamScheduleEntity) {
     Column(modifier = Modifier
@@ -185,6 +196,7 @@ fun ExamScheduleItem(item:ExamScheduleEntity) {
         Row(Modifier.fillMaxWidth()) {
             Text(text = item.subjectdesc)
         }
+        Spacer(Modifier.height(4.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
             Text(text = item.datetime)
             Text(text = item.datetimeupto)
