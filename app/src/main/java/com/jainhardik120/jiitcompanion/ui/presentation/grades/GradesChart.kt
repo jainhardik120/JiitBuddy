@@ -20,7 +20,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.jainhardik120.jiitcompanion.data.local.entity.ResultEntity
+import com.jainhardik120.jiitcompanion.data.remote.model.ResultEntity
 import java.math.RoundingMode
 import java.text.DecimalFormat
 import kotlin.math.roundToInt

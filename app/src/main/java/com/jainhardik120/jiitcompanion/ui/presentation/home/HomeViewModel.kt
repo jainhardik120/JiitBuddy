@@ -72,6 +72,10 @@ class HomeViewModel @Inject constructor(
             is HomeScreenEvent.bottomNavItemClicked -> {
                 sendUiEvent(UiEvent.Navigate("${event.screen.route}/${savedStateHandle.get<String>("userInfo")}/${savedStateHandle.get<String>("token")}"))
             }
+
+            HomeScreenEvent.onOfflineAlertClicked -> {
+
+            }
         }
     }
 }

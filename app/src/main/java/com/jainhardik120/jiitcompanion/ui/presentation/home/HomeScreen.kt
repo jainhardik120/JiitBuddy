@@ -3,22 +3,20 @@ package com.jainhardik120.jiitcompanion.ui.presentation.home
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.outlined.Logout
+import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.navigation.compose.hiltViewModel
-import androidx.navigation.NavController
 import androidx.navigation.NavDestination.Companion.hierarchy
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
-import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.ui.presentation.root.Screen
 import com.jainhardik120.jiitcompanion.util.UiEvent
-import com.squareup.moshi.Moshi
 
-private const val TAG = "HomeScreen"
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -55,10 +53,17 @@ fun HomeScreen(
         CenterAlignedTopAppBar(title = {
             Text(text = "JIIT Buddy")
         }, actions = {
+            if(token == "offline"){
+                IconButton(onClick = {
+                    viewModel.onEvent(HomeScreenEvent.onOfflineAlertClicked)
+                }) {
+                    Icon(Icons.Outlined.Warning, contentDescription = "Warning Icon")
+                }
+            }
             IconButton(onClick = {
                 viewModel.onEvent(HomeScreenEvent.onLogOutClicked)
             }) {
-                Icon(Icons.Filled.Logout, contentDescription = "Logout Icon")
+                Icon(Icons.Outlined.Logout, contentDescription = "Logout Icon")
             }
         })
     }, bottomBar = {

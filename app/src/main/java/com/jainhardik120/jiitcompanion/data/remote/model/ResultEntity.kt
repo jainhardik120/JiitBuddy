@@ -1,8 +1,5 @@
-package com.jainhardik120.jiitcompanion.data.local.entity
+package com.jainhardik120.jiitcompanion.data.remote.model
 
-import androidx.room.Entity
-
-@Entity(tableName = "result_item_table")
 data class ResultEntity(
     val cgpa: Double,
     val earnedgradepoints: Double,

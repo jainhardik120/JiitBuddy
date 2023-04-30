@@ -17,6 +17,7 @@ import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
+import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jainhardik120.jiitcompanion.util.UiEvent
 
@@ -55,6 +56,18 @@ fun LoginScreen(
             LoginCard(state = state, onEvent = {
                 viewModel.onEvent(it)
             })
+        }
+    }
+    if(state.isLoading){
+        AlertDialog(onDismissRequest = { /*TODO*/ }, properties = DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false,
+        )) {
+            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
+                CircularProgressIndicator()
+                Spacer(modifier = Modifier.width(16.dp))
+                Text(text = "Logging in...")
+            }
         }
     }
 }

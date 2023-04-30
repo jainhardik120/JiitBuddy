@@ -28,7 +28,7 @@ import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.jainhardik120.jiitcompanion.data.local.entity.ResultEntity
+import com.jainhardik120.jiitcompanion.data.remote.model.ResultEntity
 import com.jainhardik120.jiitcompanion.domain.model.MarksRegistration
 import com.jainhardik120.jiitcompanion.util.UiEvent
 import java.io.File

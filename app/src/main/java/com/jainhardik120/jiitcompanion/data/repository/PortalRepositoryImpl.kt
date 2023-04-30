@@ -3,7 +3,9 @@ package com.jainhardik120.jiitcompanion.data.repository
 import android.content.SharedPreferences
 import android.util.Log
 import com.jainhardik120.jiitcompanion.data.local.PortalDatabase
-import com.jainhardik120.jiitcompanion.data.local.entity.ResultEntity
+import com.jainhardik120.jiitcompanion.data.local.entity.ExamEventsEntity
+import com.jainhardik120.jiitcompanion.data.local.entity.ExamRegistrationsEntity
+import com.jainhardik120.jiitcompanion.data.remote.model.ResultEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceRegistrationEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
@@ -175,12 +177,16 @@ class PortalRepositoryImpl @Inject constructor(
                 generalInformation.getString("programcode"),
                 generalInformation.getInt("semester"),
                 generalInformation.getString("studentcellno"),
-                generalInformation.getString("studentpersonalemailid")
+                generalInformation.getString("studentpersonalemailid"),
+                requiredUser?.lastAttendanceRegistrationId
             )
             isOnline = true
             dao.insertUser(loggedInUser)
         } catch (e: HttpException) {
-            Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
+            Log.d(TAG, "loginUser: HTTP Exception : ${e.response()?.code()}")
+            if(e.response()?.code()==404){
+                return Resource.Error("Wrong Enrollment No or Password")
+            }
         } catch (e: IOException) {
             Log.d(TAG, "loginUser: IO Exception : ${e.message}")
         } catch (e: Exception) {
@@ -193,7 +199,113 @@ class PortalRepositoryImpl @Inject constructor(
         if (requiredUser != null) {
             return (Resource.Success(data = Pair(requiredUser, token), isOnline = isOnline))
         }
-        return Resource.Error("Not Found")
+        return Resource.Error("Servers Not Reachable")
+    }
+
+    override suspend fun getExamRegistrations(
+        clientid: String,
+        instituteid: String,
+        studentid: String,
+        token: String
+    ): Resource<List<ExamRegistrationsEntity>> {
+        val oldData = dao.getExamRegistrations(studentid)
+        if(token=="offline"){
+            return Resource.Success(oldData, isOnline = false)
+        }
+        var errorMessage: String = ""
+        try {
+            val payload = JSONObject(
+                "{\"clientid\":\"${clientid}\",\"instituteid\":\"${instituteid}\",\"memberid\":\"${studentid}\"}\n"
+            )
+            val registrationData =
+                api.getSemesterCodeExams(RequestBody(payload), "Bearer $token")
+            val data =
+                JSONObject(registrationData).getJSONObject("response").getJSONObject("semesterCodeinfo")
+                    .getJSONArray("semestercode")
+            val registrationList = List(data.length()) {
+                ExamRegistrationsEntity(
+                    studentid,
+                    data.getJSONObject(it).getString("registrationcode"),
+                    data.getJSONObject(it).getString("registrationdesc"),
+                    data.getJSONObject(it).getString("registrationid")
+                )
+            }
+            dao.insertExamRegistrations(registrationList)
+            return Resource.Success(data = registrationList, true)
+        } catch (e: HttpException) {
+            Log.d(TAG, "attendanceRegistration: HTTP Exception : ${e.message()}")
+            errorMessage = e.message()
+        } catch (e: IOException) {
+            Log.d(TAG, "attendanceRegistration: IO Exception : ${e.message}")
+            errorMessage = e.message.toString()
+        } catch (e: Exception) {
+            Log.d(TAG, "attendanceRegistration: Kotlin Exception : ${e.message}")
+            errorMessage = e.message.toString()
+        }
+        if (oldData.isNotEmpty()) {
+            return Resource.Success(data = oldData, false)
+        }
+        return Resource.Error(errorMessage)
+    }
+
+    override suspend fun getExamEvents(
+        studentid:String,
+        instituteid: String,
+        registrationid: String,
+        token: String
+    ): Resource<List<ExamEventsEntity>> {
+        Log.d(TAG, "getExamEvents: $studentid $registrationid")
+        val oldData = dao.getExamEvents(studentid, registrationid)
+        Log.d(TAG, "getExamEvents: $oldData")
+        if(token=="offline"){
+            return Resource.Success(oldData, isOnline = false)
+        }
+        var errorMessage= ""
+        try {
+            val payload = JSONObject(
+                "{\"instituteid\":\"${instituteid}\",\"registationid\":\"${registrationid}\"}\n"
+            )
+            val registrationData =
+                api.getExamEvents(RequestBody(payload), "Bearer $token")
+            val data =
+                JSONObject(registrationData).getJSONObject("response").getJSONObject("eventcode")
+                    .getJSONArray("examevent")
+            val registrationList = List(data.length()) {
+                ExamEventsEntity(
+                    studentid,
+                    data.getJSONObject(it).getLong("eventfrom"),
+                    data.getJSONObject(it).getString("exameventcode"),
+                    data.getJSONObject(it).getString("exameventdesc"),
+                    data.getJSONObject(it).getString("exameventid"),
+                    data.getJSONObject(it).getString("registrationid")
+                )
+            }
+            dao.insertExamEvents(registrationList)
+            return Resource.Success(data = registrationList, true)
+        } catch (e: HttpException) {
+            Log.d(TAG, "attendanceRegistration: HTTP Exception : ${e.message()}")
+            errorMessage = e.message()
+        } catch (e: IOException) {
+            Log.d(TAG, "attendanceRegistration: IO Exception : ${e.message}")
+            errorMessage = e.message.toString()
+        } catch (e: Exception) {
+            Log.d(TAG, "attendanceRegistration: Kotlin Exception : ${e.message}")
+            errorMessage = e.message.toString()
+        }
+        if (oldData.isNotEmpty()) {
+            return Resource.Success(data = oldData, false)
+        }
+        return Resource.Error(errorMessage)
+    }
+
+    override suspend fun getExamSchedules(
+        exameventid: String,
+        registrationid: String,
+        instituteid: String,
+        studentid: String,
+        token: String
+    ): Resource<List<ExamRegistrationsEntity>> {
+        TODO("Not yet implemented")
     }
 
     override suspend fun getAttendanceRegistrationDetails(
@@ -399,7 +511,7 @@ class PortalRepositoryImpl @Inject constructor(
             Log.d(TAG, "getStudentResultData: IO Exception : ${e.message}")
 
         } catch (e: Exception) {
-            Log.d(TAG, "getStudentResultData: Kotlin Exception : ${e.message}")
+            Log.d(TAG, "getStudentResultData: Kotlin Exception : ${e.printStackTrace()}")
         }
         return Resource.Error(message = "Unknown")
     }

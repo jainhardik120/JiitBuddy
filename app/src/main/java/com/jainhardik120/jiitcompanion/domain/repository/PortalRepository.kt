@@ -1,6 +1,8 @@
 package com.jainhardik120.jiitcompanion.domain.repository
 
-import com.jainhardik120.jiitcompanion.data.local.entity.ResultEntity
+import com.jainhardik120.jiitcompanion.data.local.entity.ExamEventsEntity
+import com.jainhardik120.jiitcompanion.data.local.entity.ExamRegistrationsEntity
+import com.jainhardik120.jiitcompanion.data.remote.model.ResultEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceEntity
 import com.jainhardik120.jiitcompanion.util.Resource
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceRegistrationEntity
@@ -46,6 +48,24 @@ interface PortalRepository {
         subjectId: String, registrationid: String, cmpidkey: String, token: String
     ): Resource<List<AttendanceEntry>>
 
+    suspend fun getExamRegistrations(
+        clientid: String,
+        instituteid: String,
+        studentid: String, token: String
+    ): Resource<List<ExamRegistrationsEntity>>
+
+    suspend fun getExamEvents(
+        studentid: String,
+        instituteid: String,
+        registrationid: String, token: String
+    ): Resource<List<ExamEventsEntity>>
+
+    suspend fun getExamSchedules(
+        exameventid:String,
+        registrationid: String,
+        instituteid: String,
+        studentid: String, token: String
+    ): Resource<List<ExamRegistrationsEntity>>
 
     suspend fun getMarksRegistration(
         instituteid: String, studentid: String, token: String

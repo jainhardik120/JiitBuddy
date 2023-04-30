@@ -33,7 +33,6 @@ class LoginViewModel @Inject constructor(
         private const val TAG = "LoginViewModel"
     }
 
-
     init {
         Log.d(TAG, "LoginViewModel: Initialized")
         val lastUser = repository.lastUser()
@@ -65,8 +64,10 @@ class LoginViewModel @Inject constructor(
     }
 
     fun login(enrollment: String, password: String) {
+        state = state.copy(isLoading = true)
         viewModelScope.launch(Dispatchers.IO) {
             val result = repository.loginUser(enrollment, password)
+            state = state.copy(isLoading = false)
             when (result) {
                 is Resource.Success -> {
                     val json =

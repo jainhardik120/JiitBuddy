@@ -49,4 +49,21 @@ interface PortalApi {
     @GET
     suspend fun getMarksPdf(@Url url : String, @Header("Authorization") authorization: String): retrofit2.Response<ResponseBody>
 
+    @POST("reqsubfaculty/getregistrationList")
+    suspend fun getSubjectRegistrationList(@Body body: RequestBody, @Header("Authorization") authorization: String) : String
+
+    @POST("reqsubfaculty/getfaculties")
+    suspend fun getFaculties(@Body body: RequestBody, @Header("Authorization") authorization: String) : String
+
+    @POST("studentcommonsontroller/getsemestercode-withstudentexamevents")
+    suspend fun getSemesterCodeExams(@Body body: RequestBody, @Header("Authorization") authorization: String) : String
+
+    @POST("studentcommonsontroller/getstudentexamevents")
+    suspend fun getExamEvents(@Body body: RequestBody, @Header("Authorization") authorization: String) : String
+
+    @POST("studentsttattview/getstudent-examschedule")
+    suspend fun getExamSchedule(@Body body: RequestBody, @Header("Authorization") authorization: String) : String
+
+
+
 }

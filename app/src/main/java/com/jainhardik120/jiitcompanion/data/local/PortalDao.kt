@@ -1,6 +1,9 @@
 package com.jainhardik120.jiitcompanion.data.local
 
 import androidx.room.*
+import com.jainhardik120.jiitcompanion.data.local.entity.ExamEventsEntity
+import com.jainhardik120.jiitcompanion.data.local.entity.ExamRegistrationsEntity
+import com.jainhardik120.jiitcompanion.data.local.entity.ExamScheduleEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceRegistrationEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
@@ -46,4 +49,31 @@ interface PortalDao {
 
     @Query("DELETE FROM attendance_detail_table WHERE studentid = :studentid")
     suspend fun deleteAttendanceEntity(studentid: String)
+
+    @Query("DELETE FROM exam_events_table WHERE studentId = :studentid")
+    suspend fun deleteExamEvents(studentid: String)
+
+    @Query("DELETE FROM exam_registrations_table WHERE studentId = :studentid")
+    suspend fun deleteExamRegistrations(studentid: String)
+
+    @Query("DELETE FROM exam_schedule_table WHERE studentId = :studentid")
+    suspend fun deleteExamSchedules(studentid: String)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertExamEvents(events: List<ExamEventsEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertExamRegistrations(registrations: List<ExamRegistrationsEntity>)
+
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertExamSchedules(schedules: List<ExamScheduleEntity>)
+
+    @Query("SELECT * FROM exam_registrations_table WHERE studentId = :studentid")
+    suspend fun getExamRegistrations(studentid: String): List<ExamRegistrationsEntity>
+
+    @Query("SELECT * FROM exam_events_table WHERE studentId = :studentid AND registrationid = :registrationid")
+    suspend fun getExamEvents(studentid: String, registrationid:String): List<ExamEventsEntity>
+
+    @Query("SELECT * FROM exam_schedule_table WHERE studentId = :studentid AND examEvent = :examEvent")
+    suspend fun getExamSchedules(studentid: String, examEvent:String): List<ExamScheduleEntity>
 }
