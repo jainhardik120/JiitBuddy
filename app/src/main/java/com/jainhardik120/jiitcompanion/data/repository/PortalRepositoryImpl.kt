@@ -216,7 +216,7 @@ class PortalRepositoryImpl @Inject constructor(
         if(token=="offline"){
             return Resource.Success(oldData, isOnline = false)
         }
-        var errorMessage = ""
+        val errorMessage: String
         try {
             val payload = JSONObject(
                 "{\"clientid\":\"${clientid}\",\"instituteid\":\"${instituteid}\",\"memberid\":\"${studentid}\"}\n"
@@ -259,12 +259,12 @@ class PortalRepositoryImpl @Inject constructor(
         token: String
     ): Resource<List<ExamEventsEntity>> {
         Log.d(TAG, "getExamEvents: $studentid $registrationid")
-        val oldData = dao.getExamEvents(studentid, registrationid)
+        var oldData = dao.getExamEvents(studentid, registrationid)
         Log.d(TAG, "getExamEvents: $oldData")
         if(token=="offline"){
             return Resource.Success(oldData, isOnline = false)
         }
-        var errorMessage= ""
+        val errorMessage: String
         try {
             val payload = JSONObject(
                 "{\"instituteid\":\"${instituteid}\",\"registationid\":\"${registrationid}\"}\n"
@@ -285,7 +285,8 @@ class PortalRepositoryImpl @Inject constructor(
                 )
             }
             dao.insertExamEvents(registrationList)
-            return Resource.Success(data = registrationList, true)
+            oldData = dao.getExamEvents(studentid, registrationid)
+            return Resource.Success(data = oldData, true)
         } catch (e: HttpException) {
             Log.d(TAG, "attendanceRegistration: HTTP Exception : ${e.message()}")
             errorMessage = e.message()
@@ -310,12 +311,12 @@ class PortalRepositoryImpl @Inject constructor(
         token: String
     ): Resource<List<ExamScheduleEntity>> {
         Log.d(TAG, "getExamEvents: $studentid $exameventid")
-        val oldData = dao.getExamSchedules(studentid, exameventid)
+        var oldData = dao.getExamSchedules(studentid, exameventid)
         Log.d(TAG, "getExamEvents: $oldData")
         if(token=="offline"){
             return Resource.Success(oldData, isOnline = false)
         }
-        var errorMessage= ""
+        val errorMessage: String
         try {
             val payload = JSONObject(
                 "{\"memberid\":\"${
@@ -341,7 +342,8 @@ class PortalRepositoryImpl @Inject constructor(
                 )
             }
             dao.insertExamSchedules(registrationList)
-            return Resource.Success(data = registrationList, true)
+            oldData = dao.getExamSchedules(studentid, exameventid)
+            return Resource.Success(data = oldData, true)
         } catch (e: HttpException) {
             Log.d(TAG, "attendanceRegistration: HTTP Exception : ${e.message()}")
             errorMessage = e.message()
