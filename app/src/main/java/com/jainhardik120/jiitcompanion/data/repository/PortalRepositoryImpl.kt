@@ -111,6 +111,17 @@ class PortalRepositoryImpl @Inject constructor(
         }
     }
 
+    override fun getAttendanceWarning(): Int {
+        return sharedPreferences.getInt("attendance_warning", 80)
+    }
+
+    override fun updateAttendanceWarning(warning: Int) {
+        with(sharedPreferences.edit()){
+            putInt("attendance_warning", warning)
+            apply()
+        }
+    }
+
     override suspend fun logOut(studentid: String) {
         dao.deleteAttendanceEntity(studentid)
         dao.deleteAttendanceRegistrations(studentid)

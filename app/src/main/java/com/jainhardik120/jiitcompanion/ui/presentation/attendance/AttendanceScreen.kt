@@ -1,11 +1,12 @@
 package com.jainhardik120.jiitcompanion.ui.presentation.attendance
 
-import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
+import androidx.compose.foundation.text.KeyboardActions
+import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
@@ -21,6 +22,7 @@ import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
 import androidx.compose.ui.Alignment
+import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
@@ -28,11 +30,14 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
+import androidx.compose.ui.platform.LocalFocusManager
+import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
 import androidx.compose.ui.semantics.Role
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.input.ImeAction
+import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -63,11 +68,13 @@ import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
-@OptIn(ExperimentalMaterial3Api::class)
+@OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun AttendanceScreen(
     viewModel: AttendanceViewModel = hiltViewModel()
 ) {
+    val keyboardController = LocalSoftwareKeyboardController.current
+    val focusManager = LocalFocusManager.current
     LaunchedEffect(key1 = true) {
         viewModel.getRegistrations()
     }
@@ -90,44 +97,79 @@ fun AttendanceScreen(
                 .fillMaxWidth()
                 .padding(12.dp)
         ) {
-            OutlinedTextField(
-                value = viewModel.state.selectedSemesterCode,
-                onValueChange = {
+            Row(Modifier.fillMaxWidth()) {
+                Column(Modifier.fillMaxWidth(0.7f)) {
+                    OutlinedTextField(
+                        value = viewModel.state.selectedSemesterCode,
+                        onValueChange = {
 
-                },
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .onGloballyPositioned { layoutCoordinates ->
-                        dropMenuSize = layoutCoordinates.size.toSize()
+                        },
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .onGloballyPositioned { layoutCoordinates ->
+                                dropMenuSize = layoutCoordinates.size.toSize()
+                            }
+                            .clickable(enabled = true) {
+                                expanded = !expanded
+                            },
+                        label = { Text(text = "Semester") },
+                        trailingIcon = {
+                            IconButton(onClick = { expanded = !expanded }) {
+                                Icon(icon, "Expand/Collapse Menu")
+                            }
+                        }, readOnly = true
+                    )
+                    DropdownMenu(
+                        expanded = expanded,
+                        onDismissRequest = { expanded = false },
+                        modifier = Modifier
+                            .width(with(LocalDensity.current) { dropMenuSize.width.toDp() })
+                    ) {
+                        viewModel.state.registrations.forEach {
+                            DropdownMenuItem(
+                                text = { Text(text = it.registrationcode) },
+                                onClick = {
+                                    viewModel.onEvent(AttendanceScreenEvent.OnSemesterChanged(it))
+                                    expanded = false
+                                })
+                        }
                     }
-                    .clickable(enabled = true) {
-                        expanded = !expanded
-                    },
-                label = { Text(text = "Semester") },
-                trailingIcon = {
-                    IconButton(onClick = { expanded = !expanded }) {
-                        Icon(icon, "Expand/Collapse Menu")
-                    }
-                }, readOnly = true
-            )
-            DropdownMenu(
-                expanded = expanded,
-                onDismissRequest = { expanded = false },
-                modifier = Modifier
-                    .width(with(LocalDensity.current) { dropMenuSize.width.toDp() })
-            ) {
-                viewModel.state.registrations.forEach {
-                    DropdownMenuItem(text = { Text(text = it.registrationcode) }, onClick = {
-                        viewModel.onEvent(AttendanceScreenEvent.OnSemesterChanged(it))
-                        expanded = false
-                    })
                 }
+                Spacer(Modifier.width(8.dp))
+                OutlinedTextField(
+                    value = if (viewModel.state.attendanceWarning == 0) {
+                        ""
+                    } else {
+                        viewModel.state.attendanceWarning.toString()
+                    },
+                    onValueChange = {
+                        viewModel.onEvent(AttendanceScreenEvent.OnAttendanceWarningTextChanged(it))
+                    },
+                    label = {
+                        Text(text = "Criteria")
+                    },
+                    keyboardOptions = KeyboardOptions.Default.copy(
+                        imeAction = ImeAction.Done,
+                        keyboardType = KeyboardType.Number
+                    ),
+                    keyboardActions = KeyboardActions(
+                        onDone = {
+                            keyboardController?.hide()
+                            focusManager.clearFocus()
+                            viewModel.onEvent(
+                                AttendanceScreenEvent.OnKeyboardDone
+                            )
+                        }
+                    ),
+                    singleLine = true
+                )
             }
+
         }
 
         LazyColumn {
             items(state.attendanceData.size) {
-                AttendanceItem(
+                AttendanceItem(warningNumber = state.attendanceWarningNumbers[it],
                     attendanceItem = state.attendanceData[it],
                     enabled = true,
                     onClick = {
@@ -148,16 +190,15 @@ fun AttendanceScreen(
             val adjacentMonths: Long = 500
             val currentDate = remember { LocalDate.now() }
             val currentMonth = remember(currentDate) {
-                if(state.lastAttendanceDate!=null){
+                if (state.lastAttendanceDate != null) {
                     state.lastAttendanceDate.yearMonth
-                }else{
+                } else {
                     currentDate.yearMonth
                 }
             }
             val startMonth = remember(currentDate) { currentMonth.minusMonths(adjacentMonths) }
             val endMonth = remember(currentDate) { currentMonth.plusMonths(adjacentMonths) }
             val daysOfWeek = remember { daysOfWeek() }
-            val context = LocalContext.current
             Column(
                 modifier = Modifier.fillMaxHeight(0.75f),
             ) {
@@ -194,15 +235,31 @@ fun AttendanceScreen(
                         },
                     )
                 }
-                if(state.selectedDate!=null){
-                    if(state.stringMap[state.selectedDate]!=null){
-                        Spacer(modifier = Modifier.fillMaxHeight().weight(1f))
-                        Text(style = MaterialTheme.typography.titleMedium,text = "Attendance for ${state.selectedDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))}", modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp))
+                if (state.selectedDate != null) {
+                    if (state.stringMap[state.selectedDate] != null) {
+                        Spacer(
+                            modifier = Modifier
+                                .fillMaxHeight()
+                                .weight(1f)
+                        )
+                        Text(
+                            style = MaterialTheme.typography.titleMedium,
+                            text = "Attendance for ${
+                                state.selectedDate.format(
+                                    DateTimeFormatter.ofPattern("dd-MM-yyyy")
+                                )
+                            }",
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(horizontal = 8.dp)
+                        )
                         Spacer(modifier = Modifier.height(4.dp))
-                        LazyColumn{
-                            itemsIndexed(state.stringMap[state.selectedDate]!!){ index, item->
+                        LazyColumn {
+                            itemsIndexed(state.stringMap[state.selectedDate]!!) { index, item ->
                                 AttendanceEntryItem(item)
-                                if(index != ((state.stringMap[state.selectedDate]?.size) ?: 0)-1){
+                                if (index != ((state.stringMap[state.selectedDate]?.size)
+                                        ?: 0) - 1
+                                ) {
                                     Divider()
                                 }
                             }
@@ -485,7 +542,12 @@ fun AttendanceEntryItem(attendanceEntry: AttendanceEntry) {
 //}
 
 @Composable
-fun AttendanceItem(attendanceItem: AttendanceItem, enabled: Boolean, onClick: () -> Unit) {
+fun AttendanceItem(
+    attendanceItem: AttendanceItem,
+    warningNumber: Int,
+    enabled: Boolean,
+    onClick: () -> Unit
+) {
     Row(Modifier
         .clickable(
             enabled = enabled,
@@ -505,9 +567,19 @@ fun AttendanceItem(attendanceItem: AttendanceItem, enabled: Boolean, onClick: ()
         Column(
             Modifier
                 .fillMaxWidth(0.25f)
-                .align(Alignment.CenterVertically)
+                .align(Alignment.CenterVertically),
+            horizontalAlignment = Alignment.CenterHorizontally
         ) {
-            Text(text = attendanceItem.attendanceFractionText, textAlign = TextAlign.Center)
+            Text(
+                text = "${attendanceItem.totalPres}",
+                textAlign = TextAlign.Center
+            )
+
+            Divider(Modifier.padding(2.dp))
+            Text(
+                text = "${attendanceItem.totalClass}",
+                textAlign = TextAlign.Center
+            )
         }
         Column(
             Modifier
@@ -521,8 +593,8 @@ fun AttendanceItem(attendanceItem: AttendanceItem, enabled: Boolean, onClick: ()
                     modifier = Modifier.size(36.dp)
                 )
             }
-            if (attendanceItem.warningNumber > 0) {
-                Text(text = "Attend: ${attendanceItem.warningNumber}")
+            if (warningNumber > 0) {
+                Text(text = "Attend: $warningNumber")
             }
         }
     }

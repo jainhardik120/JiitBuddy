@@ -16,6 +16,10 @@ interface PortalRepository {
 
     fun lastUser(): Resource<Pair<String, String>>
 
+    fun getAttendanceWarning():Int
+
+    fun updateAttendanceWarning(warning:Int)
+
     suspend fun loginUser(
         enrollmentno: String,
         password: String

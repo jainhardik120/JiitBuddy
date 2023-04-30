@@ -10,6 +10,7 @@ data class AttendanceScreenState(
     val selectedSemesterCode: String = "",
     val selectedSemesterId: String = "",
     val attendanceData:List<AttendanceItem> = emptyList(),
+    val attendanceWarningNumbers:List<Int> = emptyList(),
     val attendanceWarning :Int = 80,
     val isDetailDataReady: Boolean = false,
     val isBottomSheetExpanded: Boolean = false,

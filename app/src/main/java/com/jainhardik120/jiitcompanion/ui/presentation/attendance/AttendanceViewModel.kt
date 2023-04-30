@@ -34,6 +34,13 @@ class AttendanceViewModel @Inject constructor(
     private lateinit var token: String
     private lateinit var user: UserEntity
 
+    init {
+        viewModelScope.launch {
+            val attendanceWarning = repository.getAttendanceWarning()
+            state= state.copy(attendanceWarning = attendanceWarning)
+        }
+    }
+
     fun getRegistrations() {
         viewModelScope.launch(Dispatchers.IO) {
             token = savedStateHandle.get<String>("token") ?: return@launch
@@ -88,16 +95,34 @@ class AttendanceViewModel @Inject constructor(
                     )
                 }
             }
+
             is AttendanceScreenEvent.OnAttendanceItemClicked -> {
                 state = state.copy(isDetailDataReady = false, isBottomSheetExpanded = true)
                 loadSubjectAttendanceDetails(event.attendanceItem)
             }
+
             AttendanceScreenEvent.DismissBottomSheet -> {
                 state = state.copy(isBottomSheetExpanded = false)
             }
 
             is AttendanceScreenEvent.OnDayClicked -> {
                 state = state.copy(selectedDate = event.day)
+            }
+
+            is AttendanceScreenEvent.OnAttendanceWarningTextChanged -> {
+                if (event.warning.isEmpty()) {
+                    state = state.copy(attendanceWarning = 0)
+                } else if (event.warning.toIntOrNull() != null) {
+                    state = if(event.warning.toInt()<=99){
+                        state.copy(attendanceWarning = event.warning.toInt())
+                    }else{
+                        state.copy(attendanceWarning = 99)
+                    }
+                }
+            }
+            AttendanceScreenEvent.OnKeyboardDone -> {
+                repository.updateAttendanceWarning(state.attendanceWarning)
+                calcWarnings()
             }
         }
     }
@@ -124,12 +149,13 @@ class AttendanceViewModel @Inject constructor(
             )
             when (result) {
                 is Resource.Success -> {
-                    if(result.data!=null){
+                    if (result.data != null) {
                         state = state.copy(attendanceEntries = result.data)
                         convertMap()
                         state = state.copy(isDetailDataReady = true)
                     }
                 }
+
                 is Resource.Error -> {
 
                 }
@@ -137,7 +163,7 @@ class AttendanceViewModel @Inject constructor(
         }
     }
 
-    private fun dateTimeStringToLocalDate(dateTime:String):LocalDate{
+    private fun dateTimeStringToLocalDate(dateTime: String): LocalDate {
         val calendarDate = dateTime.split(" ")[0].split("/")
         val year = parseInt(calendarDate[2])
         val month = parseInt(calendarDate[1])
@@ -145,40 +171,40 @@ class AttendanceViewModel @Inject constructor(
         return LocalDate.of(year, month, date)
     }
 
-    private fun convertMap(){
+    private fun convertMap() {
         val tempMap: MutableMap<LocalDate, Pair<Int, Int>> = mutableMapOf()
         val stringMap: MutableMap<LocalDate, MutableList<AttendanceEntry>> = mutableMapOf()
-        var maxDate:LocalDate = LocalDate.of(2003,10,17)
-        for (i in state.attendanceEntries){
+        var maxDate: LocalDate = LocalDate.of(2003, 10, 17)
+        for (i in state.attendanceEntries) {
             val localDate = dateTimeStringToLocalDate(i.datetime)
-            if(localDate>maxDate){
+            if (localDate > maxDate) {
                 maxDate = localDate
             }
-            if(stringMap[localDate]==null){
-                stringMap[localDate]= mutableListOf()
+            if (stringMap[localDate] == null) {
+                stringMap[localDate] = mutableListOf()
             }
             stringMap[localDate]?.add(i)
-            if(tempMap.containsKey(localDate)){
+            if (tempMap.containsKey(localDate)) {
                 val tempPair = tempMap[localDate]
-                if(i.present.equals("present", ignoreCase = true)){
+                if (i.present.equals("present", ignoreCase = true)) {
                     if (tempPair != null) {
-                        tempMap[localDate] = Pair(tempPair.first+1,tempPair.second)
+                        tempMap[localDate] = Pair(tempPair.first + 1, tempPair.second)
                     }
-                }else{
+                } else {
                     if (tempPair != null) {
-                        tempMap[localDate] = Pair(tempPair.first,tempPair.second+1)
+                        tempMap[localDate] = Pair(tempPair.first, tempPair.second + 1)
                     }
                 }
-            }else{
-                if(i.present.equals("present", ignoreCase = true)){
-                    tempMap[localDate] = Pair(1,0)
-                }else{
-                    tempMap[localDate] = Pair(0,1)
+            } else {
+                if (i.present.equals("present", ignoreCase = true)) {
+                    tempMap[localDate] = Pair(1, 0)
+                } else {
+                    tempMap[localDate] = Pair(0, 1)
                 }
             }
         }
         state = state.copy(map = tempMap, stringMap = stringMap)
-        if(state.attendanceEntries.isNotEmpty() && maxDate!= LocalDate.of(2003,10,17)){
+        if (state.attendanceEntries.isNotEmpty() && maxDate != LocalDate.of(2003, 10, 17)) {
             state = state.copy(lastAttendanceDate = maxDate, selectedDate = maxDate)
         }
     }
@@ -201,7 +227,6 @@ class AttendanceViewModel @Inject constructor(
                             var totalPres = 0
                             var totalClass = 0
                             var attendanceText = ""
-                            val attendanceWarning = state.attendanceWarning
                             val componentIdText = ArrayList<String>()
                             if (attendanceEntity.Lsubjectcomponentcode == "L") {
                                 try {
@@ -266,31 +291,25 @@ class AttendanceViewModel @Inject constructor(
                                     Log.d("myApp", e.message.toString())
                                 }
                             }
-                            var warningNumber =
-                                ((attendanceWarning * (totalClass)) - (100 * totalPres
-                                    .toDouble()
-                                    .roundToInt())) / (100 - attendanceWarning)
-                            if (totalClass != 0 && (totalClass + warningNumber) != 0) {
-                                if (((totalPres + warningNumber)) / (totalClass + warningNumber) < attendanceWarning.toDouble()) {
-                                    warningNumber++
-                                }
-                            }
+
                             val percentage = if (totalClass == 0) {
                                 100
                             } else {
                                 (totalPres * 100) / totalClass
                             }
+
                             AttendanceItem(
                                 attendanceEntity.subjectid,
                                 attendanceEntity.subjectcode,
                                 percentage,
-                                "$totalPres\n----\n$totalClass",
+                                totalClass,
+                                totalPres,
                                 attendanceText,
-                                componentIdText,
-                                warningNumber
+                                componentIdText
                             )
                         }
                         state = state.copy(attendanceData = attendanceData)
+                        calcWarnings()
                     }
                     Log.d(TAG, "loadAttendanceDetails: ${result.data}")
                 }
@@ -300,5 +319,24 @@ class AttendanceViewModel @Inject constructor(
                 }
             }
         }
+    }
+
+    private fun calcWarnings(){
+        val warningNumbers=List(state.attendanceData.size){
+            val attendanceWarning = state.attendanceWarning
+            val totalClass = state.attendanceData[it].totalClass
+            val totalPres = state.attendanceData[it].totalPres
+            var warningNumber =
+                ((attendanceWarning * (totalClass)) - (100 * totalPres
+                    .toDouble()
+                    .roundToInt())) / (100 - attendanceWarning)
+            if (totalClass != 0 && (totalClass + warningNumber) != 0) {
+                if (((totalPres + warningNumber)) / (totalClass + warningNumber) < attendanceWarning.toDouble()) {
+                    warningNumber++
+                }
+            }
+            warningNumber
+        }
+        state = state.copy(attendanceWarningNumbers = warningNumbers)
     }
 }
