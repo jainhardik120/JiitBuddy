@@ -29,15 +29,14 @@ import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
 
-
 @Singleton
 class PortalRepositoryImpl @Inject constructor(
     private val api: PortalApi,
     db: PortalDatabase,
     private val sharedPreferences: SharedPreferences,
-    @Named("FilesDir") private val externalFilesDir:String
+    @Named("FilesDir") private val externalFilesDir: String
 ) : PortalRepository {
-    companion object{
+    companion object {
         private const val TAG = "PortalRepositoryDebug"
     }
 
@@ -93,19 +92,22 @@ class PortalRepositoryImpl @Inject constructor(
         registrationid: String,
         registrationCode: String,
         token: String
-    ):Resource<String> {
+    ): Resource<String> {
         return try {
-            val response = api.getMarksPdf("https://webportal.jiit.ac.in:6011/StudentPortalAPI/studentsexamview/printstudent-exammarks/$studentid/$instituteid/$registrationid/$registrationCode", "Bearer $token")
+            val response = api.getMarksPdf(
+                "https://webportal.jiit.ac.in:6011/StudentPortalAPI/studentsexamview/printstudent-exammarks/$studentid/$instituteid/$registrationid/$registrationCode",
+                "Bearer $token"
+            )
             val file = File(externalFilesDir + "/${registrationCode}.pdf")
             Log.d(TAG, "getMarksPdf: ${file.path}")
-            if(!file.exists()){
+            if (!file.exists()) {
                 file.createNewFile()
             }
             val fos = FileOutputStream(file)
             fos.write(response.body()?.bytes() ?: ByteArray(0))
             fos.close()
             Resource.Success(data = file.path, true)
-        }catch (e:Exception){
+        } catch (e: Exception) {
             Log.d(TAG, "getMarksPdf: ${e.printStackTrace()}")
             Resource.Error(e.message.toString())
         }
@@ -116,7 +118,7 @@ class PortalRepositoryImpl @Inject constructor(
     }
 
     override fun updateAttendanceWarning(warning: Int) {
-        with(sharedPreferences.edit()){
+        with(sharedPreferences.edit()) {
             putInt("attendance_warning", warning)
             apply()
         }
@@ -129,7 +131,7 @@ class PortalRepositoryImpl @Inject constructor(
         dao.deleteExamEvents(studentid)
         dao.deleteExamRegistrations(studentid)
         dao.deleteExamSchedules(studentid)
-        with(sharedPreferences.edit()){
+        with(sharedPreferences.edit()) {
             remove("enroll")
             remove("password")
             apply()
@@ -199,7 +201,7 @@ class PortalRepositoryImpl @Inject constructor(
             dao.insertUser(loggedInUser)
         } catch (e: HttpException) {
             Log.d(TAG, "loginUser: HTTP Exception : ${e.response()?.code()}")
-            if(e.response()?.code()==404){
+            if (e.response()?.code() == 404) {
                 return Resource.Error("Wrong Enrollment No or Password")
             }
         } catch (e: IOException) {
@@ -224,7 +226,7 @@ class PortalRepositoryImpl @Inject constructor(
         token: String
     ): Resource<List<ExamRegistrationsEntity>> {
         val oldData = dao.getExamRegistrations(studentid)
-        if(token=="offline"){
+        if (token == "offline") {
             return Resource.Success(oldData, isOnline = false)
         }
         val errorMessage: String
@@ -235,7 +237,8 @@ class PortalRepositoryImpl @Inject constructor(
             val registrationData =
                 api.getSemesterCodeExams(RequestBody(payload), "Bearer $token")
             val data =
-                JSONObject(registrationData).getJSONObject("response").getJSONObject("semesterCodeinfo")
+                JSONObject(registrationData).getJSONObject("response")
+                    .getJSONObject("semesterCodeinfo")
                     .getJSONArray("semestercode")
             val registrationList = List(data.length()) {
                 ExamRegistrationsEntity(
@@ -264,7 +267,7 @@ class PortalRepositoryImpl @Inject constructor(
     }
 
     override suspend fun getExamEvents(
-        studentid:String,
+        studentid: String,
         instituteid: String,
         registrationid: String,
         token: String
@@ -272,7 +275,7 @@ class PortalRepositoryImpl @Inject constructor(
         Log.d(TAG, "getExamEvents: $studentid $registrationid")
         var oldData = dao.getExamEvents(studentid, registrationid)
         Log.d(TAG, "getExamEvents: $oldData")
-        if(token=="offline"){
+        if (token == "offline") {
             return Resource.Success(oldData, isOnline = false)
         }
         val errorMessage: String
@@ -324,7 +327,7 @@ class PortalRepositoryImpl @Inject constructor(
         Log.d(TAG, "getExamEvents: $studentid $exameventid")
         var oldData = dao.getExamSchedules(studentid, exameventid)
         Log.d(TAG, "getExamEvents: $oldData")
-        if(token=="offline"){
+        if (token == "offline") {
             return Resource.Success(oldData, isOnline = false)
         }
         val errorMessage: String
@@ -348,8 +351,16 @@ class PortalRepositoryImpl @Inject constructor(
                     jsonObjectSubData.getString("datetime"),
                     jsonObjectSubData.getString("datetimeupto"),
                     jsonObjectSubData.getString("subjectdesc"),
-                    if(jsonObjectSubData.getString("roomcode")=="null"){"-"}else{jsonObjectSubData.getString("roomcode")},
-                    if(jsonObjectSubData.getString("seatno")=="null"){"-"}else{jsonObjectSubData.getString("seatno")}
+                    if (jsonObjectSubData.getString("roomcode") == "null") {
+                        "-"
+                    } else {
+                        jsonObjectSubData.getString("roomcode")
+                    },
+                    if (jsonObjectSubData.getString("seatno") == "null") {
+                        "-"
+                    } else {
+                        jsonObjectSubData.getString("seatno")
+                    }
                 )
             }
             dao.insertExamSchedules(registrationList)
@@ -504,12 +515,24 @@ class PortalRepositoryImpl @Inject constructor(
     override suspend fun getStudentResultData(
         instituteid: String,
         studentid: String,
-        stynumber: Int,
         token: String
     ): Resource<List<ResultEntity>> {
         try {
+
+            val loadingData = api.sgpaLoadData(
+                RequestBody(
+                    JSONObject(
+                        "{\"instituteid\":\"${
+                            instituteid
+                        }\",\"studentid\":\"${studentid}\"}"
+                    )
+                ), "Bearer $token"
+            )
             val payload = JSONObject(
-                "{\"instituteid\":\"${instituteid}\",\"studentid\":\"${studentid}\",\"stynumber\":\"${stynumber}\"}\n"
+                "{\"instituteid\":\"${instituteid}\",\"studentid\":\"${studentid}\",\"stynumber\":\"${
+                    JSONObject(loadingData).getJSONObject("response").getJSONArray("studentInfo").getJSONObject(0)
+                        .getString("stynumber")
+                }\"}\n"
             )
             val registrationData = api.studentResultData(RequestBody(payload), "Bearer $token")
             val array =

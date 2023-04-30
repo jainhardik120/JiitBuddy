@@ -40,6 +40,9 @@ interface PortalApi {
     @POST("StudentClassAttendance/getstudentsubjectpersentage")
     suspend fun subjectSubjectAttendanceDetail(@Body body: RequestBody, @Header("Authorization") authorization: String) : String
 
+    @POST("studentsgpacgpa/loadData")
+    suspend fun sgpaLoadData(@Body body: RequestBody, @Header("Authorization") authorization: String) : String
+
     @POST("studentsgpacgpa/getallsemesterdata")
     suspend fun studentResultData(@Body body: RequestBody, @Header("Authorization") authorization: String) : String
 

@@ -48,7 +48,7 @@ class GradesViewModel @Inject constructor(
             user = Moshi.Builder().build().adapter(UserEntity::class.java).lenient()
                 .fromJson(savedStateHandle.get<String>("userInfo") ?: return@launch)!!
             val result =
-                repository.getStudentResultData(user.instituteValue, user.memberid, 4, token)
+                repository.getStudentResultData(user.instituteValue, user.memberid,  token)
             when (result) {
                 is Resource.Success -> {
                     state = result.data?.let { state.copy(results = it) }!!

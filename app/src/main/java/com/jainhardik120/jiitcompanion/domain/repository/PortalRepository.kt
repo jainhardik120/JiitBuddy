@@ -36,7 +36,7 @@ interface PortalRepository {
 
     suspend fun getStudentResultData(
         instituteid: String,
-        studentid: String, stynumber: Int, token: String
+        studentid: String, token: String
     ): Resource<List<ResultEntity>>
 
     suspend fun getAttendanceDetails(
