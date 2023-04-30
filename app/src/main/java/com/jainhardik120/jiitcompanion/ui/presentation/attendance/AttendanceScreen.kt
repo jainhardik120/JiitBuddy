@@ -4,6 +4,7 @@ import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
@@ -37,6 +38,7 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.jainhardik120.jiitcompanion.data.repository.model.AttendanceEntry
 import com.jainhardik120.jiitcompanion.domain.model.AttendanceItem
 import com.jainhardik120.jiitcompanion.ui.presentation.attendance.AttendanceScreenComponents.CalendarHeader
 import com.jainhardik120.jiitcompanion.ui.presentation.attendance.AttendanceScreenComponents.Day
@@ -57,6 +59,7 @@ import java.time.DayOfWeek
 import java.time.LocalDate
 import java.time.Month
 import java.time.YearMonth
+import java.time.format.DateTimeFormatter
 import java.time.format.TextStyle
 import java.util.Locale
 
@@ -186,10 +189,26 @@ fun AttendanceScreen(
                                 errorPercentage = errorPercentage,
                                 isMonthDate = (day.position == DayPosition.MonthDate),
                                 onClick = { clicked ->
-                                    Toast.makeText(context, state.stringMap[clicked].toString(), Toast.LENGTH_LONG).show()
+                                    viewModel.onEvent(AttendanceScreenEvent.OnDayClicked(clicked))
                                 })
                         },
                     )
+                }
+                if(state.selectedDate!=null){
+                    if(state.stringMap[state.selectedDate]!=null){
+                        Spacer(modifier = Modifier.fillMaxHeight().weight(1f))
+                        Text(style = MaterialTheme.typography.titleMedium,text = "Attendance for ${state.selectedDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"))}", modifier = Modifier.fillMaxWidth().padding(horizontal = 8.dp))
+                        Spacer(modifier = Modifier.height(4.dp))
+                        LazyColumn{
+                            itemsIndexed(state.stringMap[state.selectedDate]!!){ index, item->
+                                AttendanceEntryItem(item)
+                                if(index != ((state.stringMap[state.selectedDate]?.size) ?: 0)-1){
+                                    Divider()
+                                }
+                            }
+                        }
+                    }
+
                 }
             }
         }
@@ -423,27 +442,27 @@ object AttendanceScreenComponents {
 //    )
 //}
 
-//@Composable
-//fun AttendanceEntryItem(attendanceEntry: AttendanceEntry) {
-//    Row(Modifier.padding(8.dp)) {
-//        Column(
-//            Modifier
-//                .weight(1f)
-//                .padding(start = 8.dp)
-//        ) {
-//            Text(text = attendanceEntry.attendanceby)
-//            Text(text = attendanceEntry.classtype)
-//            Text(text = attendanceEntry.datetime)
-//        }
-//        Column(
-//            Modifier
-//                .align(Alignment.CenterVertically)
-//                .padding(end = 8.dp)
-//        ) {
-//            Text(text = attendanceEntry.present)
-//        }
-//    }
-//}
+@Composable
+fun AttendanceEntryItem(attendanceEntry: AttendanceEntry) {
+    Row(Modifier.padding(8.dp)) {
+        Column(
+            Modifier
+                .weight(1f)
+                .padding(start = 8.dp)
+        ) {
+            Text(text = attendanceEntry.attendanceby)
+            Text(text = attendanceEntry.classtype)
+            Text(text = attendanceEntry.datetime)
+        }
+        Column(
+            Modifier
+                .align(Alignment.CenterVertically)
+                .padding(end = 8.dp)
+        ) {
+            Text(text = attendanceEntry.present)
+        }
+    }
+}
 
 //
 //@Composable

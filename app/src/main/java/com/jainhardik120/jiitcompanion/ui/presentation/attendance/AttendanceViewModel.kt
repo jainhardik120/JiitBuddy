@@ -95,6 +95,10 @@ class AttendanceViewModel @Inject constructor(
             AttendanceScreenEvent.DismissBottomSheet -> {
                 state = state.copy(isBottomSheetExpanded = false)
             }
+
+            is AttendanceScreenEvent.OnDayClicked -> {
+                state = state.copy(selectedDate = event.day)
+            }
         }
     }
 
@@ -173,7 +177,10 @@ class AttendanceViewModel @Inject constructor(
                 }
             }
         }
-        state = state.copy(map = tempMap, stringMap = stringMap, lastAttendanceDate = maxDate)
+        state = state.copy(map = tempMap, stringMap = stringMap)
+        if(state.attendanceEntries.isNotEmpty() && maxDate!= LocalDate.of(2003,10,17)){
+            state = state.copy(lastAttendanceDate = maxDate, selectedDate = maxDate)
+        }
     }
 
     private fun loadAttendanceDetails() {
