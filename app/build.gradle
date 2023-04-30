@@ -54,11 +54,13 @@ android {
 }
 
 dependencies {
+    implementation "br.com.devsrsouza.compose.icons:simple-icons:1.1.0"
     coreLibraryDesugaring 'com.android.tools:desugar_jdk_libs:2.0.3'
     implementation 'com.kizitonwose.calendar:compose:2.3.0'
     implementation 'org.jetbrains.kotlinx:kotlinx-serialization-json:1.5.0'
     implementation 'androidx.core:core-ktx:1.10.0'
     implementation "androidx.compose.ui:ui:1.4.2"
+    implementation "androidx.compose.ui:ui-util:1.4.2"
     implementation "com.google.accompanist:accompanist-systemuicontroller:0.31.0-alpha"
     implementation "androidx.compose.ui:ui-tooling-preview:1.4.2"
     implementation 'androidx.lifecycle:lifecycle-runtime-ktx:2.6.1'
