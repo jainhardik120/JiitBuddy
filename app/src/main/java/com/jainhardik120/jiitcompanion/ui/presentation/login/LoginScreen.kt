@@ -30,6 +30,7 @@ fun LoginScreen(
     val state = viewModel.state
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(key1 = true) {
+        viewModel.initialize()
         viewModel.uiEvent.collect {
             when (it) {
                 is UiEvent.Navigate -> {

@@ -33,7 +33,7 @@ class LoginViewModel @Inject constructor(
         private const val TAG = "LoginViewModel"
     }
 
-    init {
+    fun initialize() {
         Log.d(TAG, "LoginViewModel: Initialized")
         val lastUser = repository.lastUser()
         if (!lastUser.data?.first.equals("null")) {

@@ -3,6 +3,7 @@ package com.jainhardik120.jiitcompanion.ui.presentation.home
 import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Logout
+import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material.icons.outlined.Logout
 import androidx.compose.material.icons.outlined.Warning
 import androidx.compose.material3.*
@@ -41,7 +42,6 @@ fun HomeScreen(
                             launchSingleTop = true
                         }
                     }
-
                 }
                 else -> {
 
@@ -116,6 +116,29 @@ fun HomeScreen(
             },
             dismissButton = {
                 TextButton(onClick = { viewModel.onEvent(HomeScreenEvent.onLogOutDismissed) }) {
+                    Text(text = "Cancel")
+                }
+            })
+    }
+
+    if (viewModel.state.offlineDialogOpened) {
+        AlertDialog(
+            icon={
+                Icon(Icons.Filled.Warning, contentDescription = "Warning Icon")
+            },
+            onDismissRequest = {
+                viewModel.onEvent(HomeScreenEvent.offlineDialogDismisse)
+            },
+            text = {
+                Text(text = "The app is working in offline mode because servers were not reachable at time of login. Click below button to retry connection.")
+            },
+            confirmButton = {
+                TextButton(onClick = { viewModel.onEvent(HomeScreenEvent.offlineDialogConfirmed) }) {
+                    Text(text = "Retry")
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { viewModel.onEvent(HomeScreenEvent.offlineDialogDismisse) }) {
                     Text(text = "Cancel")
                 }
             })

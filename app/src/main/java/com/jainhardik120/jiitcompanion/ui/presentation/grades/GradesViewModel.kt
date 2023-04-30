@@ -42,22 +42,25 @@ class GradesViewModel @Inject constructor(
         }
     }
 
-    init {
+    fun initialize() {
         viewModelScope.launch {
             token = savedStateHandle.get<String>("token") ?: return@launch
             user = Moshi.Builder().build().adapter(UserEntity::class.java).lenient()
                 .fromJson(savedStateHandle.get<String>("userInfo") ?: return@launch)!!
-            val result =
-                repository.getStudentResultData(user.instituteValue, user.memberid,  token)
-            when (result) {
-                is Resource.Success -> {
-                    state = result.data?.let { state.copy(results = it) }!!
-                }
-                is Resource.Error -> {
+            if(token=="offline"){
+                state=state.copy(isOffline = true)
+            }else{
+                val result =
+                    repository.getStudentResultData(user.instituteValue, user.memberid,  token)
+                when (result) {
+                    is Resource.Success -> {
+                        state = result.data?.let { state.copy(results = it) }!!
+                    }
+                    is Resource.Error -> {
 
+                    }
                 }
             }
-
         }
     }
 

@@ -21,6 +21,7 @@ import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
@@ -41,10 +42,10 @@ fun GradesScreen(
     val launcher = rememberLauncherForActivityResult(
         contract = ActivityResultContracts.StartActivityForResult(),
         onResult = {
-
         })
     val context = LocalContext.current
     LaunchedEffect(key1 = true) {
+        viewModel.initialize()
         viewModel.uiEvent.collect {
             when (it) {
                 is UiEvent.OpenPdf -> {
@@ -70,48 +71,55 @@ fun GradesScreen(
         }
     }
     val state = viewModel.state
-    Scaffold(floatingActionButton = {
-        ExtendedFloatingActionButton(
-            onClick = { viewModel.onEvent(GradesScreenEvent.ButtonViewMarksClicked) },
-            shape = MaterialTheme.shapes.large,
-            expanded = true,
-            icon = {
-                Icon(
-                    Icons.Outlined.FileDownload,
-                    contentDescription = "Files Download Icon"
-                )
-            },
-            text = {
-                Text(text = "View Marks")
-            }
-        )
-    }
-    ) {
-
-        Column(
-            Modifier
-                .padding(it)
-                .fillMaxSize()) {
-
-            Spacer(Modifier.height(16.dp))
-            if(state.results.isNotEmpty()){
-                GradesChart(modifier = Modifier
-                    .fillMaxWidth()
-                    .height(300.dp), resultEntities = state.results)
-                Spacer(Modifier.height(16.dp))
-            }
-            LazyColumn() {
-                items(state.results.size) { index ->
-                    ResultItem(resultEntity = state.results[index])
-                    if (index != state.results.size - 1) {
-                        Divider()
-                    }
+    if(!state.isOffline){
+        Scaffold(floatingActionButton = {
+            ExtendedFloatingActionButton(
+                onClick = { viewModel.onEvent(GradesScreenEvent.ButtonViewMarksClicked) },
+                shape = MaterialTheme.shapes.large,
+                expanded = true,
+                icon = {
+                    Icon(
+                        Icons.Outlined.FileDownload,
+                        contentDescription = "Files Download Icon"
+                    )
+                },
+                text = {
+                    Text(text = "View Marks")
                 }
-
-            }
+            )
         }
+        ) {
 
+            Column(
+                Modifier
+                    .padding(it)
+                    .fillMaxSize()) {
+
+                Spacer(Modifier.height(16.dp))
+                if(state.results.isNotEmpty()){
+                    GradesChart(modifier = Modifier
+                        .fillMaxWidth()
+                        .height(300.dp), resultEntities = state.results)
+                    Spacer(Modifier.height(16.dp))
+                }
+                LazyColumn() {
+                    items(state.results.size) { index ->
+                        ResultItem(resultEntity = state.results[index])
+                        if (index != state.results.size - 1) {
+                            Divider()
+                        }
+                    }
+
+                }
+            }
+
+        }
+    }else{
+        Column(Modifier.fillMaxSize(), horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+            Text(text = "Sorry, this content is not available in offline mode :-(", modifier=Modifier.fillMaxWidth(0.8f), textAlign = TextAlign.Center)
+        }
     }
+    
     if (state.isMarksDialogOpened && state.isMarksRegistrationsLoaded) {
         SubjectMarksDialog(registrations = state.marksRegistrations, onClick = {
             viewModel.onEvent(GradesScreenEvent.MarksClicked(it))

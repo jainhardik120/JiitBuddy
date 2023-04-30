@@ -60,21 +60,30 @@ class HomeViewModel @Inject constructor(
             is HomeScreenEvent.onLogOutClicked->{
                 state = state.copy(logOutDialogOpened = true)
             }
-            HomeScreenEvent.onLogOutConfirmed -> {
+            is HomeScreenEvent.onLogOutConfirmed -> {
                 viewModelScope.launch {
+                    state = state.copy(logOutDialogOpened = false)
                     repository.logOut(user.memberid)
                     sendUiEvent(UiEvent.Navigate(Screen.LoginScreen.route))
                 }
             }
-            HomeScreenEvent.onLogOutDismissed -> {
+            is HomeScreenEvent.onLogOutDismissed -> {
                 state= state.copy(logOutDialogOpened = false)
             }
             is HomeScreenEvent.bottomNavItemClicked -> {
                 sendUiEvent(UiEvent.Navigate("${event.screen.route}/${savedStateHandle.get<String>("userInfo")}/${savedStateHandle.get<String>("token")}"))
             }
-
-            HomeScreenEvent.onOfflineAlertClicked -> {
-
+            is HomeScreenEvent.onOfflineAlertClicked -> {
+                state = state.copy(offlineDialogOpened = true)
+            }
+            HomeScreenEvent.offlineDialogConfirmed -> {
+                viewModelScope.launch {
+                    state = state.copy(offlineDialogOpened = false)
+                    sendUiEvent(UiEvent.Navigate(Screen.LoginScreen.route))
+                }
+            }
+            HomeScreenEvent.offlineDialogDismisse -> {
+                state = state.copy(offlineDialogOpened = false)
             }
         }
     }

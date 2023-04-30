@@ -7,5 +7,6 @@ data class GradesState(
     val results:List<ResultEntity> = emptyList(),
     val isMarksDialogOpened: Boolean = false,
     val isMarksRegistrationsLoaded: Boolean = false,
-    val marksRegistrations:List<MarksRegistration> = emptyList()
+    val marksRegistrations:List<MarksRegistration> = emptyList(),
+    val isOffline:Boolean = false,
 )
