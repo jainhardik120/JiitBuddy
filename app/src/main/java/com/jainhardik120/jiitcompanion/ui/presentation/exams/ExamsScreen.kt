@@ -1,14 +1,20 @@
 package com.jainhardik120.jiitcompanion.ui.presentation.exams
 
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.Row
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
+import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.Icon
@@ -31,6 +37,7 @@ import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.jainhardik120.jiitcompanion.data.local.entity.ExamScheduleEntity
 import com.jainhardik120.jiitcompanion.util.UiEvent
 
 @Composable
@@ -156,6 +163,33 @@ fun ExamsScreen(
                     }
                 }
             }
+            LazyColumn(modifier = Modifier
+                .fillMaxWidth()
+                .fillMaxHeight(),content = {
+                itemsIndexed(viewModel.state.schedule){index, item->
+                    ExamScheduleItem(item)
+                    if(index!=viewModel.state.schedule.size-1){
+                        Divider()
+                    }
+                }
+            })
+        }
+    }
+}
+
+@Composable
+fun ExamScheduleItem(item:ExamScheduleEntity) {
+    Column(modifier = Modifier
+        .fillMaxWidth()
+        .padding(8.dp)) {
+        Row(Modifier.fillMaxWidth()) {
+            Text(text = item.subjectdesc)
+        }
+        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
+            Text(text = item.datetime)
+            Text(text = item.datetimeupto)
+            Text(text = item.roomcode)
+            Text(text = item.seatno)
         }
     }
 }
