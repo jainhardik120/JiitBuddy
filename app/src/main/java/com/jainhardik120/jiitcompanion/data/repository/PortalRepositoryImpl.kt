@@ -305,7 +305,7 @@ class PortalRepositoryImpl @Inject constructor(
         studentid: String,
         token: String
     ): Resource<List<ExamRegistrationsEntity>> {
-        TODO("Not yet implemented")
+        return Resource.Success(data = emptyList(), false)
     }
 
     override suspend fun getAttendanceRegistrationDetails(
