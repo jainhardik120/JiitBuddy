@@ -14,7 +14,6 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.FloatingActionButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Scaffold
@@ -33,6 +32,7 @@ import com.jainhardik120.jiitcompanion.data.local.entity.ResultEntity
 import com.jainhardik120.jiitcompanion.domain.model.MarksRegistration
 import com.jainhardik120.jiitcompanion.util.UiEvent
 import java.io.File
+
 
 @Composable
 fun GradesScreen(
@@ -73,6 +73,7 @@ fun GradesScreen(
     Scaffold(floatingActionButton = {
         ExtendedFloatingActionButton(
             onClick = { viewModel.onEvent(GradesScreenEvent.ButtonViewMarksClicked) },
+            shape = MaterialTheme.shapes.large,
             expanded = true,
             icon = {
                 Icon(
@@ -80,26 +81,37 @@ fun GradesScreen(
                     contentDescription = "Files Download Icon"
                 )
             },
-            text={
+            text = {
                 Text(text = "View Marks")
             }
         )
     }
     ) {
-        LazyColumn(
+
+        Column(
             Modifier
                 .padding(it)
                 .fillMaxSize()) {
-            items(state.results.size) {index->
-                ResultItem(resultEntity = state.results[index])
-                if(index!=state.results.size-1){
-                    Divider()
-                }
+
+            Spacer(Modifier.height(16.dp))
+            if(state.results.isNotEmpty()){
+                GradesChart(modifier = Modifier
+                    .fillMaxWidth()
+                    .height(300.dp), resultEntities = state.results)
+                Spacer(Modifier.height(16.dp))
             }
+            LazyColumn() {
+                items(state.results.size) { index ->
+                    ResultItem(resultEntity = state.results[index])
+                    if (index != state.results.size - 1) {
+                        Divider()
+                    }
+                }
 
+            }
         }
-    }
 
+    }
     if (state.isMarksDialogOpened && state.isMarksRegistrationsLoaded) {
         SubjectMarksDialog(registrations = state.marksRegistrations, onClick = {
             viewModel.onEvent(GradesScreenEvent.MarksClicked(it))
@@ -160,7 +172,10 @@ fun ResultItem(resultEntity: ResultEntity) {
             .padding(8.dp)
     ) {
         Column() {
-            Text(text = resultEntity.stynumber.toString(), style = MaterialTheme.typography.headlineLarge)
+            Text(
+                text = resultEntity.stynumber.toString(),
+                style = MaterialTheme.typography.headlineLarge
+            )
         }
         Spacer(Modifier.width(4.dp))
         Column(verticalArrangement = Arrangement.SpaceAround, modifier = Modifier.weight(1f)) {
