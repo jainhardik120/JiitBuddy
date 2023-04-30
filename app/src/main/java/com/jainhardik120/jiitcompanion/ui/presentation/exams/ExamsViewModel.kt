@@ -53,6 +53,14 @@ class ExamsViewModel @Inject constructor(
                 is Resource.Success -> {
                     if(result.data!=null){
                         state = state.copy(registrations = result.data)
+                        if(user.lastAttendanceRegistrationId!=null){
+                            for (i in state.registrations){
+                                if(i.registrationid == user.lastAttendanceRegistrationId){
+                                    state = state.copy(selectedSemesterId = i.registrationid, selectedSemesterCode = i.registrationcode)
+                                    loadExamEvents()
+                                }
+                            }
+                        }
                     }
                 }
                 is Resource.Error -> {
@@ -68,6 +76,15 @@ class ExamsViewModel @Inject constructor(
                 is Resource.Success -> {
                     if(result.data!=null){
                         state = state.copy(events = result.data)
+                        val max = result.data.maxOfOrNull { it.eventfrom }
+                        if(max!=null){
+                            for (i in state.events){
+                                if(i.eventfrom==max){
+                                    state = state.copy(selectedExamId = i.exameventid, selectedEventDesc = i.exameventdesc)
+                                    loadExamSchedule()
+                                }
+                            }
+                        }
                     }
                 }
                 is Resource.Error -> {
@@ -79,10 +96,12 @@ class ExamsViewModel @Inject constructor(
     
     private fun loadExamSchedule(){
         viewModelScope.launch(Dispatchers.IO) {
-            val result = repository.getExamSchedules(state.selectedExamId, state.selectedSemesterId, user.instituteValue, user.memberid, token)
-            when (result) {
+            when (val result = repository.getExamSchedules(state.selectedExamId, state.selectedSemesterId, user.instituteValue, user.memberid, token)) {
                 is Resource.Success -> {
                     Log.d(TAG, "loadExamSchedule: ${result.data}")
+                    if(result.data!=null){
+                        state = state.copy(schedule = result.data)
+                    }
                 }
                 is Resource.Error -> {
                     result.message?.let { UiEvent.ShowSnackbar(it) }?.let { sendUiEvent(it) }
@@ -99,7 +118,9 @@ class ExamsViewModel @Inject constructor(
                     selectedSemesterCode = event.semester.registrationcode,
                     selectedSemesterId = event.semester.registrationid,
                     selectedExamId = "",
-                    selectedEventDesc = ""
+                    selectedEventDesc = "",
+                    events = emptyList(),
+                    schedule = emptyList()
                 )
                 loadExamEvents()
             }
@@ -108,6 +129,7 @@ class ExamsViewModel @Inject constructor(
                 state = state.copy(
                     selectedEventDesc = event.event.exameventdesc,
                     selectedExamId = event.event.exameventid,
+                    schedule = emptyList()
                 )
                 loadExamSchedule()
             }

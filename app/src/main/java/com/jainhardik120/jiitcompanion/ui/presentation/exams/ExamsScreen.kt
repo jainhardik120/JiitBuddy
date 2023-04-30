@@ -2,10 +2,8 @@ package com.jainhardik120.jiitcompanion.ui.presentation.exams
 
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
@@ -39,15 +37,14 @@ import com.jainhardik120.jiitcompanion.util.UiEvent
 fun ExamsScreen(
     viewModel: ExamsViewModel = hiltViewModel()
 ) {
-    val snackbarHostState = remember { SnackbarHostState() }
+    val snackBarHostState = remember { SnackbarHostState() }
     LaunchedEffect(key1 = true, block = {
         viewModel.getRegistrations()
         viewModel.uiEvent.collect {
             when (it) {
                 is UiEvent.ShowSnackbar -> {
-                    snackbarHostState.showSnackbar(it.message)
+                    snackBarHostState.showSnackbar(it.message)
                 }
-
                 else -> {
 
                 }
@@ -70,7 +67,7 @@ fun ExamsScreen(
         Icons.Filled.KeyboardArrowUp
     else
         Icons.Filled.KeyboardArrowDown
-    Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) {
+    Scaffold(snackbarHost = { SnackbarHost(hostState = snackBarHostState) }) {
         Column(
             Modifier
                 .fillMaxSize()
@@ -96,7 +93,10 @@ fun ExamsScreen(
                         },
                     label = { Text(text = "Semester") },
                     trailingIcon = {
-                        IconButton(onClick = { expanded1 = !expanded1 }) {
+                        IconButton(onClick = {
+                            expanded1 = !expanded1
+                            expanded2 = false
+                        }) {
                             Icon(icon1, "Expand/Collapse Menu")
                         }
                     }, readOnly = true
@@ -114,9 +114,12 @@ fun ExamsScreen(
                         })
                     }
                 }
-
-                Spacer(modifier = Modifier.height(16.dp))
-
+            }
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp)
+            ) {
                 OutlinedTextField(
                     value = viewModel.state.selectedEventDesc,
                     onValueChange = {
@@ -132,7 +135,9 @@ fun ExamsScreen(
                         },
                     label = { Text(text = "Exam Event") },
                     trailingIcon = {
-                        IconButton(onClick = { expanded2 = !expanded2 }) {
+                        IconButton(onClick = {
+                            expanded2 = !expanded2
+                            expanded1 = false}) {
                             Icon(icon2, "Expand/Collapse Menu")
                         }
                     }, readOnly = true

@@ -2,6 +2,7 @@ package com.jainhardik120.jiitcompanion.domain.repository
 
 import com.jainhardik120.jiitcompanion.data.local.entity.ExamEventsEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.ExamRegistrationsEntity
+import com.jainhardik120.jiitcompanion.data.local.entity.ExamScheduleEntity
 import com.jainhardik120.jiitcompanion.data.remote.model.ResultEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceEntity
 import com.jainhardik120.jiitcompanion.util.Resource
@@ -65,7 +66,7 @@ interface PortalRepository {
         registrationid: String,
         instituteid: String,
         studentid: String, token: String
-    ): Resource<List<ExamRegistrationsEntity>>
+    ): Resource<List<ExamScheduleEntity>>
 
     suspend fun getMarksRegistration(
         instituteid: String, studentid: String, token: String

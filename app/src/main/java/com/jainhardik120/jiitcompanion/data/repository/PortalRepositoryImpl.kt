@@ -5,6 +5,7 @@ import android.util.Log
 import com.jainhardik120.jiitcompanion.data.local.PortalDatabase
 import com.jainhardik120.jiitcompanion.data.local.entity.ExamEventsEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.ExamRegistrationsEntity
+import com.jainhardik120.jiitcompanion.data.local.entity.ExamScheduleEntity
 import com.jainhardik120.jiitcompanion.data.remote.model.ResultEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceRegistrationEntity
@@ -114,6 +115,9 @@ class PortalRepositoryImpl @Inject constructor(
         dao.deleteAttendanceEntity(studentid)
         dao.deleteAttendanceRegistrations(studentid)
         dao.deleteUserEntity(studentid)
+        dao.deleteExamEvents(studentid)
+        dao.deleteExamRegistrations(studentid)
+        dao.deleteExamSchedules(studentid)
         with(sharedPreferences.edit()){
             remove("enroll")
             remove("password")
@@ -212,7 +216,7 @@ class PortalRepositoryImpl @Inject constructor(
         if(token=="offline"){
             return Resource.Success(oldData, isOnline = false)
         }
-        var errorMessage: String = ""
+        var errorMessage = ""
         try {
             val payload = JSONObject(
                 "{\"clientid\":\"${clientid}\",\"instituteid\":\"${instituteid}\",\"memberid\":\"${studentid}\"}\n"
@@ -304,8 +308,54 @@ class PortalRepositoryImpl @Inject constructor(
         instituteid: String,
         studentid: String,
         token: String
-    ): Resource<List<ExamRegistrationsEntity>> {
-        return Resource.Success(data = emptyList(), false)
+    ): Resource<List<ExamScheduleEntity>> {
+        Log.d(TAG, "getExamEvents: $studentid $exameventid")
+        val oldData = dao.getExamSchedules(studentid, exameventid)
+        Log.d(TAG, "getExamEvents: $oldData")
+        if(token=="offline"){
+            return Resource.Success(oldData, isOnline = false)
+        }
+        var errorMessage= ""
+        try {
+            val payload = JSONObject(
+                "{\"memberid\":\"${
+                    studentid
+                }\",\"instituteid\":\"${
+                    instituteid
+                }\",\"exameventid\":\"${exameventid}\",\"registrationid\":\"${registrationid}\"}"
+            )
+            val registrationData =
+                api.getExamSchedule(RequestBody(payload), "Bearer $token")
+            val array =
+                JSONObject(registrationData).getJSONObject("response").getJSONArray("subjectinfo")
+            val registrationList = List(array.length()) {
+                val jsonObjectSubData = array.getJSONObject(it)
+                ExamScheduleEntity(
+                    studentid,
+                    exameventid,
+                    jsonObjectSubData.getString("datetime"),
+                    jsonObjectSubData.getString("datetimeupto"),
+                    jsonObjectSubData.getString("subjectdesc"),
+                    if(jsonObjectSubData.getString("roomcode")=="null"){"-"}else{jsonObjectSubData.getString("roomcode")},
+                    if(jsonObjectSubData.getString("seatno")=="null"){"-"}else{jsonObjectSubData.getString("seatno")}
+                )
+            }
+            dao.insertExamSchedules(registrationList)
+            return Resource.Success(data = registrationList, true)
+        } catch (e: HttpException) {
+            Log.d(TAG, "attendanceRegistration: HTTP Exception : ${e.message()}")
+            errorMessage = e.message()
+        } catch (e: IOException) {
+            Log.d(TAG, "attendanceRegistration: IO Exception : ${e.message}")
+            errorMessage = e.message.toString()
+        } catch (e: Exception) {
+            Log.d(TAG, "attendanceRegistration: Kotlin Exception : ${e.message}")
+            errorMessage = e.message.toString()
+        }
+        if (oldData.isNotEmpty()) {
+            return Resource.Success(data = oldData, false)
+        }
+        return Resource.Error(errorMessage)
     }
 
     override suspend fun getAttendanceRegistrationDetails(
