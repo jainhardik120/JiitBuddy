@@ -1,3 +1,7 @@
 <resources>
     <string name="app_name">JIIT Buddy</string>
+    <string name="banner_ad_id">ca-app-pub-9875894881268310/7446365622</string>
+    <string name="banner_ad_test_id">ca-app-pub-3940256099942544/6300978111</string>
+    <string name="native_ad_id">ca-app-pub-9875894881268310/8838558094</string>
+    <string name="native_ad_test_id">ca-app-pub-3940256099942544/2247696110</string>
 </resources>

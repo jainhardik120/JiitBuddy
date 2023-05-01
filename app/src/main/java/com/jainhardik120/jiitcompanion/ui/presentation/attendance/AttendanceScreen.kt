@@ -1,5 +1,6 @@
 package com.jainhardik120.jiitcompanion.ui.presentation.attendance
 
+import android.widget.Toast
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
@@ -30,6 +31,7 @@ import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.onGloballyPositioned
+import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
@@ -75,8 +77,12 @@ fun AttendanceScreen(
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
+    val context = LocalContext.current
     LaunchedEffect(key1 = true) {
         viewModel.getRegistrations()
+        if(viewModel.state.isOffline){
+            Toast.makeText(context, "Old Attendance Data is being shown because app is offline", Toast.LENGTH_LONG).show()
+        }
     }
     var expanded by remember { mutableStateOf(false) }
     val bottomSheetState = rememberModalBottomSheetState(
@@ -171,7 +177,7 @@ fun AttendanceScreen(
             items(state.attendanceData.size) {
                 AttendanceItem(warningNumber = state.attendanceWarningNumbers[it],
                     attendanceItem = state.attendanceData[it],
-                    enabled = true,
+                    enabled = !state.isOffline,
                     onClick = {
                         viewModel.onEvent(AttendanceScreenEvent.OnAttendanceItemClicked(state.attendanceData[it]))
                     })

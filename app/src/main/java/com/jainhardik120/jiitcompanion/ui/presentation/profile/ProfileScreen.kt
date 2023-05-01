@@ -38,7 +38,6 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.modifier.modifierLocalConsumer
 import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
@@ -50,6 +49,8 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.jainhardik120.jiitcompanion.data.remote.model.FeedItem
+import com.jainhardik120.jiitcompanion.ui.components.BannerAdView
+import com.jainhardik120.jiitcompanion.ui.components.NativeAdView
 import com.jainhardik120.jiitcompanion.util.UiEvent
 import com.jainhardik120.jiitcompanion.util.drawVerticalScrollbar
 import com.jainhardik120.jiitcompanion.util.flingBehaviorIgnoringMotionScale
@@ -59,7 +60,6 @@ import compose.icons.simpleicons.Instagram
 import compose.icons.simpleicons.Linkedin
 import compose.icons.simpleicons.Reddit
 import compose.icons.simpleicons.Twitter
-import org.w3c.dom.Text
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -124,6 +124,12 @@ fun ProfileScreen(
                 }
             }
         }
+//        item{
+//            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
+//                BannerAdView(true)
+//                NativeAdView(true)
+//            }
+//        }
         item {
             if (state.feedItems.isNotEmpty()) {
                 Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
@@ -144,6 +150,7 @@ fun ProfileScreen(
         item {
             Signature()
         }
+
 
     })
 }
@@ -185,7 +192,6 @@ fun ScrollbarLazyColumn(
 }
 
 
-@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun Signature() {
     Card(

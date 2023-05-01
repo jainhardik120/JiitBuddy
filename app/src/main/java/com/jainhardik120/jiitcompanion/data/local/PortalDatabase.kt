@@ -15,7 +15,7 @@ import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
     StudentAttendanceRegistrationEntity::class,
     ExamEventsEntity::class,
     ExamRegistrationsEntity::class,
-    ExamScheduleEntity::class], version = 3)
+    ExamScheduleEntity::class], version = 3, exportSchema = false)
 abstract class PortalDatabase : RoomDatabase(){
     abstract val dao : PortalDao
 }

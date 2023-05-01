@@ -46,8 +46,8 @@ class PortalRepositoryImpl @Inject constructor(
 
     override fun lastUser(): Resource<Pair<String, String>> {
         val data = Pair(
-            sharedPreferences.getString("enroll", "null")!!,
-            sharedPreferences.getString("password", "null")!!
+            sharedPreferences.getString("LastEnroll", "null")!!,
+            sharedPreferences.getString("LastPass", "null")!!
         )
         return Resource.Success(data = data, true)
     }
@@ -193,8 +193,8 @@ class PortalRepositoryImpl @Inject constructor(
         dao.deleteExamRegistrations(studentid)
         dao.deleteExamSchedules(studentid)
         with(sharedPreferences.edit()) {
-            remove("enroll")
-            remove("password")
+            remove("LastEnroll")
+            remove("LastPass")
             apply()
         }
     }
@@ -216,8 +216,8 @@ class PortalRepositoryImpl @Inject constructor(
             val regdata = api.login(RequestBody(jsonObject), "Bearer")
             with(sharedPreferences.edit()) {
                 clear()
-                putString("enroll", enrollmentno)
-                putString("password", password)
+                putString("LastEnroll", enrollmentno)
+                putString("LastPass", password)
                 apply()
             }
             val loginDetails =

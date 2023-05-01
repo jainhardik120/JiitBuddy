@@ -18,5 +18,6 @@ data class AttendanceScreenState(
     val map: Map<LocalDate, Pair<Int, Int>> = emptyMap(),
     val stringMap: Map<LocalDate, List<AttendanceEntry>> = emptyMap(),
     val lastAttendanceDate:LocalDate?=null,
-    val selectedDate:LocalDate?=null
+    val selectedDate:LocalDate?=null,
+    val isOffline : Boolean = false
 )

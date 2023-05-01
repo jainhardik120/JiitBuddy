@@ -11,6 +11,7 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.outlined.FileDownload
 import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.Button
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExtendedFloatingActionButton
@@ -89,7 +90,6 @@ fun GradesScreen(
             )
         }
         ) {
-
             Column(
                 Modifier
                     .padding(it)
@@ -179,16 +179,24 @@ fun ResultItem(resultEntity: ResultEntity) {
             .fillMaxWidth()
             .padding(8.dp)
     ) {
-        Column() {
+        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
             Text(
                 text = resultEntity.stynumber.toString(),
                 style = MaterialTheme.typography.headlineLarge
             )
         }
-        Spacer(Modifier.width(4.dp))
-        Column(verticalArrangement = Arrangement.SpaceAround, modifier = Modifier.weight(1f)) {
-            Text(text = "SGPA : ${resultEntity.sgpa}", style = MaterialTheme.typography.bodyMedium)
-            Text(text = "CGPA : ${resultEntity.cgpa}", style = MaterialTheme.typography.bodyMedium)
+        Spacer(Modifier.width(12.dp))
+        Column(verticalArrangement = Arrangement.SpaceAround, modifier = Modifier
+            .weight(1f)
+            .fillMaxWidth()) {
+            Row(Modifier.fillMaxWidth()) {
+                Text(text = "SGPA : ${resultEntity.sgpa}", style = MaterialTheme.typography.headlineSmall)
+                Spacer(modifier = Modifier.weight(1f))
+                Text(text = "CGPA : ${resultEntity.cgpa}", style = MaterialTheme.typography.headlineSmall)
+            }
+            Row(Modifier.fillMaxWidth()) {
+                Text(text = "Grade Points : ${resultEntity.earnedgradepoints}/${resultEntity.totalregisteredcredit*10}")
+            }
         }
     }
 }
@@ -198,9 +206,21 @@ fun ResultItem(resultEntity: ResultEntity) {
 fun ResultItemPreview() {
     ResultItem(
         resultEntity = ResultEntity(
-            9.3, 181.0, 65, 181.0, 19.5,
-            19.5, 8.8, 1, 19.5, 19.5, 19.5, 65,
-            181.0, 181.0, 19.5
+            9.3,
+            181.0,
+            65,
+            181.0,
+            19.5,
+            19.5,
+            8.8,
+            1,
+            19.5,
+            19.5,
+            19.5,
+            65,
+            181.0,
+            181.0,
+            19.5
         )
     )
 }

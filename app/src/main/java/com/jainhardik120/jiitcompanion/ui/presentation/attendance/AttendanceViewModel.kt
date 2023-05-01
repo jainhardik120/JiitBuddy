@@ -42,10 +42,11 @@ class AttendanceViewModel @Inject constructor(
     }
 
     fun getRegistrations() {
+        token = savedStateHandle.get<String>("token") ?: return
+        user = Moshi.Builder().build().adapter(UserEntity::class.java).lenient()
+            .fromJson(savedStateHandle.get<String>("userInfo") ?: return)!!
+        state = state.copy(isOffline = (token=="offline"))
         viewModelScope.launch(Dispatchers.IO) {
-            token = savedStateHandle.get<String>("token") ?: return@launch
-            user = Moshi.Builder().build().adapter(UserEntity::class.java).lenient()
-                .fromJson(savedStateHandle.get<String>("userInfo") ?: return@launch)!!
             Log.d(TAG, "UserInfo: ${savedStateHandle.get<String>("userInfo")}")
             val result = repository.getAttendanceRegistrationDetails(
                 user.clientid,

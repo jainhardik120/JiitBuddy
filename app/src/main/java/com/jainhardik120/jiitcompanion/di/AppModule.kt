@@ -52,7 +52,7 @@ object AppModule {
 
     @Provides
     fun provideSharedPreferences(app: Application):SharedPreferences{
-        return app.getSharedPreferences("sharedpreferences", Context.MODE_PRIVATE)
+        return app.getSharedPreferences("com.jainhardik120.JIITCompanion.preferences", Context.MODE_PRIVATE)
     }
 
     @Named("FilesDir")
