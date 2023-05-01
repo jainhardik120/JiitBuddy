@@ -1,6 +1,7 @@
 package com.jainhardik120.jiitcompanion.ui.presentation
 
 import android.os.Bundle
+import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
@@ -18,6 +19,7 @@ import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.gms.ads.MobileAds
+import com.google.android.play.core.review.ReviewManagerFactory
 import com.jainhardik120.jiitcompanion.ui.components.BannerAdView
 import com.jainhardik120.jiitcompanion.ui.presentation.root.RootNavigationGraph
 import com.jainhardik120.jiitcompanion.ui.theme.JIITBuddyTheme
@@ -46,8 +48,18 @@ class MainActivity : ComponentActivity() {
                     modifier = Modifier.fillMaxSize(),
                     color = MaterialTheme.colorScheme.background
                 ) {
-                    RootNavigationGraph(navController = rememberNavController())
+                    RootNavigationGraph(navController = rememberNavController(), onReview = {showFeedbackDialog()})
                 }
+            }
+        }
+    }
+
+    private fun showFeedbackDialog(){
+        Log.d("MainActivity", "showFeedbackDialog: Called")
+        val reviewManager = ReviewManagerFactory.create(applicationContext)
+        reviewManager.requestReviewFlow().addOnCompleteListener{
+            if(it.isSuccessful){
+                reviewManager.launchReviewFlow(this, it.result)
             }
         }
     }

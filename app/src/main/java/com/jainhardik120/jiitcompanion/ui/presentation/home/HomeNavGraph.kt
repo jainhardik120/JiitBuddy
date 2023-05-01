@@ -18,7 +18,8 @@ fun HomeNavGraph(
     navController: NavHostController,
     paddingValues: PaddingValues,
     userInfo:String,
-    token:String
+    token:String,
+    onReview: ()-> Unit
 ) {
     NavHost(
         navController = navController,
@@ -43,7 +44,7 @@ fun HomeNavGraph(
                 Modifier
                     .fillMaxSize()
                     .padding(paddingValues)) {
-                AttendanceScreen()
+                AttendanceScreen(onReview={onReview()})
             }
         }
         composable(route = BottomBarScreen.ExamSchedule.route + "/{userInfo}/{token}",

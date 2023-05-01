@@ -52,6 +52,30 @@ class PortalRepositoryImpl @Inject constructor(
         return Resource.Success(data = data, true)
     }
 
+    override fun incrementSheetOpening() {
+        Log.d(TAG, "incrementSheetOpening: Incremented")
+        val openings = getOpenings()
+        with(sharedPreferences.edit()){
+            putInt("Openings", openings+1)
+            apply()
+        }
+    }
+
+    override fun getOpenings(): Int {
+        return sharedPreferences.getInt("Openings", 0)
+    }
+
+    override fun getIsOpened(): Boolean {
+        return sharedPreferences.getBoolean("IsOpened", false)
+    }
+
+    override fun updateOpened() {
+        with(sharedPreferences.edit()){
+            putBoolean("IsOpened", true)
+            apply()
+        }
+    }
+
     override suspend fun getSubjectsRegistrations(
         instituteid: String,
         studentid: String,

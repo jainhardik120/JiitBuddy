@@ -18,6 +18,14 @@ interface PortalRepository {
 
     fun lastUser(): Resource<Pair<String, String>>
 
+    fun incrementSheetOpening()
+
+    fun getOpenings():Int
+
+    fun getIsOpened():Boolean
+
+    fun updateOpened()
+
     fun getAttendanceWarning():Int
 
     fun updateAttendanceWarning(warning:Int)

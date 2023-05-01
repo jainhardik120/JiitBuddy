@@ -11,4 +11,5 @@ sealed class UiEvent {
     ):UiEvent()
     data class OpenUrl(val url:String)
         :UiEvent()
+    object LaunchReview:UiEvent()
 }

@@ -24,7 +24,7 @@ object PortalNavArguments {
 }
 
 @Composable
-fun RootNavigationGraph(navController: NavHostController) {
+fun RootNavigationGraph(navController: NavHostController, onReview: ()-> Unit) {
     NavHost(
         navController = navController,
         route = Graph.ROOT,
@@ -47,7 +47,8 @@ fun RootNavigationGraph(navController: NavHostController) {
                     navController.navigate(event.route)
                 },
                 userInfo = it.arguments?.getString("userInfo") ?: "",
-                token = it.arguments?.getString("token") ?: ""
+                token = it.arguments?.getString("token") ?: "",
+                onReview = { onReview() }
             )
         }
     }

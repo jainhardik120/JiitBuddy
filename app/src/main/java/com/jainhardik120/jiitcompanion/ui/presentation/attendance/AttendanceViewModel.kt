@@ -12,9 +12,12 @@ import com.jainhardik120.jiitcompanion.data.repository.model.AttendanceEntry
 import com.jainhardik120.jiitcompanion.domain.model.AttendanceItem
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
 import com.jainhardik120.jiitcompanion.util.Resource
+import com.jainhardik120.jiitcompanion.util.UiEvent
 import com.squareup.moshi.Moshi
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.channels.Channel
+import kotlinx.coroutines.flow.receiveAsFlow
 import kotlinx.coroutines.launch
 import java.lang.Integer.parseInt
 import java.time.LocalDate
@@ -34,11 +37,19 @@ class AttendanceViewModel @Inject constructor(
     private lateinit var token: String
     private lateinit var user: UserEntity
 
-    init {
+
+    private val _uiEvent = Channel<UiEvent>()
+    val uiEvent = _uiEvent.receiveAsFlow()
+
+    private fun sendUiEvent(event: UiEvent) {
         viewModelScope.launch {
-            val attendanceWarning = repository.getAttendanceWarning()
-            state= state.copy(attendanceWarning = attendanceWarning)
+            _uiEvent.send(event)
         }
+    }
+
+    init {
+        val attendanceWarning = repository.getAttendanceWarning()
+        state= state.copy(attendanceWarning = attendanceWarning)
     }
 
     fun getRegistrations() {
@@ -104,6 +115,14 @@ class AttendanceViewModel @Inject constructor(
 
             AttendanceScreenEvent.DismissBottomSheet -> {
                 state = state.copy(isBottomSheetExpanded = false)
+                if(!repository.getIsOpened()){
+                    repository.incrementSheetOpening()
+                    if(repository.getOpenings()>5){
+                        repository.updateOpened()
+                        sendUiEvent(UiEvent.LaunchReview)
+                    }
+                }
+
             }
 
             is AttendanceScreenEvent.OnDayClicked -> {

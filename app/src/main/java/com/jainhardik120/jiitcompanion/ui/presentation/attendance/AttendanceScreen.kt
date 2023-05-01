@@ -50,6 +50,7 @@ import com.jainhardik120.jiitcompanion.domain.model.AttendanceItem
 import com.jainhardik120.jiitcompanion.ui.presentation.attendance.AttendanceScreenComponents.CalendarHeader
 import com.jainhardik120.jiitcompanion.ui.presentation.attendance.AttendanceScreenComponents.Day
 import com.jainhardik120.jiitcompanion.ui.presentation.attendance.AttendanceScreenComponents.MonthAndWeekCalendarTitle
+import com.jainhardik120.jiitcompanion.util.UiEvent
 import com.kizitonwose.calendar.compose.CalendarLayoutInfo
 import com.kizitonwose.calendar.compose.CalendarState
 import com.kizitonwose.calendar.compose.HorizontalCalendar
@@ -73,7 +74,8 @@ import java.util.Locale
 @OptIn(ExperimentalMaterial3Api::class, ExperimentalComposeUiApi::class)
 @Composable
 fun AttendanceScreen(
-    viewModel: AttendanceViewModel = hiltViewModel()
+    viewModel: AttendanceViewModel = hiltViewModel(),
+    onReview: ()-> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
@@ -82,6 +84,11 @@ fun AttendanceScreen(
         viewModel.getRegistrations()
         if(viewModel.state.isOffline){
             Toast.makeText(context, "Old Attendance Data is being shown because app is offline", Toast.LENGTH_LONG).show()
+        }
+        viewModel.uiEvent.collect{
+            if(it is UiEvent.LaunchReview){
+                onReview()
+            }
         }
     }
     var expanded by remember { mutableStateOf(false) }

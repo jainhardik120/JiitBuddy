@@ -26,7 +26,8 @@ fun HomeScreen(
     onNavigateUp: (UiEvent.Navigate) -> Unit,
     navController: NavHostController = rememberNavController(),
     userInfo :String,
-    token:String
+    token:String,
+    onReview: ()-> Unit
 ) {
     val navBackStackEntry by navController.currentBackStackEntryAsState()
     val currentDestination = navBackStackEntry?.destination
@@ -94,7 +95,8 @@ fun HomeScreen(
         HomeNavGraph(
             navController = navController,
             paddingValues = it,
-            userInfo, token
+            userInfo, token,
+            onReview = {onReview()}
         )
     }
 
