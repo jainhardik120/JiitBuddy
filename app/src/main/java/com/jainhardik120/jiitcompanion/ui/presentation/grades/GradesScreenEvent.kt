@@ -5,5 +5,7 @@ import com.jainhardik120.jiitcompanion.domain.model.MarksRegistration
 sealed class GradesScreenEvent {
     object ButtonViewMarksClicked: GradesScreenEvent()
     object MarksDialogDismissed: GradesScreenEvent()
+    object BottomSheetDismissed: GradesScreenEvent()
     data class MarksClicked(val registration: MarksRegistration):GradesScreenEvent()
+    data class ResultItemClicked(val stynumber: Int):GradesScreenEvent()
 }

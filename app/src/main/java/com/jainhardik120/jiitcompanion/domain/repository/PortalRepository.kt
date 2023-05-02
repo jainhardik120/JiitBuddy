@@ -10,6 +10,7 @@ import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceRegist
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.data.repository.model.AttendanceEntry
 import com.jainhardik120.jiitcompanion.data.repository.model.RegisteredSubject
+import com.jainhardik120.jiitcompanion.data.repository.model.ResultDetailEntity
 import com.jainhardik120.jiitcompanion.data.repository.model.SubjectSemesterRegistrations
 import com.jainhardik120.jiitcompanion.domain.model.MarksRegistration
 
@@ -99,4 +100,8 @@ interface PortalRepository {
     ):Resource<String>
 
     suspend fun logOut(studentid: String)
+
+    suspend fun getResultDetail(
+        studentid: String, instituteid: String, stynumber: Int, token: String
+    ):Resource<List<ResultDetailEntity>>
 }

@@ -67,6 +67,7 @@ interface PortalApi {
     @POST("studentsttattview/getstudent-examschedule")
     suspend fun getExamSchedule(@Body body: RequestBody, @Header("Authorization") authorization: String) : String
 
-
+    @POST("studentsgpacgpa/getallsemesterdatadetail")
+    suspend fun resultDetail(@Body body: RequestBody, @Header("Authorization") authorization: String) : String
 
 }

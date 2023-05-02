@@ -100,6 +100,24 @@ class GradesViewModel @Inject constructor(
 
     }
 
+    private fun loadResultDetails(stynumber:Int){
+        viewModelScope.launch(Dispatchers.IO) {
+            val result = repository.getResultDetail(user.memberid, user.instituteValue, stynumber, token)
+            when(result){
+                is Resource.Success->{
+                    Log.d(TAG, "loadResultDetails: ${result.data.toString()}")
+                    if(result.data!=null){
+                        state = state.copy(detailData = result.data, isDetailDataReady = true)
+                    }
+                }
+                is Resource.Error->{
+                    
+                }
+            }
+        }
+    }
+
+
     fun onEvent(event: GradesScreenEvent){
         when(event){
             is GradesScreenEvent.ButtonViewMarksClicked ->{
@@ -115,6 +133,16 @@ class GradesViewModel @Inject constructor(
             is GradesScreenEvent.MarksDialogDismissed -> {
                 state = state.copy(isMarksDialogOpened = false)
             }
+
+            is GradesScreenEvent.ResultItemClicked -> {
+                state = state.copy(isBottomSheetExpanded = true, isDetailDataReady = false)
+                loadResultDetails(event.stynumber)
+            }
+
+            is GradesScreenEvent.BottomSheetDismissed -> {
+                state = state.copy(isBottomSheetExpanded = false)
+            }
+
         }
     }
 }

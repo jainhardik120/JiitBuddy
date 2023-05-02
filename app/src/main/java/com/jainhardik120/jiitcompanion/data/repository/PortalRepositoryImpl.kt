@@ -13,6 +13,7 @@ import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.data.remote.PortalApi
 import com.jainhardik120.jiitcompanion.data.repository.model.AttendanceEntry
 import com.jainhardik120.jiitcompanion.data.repository.model.RegisteredSubject
+import com.jainhardik120.jiitcompanion.data.repository.model.ResultDetailEntity
 import com.jainhardik120.jiitcompanion.data.repository.model.SubjectSemesterRegistrations
 import com.jainhardik120.jiitcompanion.domain.model.MarksRegistration
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
@@ -207,6 +208,42 @@ class PortalRepositoryImpl @Inject constructor(
             putInt("attendance_warning", warning)
             apply()
         }
+    }
+
+    override suspend fun getResultDetail(
+        studentid: String,
+        instituteid: String,
+        stynumber: Int,
+        token: String
+    ): Resource<List<ResultDetailEntity>> {
+        var errorMessage: String = ""
+        try {
+            val payload = JSONObject(
+                "{\"instituteid\":\"${
+                    instituteid
+                }\",\"studentid\":\"${studentid}\",\"stynumber\":\"${
+                    stynumber
+                }\"}"
+            )
+            val registrationData =
+                api.resultDetail(RequestBody(payload), "Bearer $token")
+            val data = JSONObject(registrationData).getJSONObject("response").getJSONArray("semesterList")
+            val adapter = Moshi.Builder().build().adapter(ResultDetailEntity::class.java).lenient()
+            val resultList = List(data.length()) {
+                adapter.fromJson(data.getJSONObject(it).toString())!!
+            }
+            return Resource.Success(data = resultList, isOnline = true)
+        } catch (e: HttpException) {
+            Log.d(TAG, "attendanceRegistration: HTTP Exception : ${e.message()}")
+            errorMessage = e.message()
+        } catch (e: IOException) {
+            Log.d(TAG, "attendanceRegistration: IO Exception : ${e.message}")
+            errorMessage = e.message.toString()
+        } catch (e: Exception) {
+            Log.d(TAG, "attendanceRegistration: Kotlin Exception : ${e.message}")
+            errorMessage = e.message.toString()
+        }
+        return Resource.Error(errorMessage)
     }
 
     override suspend fun logOut(studentid: String) {
