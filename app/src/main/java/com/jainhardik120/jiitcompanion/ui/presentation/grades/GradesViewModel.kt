@@ -66,8 +66,7 @@ class GradesViewModel @Inject constructor(
 
     private fun loadMarksRegistrations(){
         viewModelScope.launch(Dispatchers.IO){
-            val result = repository.getMarksRegistration(user.instituteValue, user.memberid, token)
-            when(result){
+            when(val result = repository.getMarksRegistration(user.instituteValue, user.memberid, token)){
                 is Resource.Success ->{
                     if(result.data!=null){
                         state= state.copy(marksRegistrations = result.data, isMarksRegistrationsLoaded = true)
@@ -83,8 +82,7 @@ class GradesViewModel @Inject constructor(
     private fun downloadAndOpenMarksPdf(registration : MarksRegistration){
         Log.d(TAG, "downloadAndOpenMarksPdf: ${registration.registrationcode}")
         viewModelScope.launch(Dispatchers.IO) {
-            val result = repository.getMarksPdf(user.memberid, user.instituteValue, registration.registrationid, registration.registrationcode, token)
-            when(result){
+            when(val result = repository.getMarksPdf(user.memberid, user.instituteValue, registration.registrationid, registration.registrationcode, token)){
                 is Resource.Success->{
                     Log.d(TAG, "downloadAndOpenMarksPdf: ${result.data}")
                     if(result.data!=null){
@@ -102,8 +100,7 @@ class GradesViewModel @Inject constructor(
 
     private fun loadResultDetails(stynumber:Int){
         viewModelScope.launch(Dispatchers.IO) {
-            val result = repository.getResultDetail(user.memberid, user.instituteValue, stynumber, token)
-            when(result){
+            when(val result = repository.getResultDetail(user.memberid, user.instituteValue, stynumber, token)){
                 is Resource.Success->{
                     Log.d(TAG, "loadResultDetails: ${result.data.toString()}")
                     if(result.data!=null){

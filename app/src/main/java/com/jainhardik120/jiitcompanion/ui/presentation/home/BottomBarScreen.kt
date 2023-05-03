@@ -1,8 +1,13 @@
 package com.jainhardik120.jiitcompanion.ui.presentation.home
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.*
+import androidx.compose.material.icons.filled.Event
+import androidx.compose.material.icons.filled.Home
+import androidx.compose.material.icons.filled.Insights
+import androidx.compose.material.icons.filled.Monitor
+import androidx.compose.material.icons.filled.School
 import androidx.compose.ui.graphics.vector.ImageVector
+
 
 sealed class BottomBarScreen(
     val route: String,

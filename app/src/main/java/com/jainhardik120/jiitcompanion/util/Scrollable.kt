@@ -12,12 +12,6 @@ import androidx.compose.ui.MotionDurationScale
 import kotlinx.coroutines.withContext
 import kotlin.math.abs
 
-/**
- * FlingBehavior that always uses the default motion scale.
- *
- * This makes the scrolling animation works like View's lists
- * when "Remove animation" settings is on.
- */
 @Composable
 fun flingBehaviorIgnoringMotionScale(): FlingBehavior {
     val flingSpec = rememberSplineBasedDecay<Float>()
@@ -27,7 +21,6 @@ fun flingBehaviorIgnoringMotionScale(): FlingBehavior {
 }
 
 private val DefaultMotionDurationScale = object : MotionDurationScale {
-    // Use default motion scale factor
     override val scaleFactor: Float = 1f
 }
 

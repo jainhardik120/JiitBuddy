@@ -1,13 +1,21 @@
 package com.jainhardik120.jiitcompanion.ui.presentation.home
 
-import androidx.compose.foundation.layout.*
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.Logout
 import androidx.compose.material.icons.filled.Warning
-import androidx.compose.material.icons.outlined.Logout
-import androidx.compose.material.icons.outlined.Warning
-import androidx.compose.material3.*
-import androidx.compose.runtime.*
+import androidx.compose.material3.AlertDialog
+import androidx.compose.material3.CenterAlignedTopAppBar
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.Icon
+import androidx.compose.material3.IconButton
+import androidx.compose.material3.NavigationBar
+import androidx.compose.material3.NavigationBarItem
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.Text
+import androidx.compose.material3.TextButton
+import androidx.compose.runtime.Composable
+import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.hilt.navigation.compose.hiltViewModel
 import androidx.navigation.NavDestination.Companion.hierarchy
@@ -58,13 +66,13 @@ fun HomeScreen(
                 IconButton(onClick = {
                     viewModel.onEvent(HomeScreenEvent.onOfflineAlertClicked)
                 }) {
-                    Icon(Icons.Outlined.Warning, contentDescription = "Warning Icon")
+                    Icon(Icons.Filled.Warning, contentDescription = "Warning Icon")
                 }
             }
             IconButton(onClick = {
                 viewModel.onEvent(HomeScreenEvent.onLogOutClicked)
             }) {
-                Icon(Icons.Outlined.Logout, contentDescription = "Logout Icon")
+                Icon(Icons.Filled.Logout, contentDescription = "Logout Icon")
             }
         })
     }, bottomBar = {

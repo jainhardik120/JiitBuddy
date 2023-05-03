@@ -49,8 +49,6 @@ import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
 import coil.compose.AsyncImage
 import com.jainhardik120.jiitcompanion.data.remote.model.FeedItem
-import com.jainhardik120.jiitcompanion.ui.components.BannerAdView
-import com.jainhardik120.jiitcompanion.ui.components.NativeAdView
 import com.jainhardik120.jiitcompanion.util.UiEvent
 import com.jainhardik120.jiitcompanion.util.drawVerticalScrollbar
 import com.jainhardik120.jiitcompanion.util.flingBehaviorIgnoringMotionScale

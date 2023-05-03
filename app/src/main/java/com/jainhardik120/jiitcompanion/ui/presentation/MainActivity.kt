@@ -5,10 +5,7 @@ import android.util.Log
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.compose.foundation.isSystemInDarkTheme
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.surfaceColorAtElevation
@@ -20,7 +17,6 @@ import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import com.google.android.gms.ads.MobileAds
 import com.google.android.play.core.review.ReviewManagerFactory
-import com.jainhardik120.jiitcompanion.ui.components.BannerAdView
 import com.jainhardik120.jiitcompanion.ui.presentation.root.RootNavigationGraph
 import com.jainhardik120.jiitcompanion.ui.theme.JIITBuddyTheme
 import dagger.hilt.android.AndroidEntryPoint

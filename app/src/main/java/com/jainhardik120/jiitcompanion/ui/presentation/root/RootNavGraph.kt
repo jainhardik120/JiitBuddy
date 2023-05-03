@@ -6,10 +6,8 @@ import androidx.navigation.NavType
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.navArgument
-import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.ui.presentation.home.HomeScreen
 import com.jainhardik120.jiitcompanion.ui.presentation.login.LoginScreen
-import com.squareup.moshi.Moshi
 
 object PortalNavArguments {
     var arguments = listOf(
