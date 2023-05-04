@@ -20,11 +20,14 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
@@ -53,6 +56,7 @@ fun GradesScreen(
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
+    val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(key1 = true) {
         viewModel.initialize()
         viewModel.uiEvent.collect {
@@ -74,14 +78,15 @@ fun GradesScreen(
                         Log.d("myApp", "onCreateView: $e")
                     }
                 }
-
+                is UiEvent.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(it.message)}
                 else -> {}
             }
         }
     }
     val state = viewModel.state
     if (!state.isOffline) {
-        Scaffold(floatingActionButton = {
+        Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState)},floatingActionButton = {
             ExtendedFloatingActionButton(
                 onClick = { viewModel.onEvent(GradesScreenEvent.ButtonViewMarksClicked) },
                 shape = MaterialTheme.shapes.large,
@@ -286,7 +291,7 @@ fun ResultItem(resultEntity: ResultEntity, onClick: () -> Unit) {
                 )
             }
             Row(Modifier.fillMaxWidth()) {
-                Text(text = "Grade Points : ${resultEntity.earnedgradepoints}/${resultEntity.totalregisteredcredit * 10}")
+                Text(text = "Grade Points : ${resultEntity.earnedgradepoints}/${resultEntity.registeredcredit * 10}")
             }
         }
     }

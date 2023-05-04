@@ -82,6 +82,7 @@ class PortalRepositoryImpl @Inject constructor(
         studentid: String,
         token: String
     ): Resource<List<SubjectSemesterRegistrations>> {
+        var message = ""
         try {
             val payload = JSONObject(
                 "{\"instituteid\":\"${instituteid}\",\"studentid\":\"${studentid}\"}\n"
@@ -98,12 +99,15 @@ class PortalRepositoryImpl @Inject constructor(
             return Resource.Success(data = resultList, true)
         } catch (e: HttpException) {
             Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
+            message = e.message()?:""
         } catch (e: IOException) {
+            message = e.message?:""
             Log.d(TAG, "loginUser: IO Exception : ${e.message}")
         } catch (e: Exception) {
+            message = e.message?:""
             Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
         }
-        return Resource.Error("Not Found")
+        return Resource.Error(message)
     }
 
     override suspend fun getSubjects(
@@ -112,6 +116,7 @@ class PortalRepositoryImpl @Inject constructor(
         studentid: String,
         token: String
     ): Resource<List<RegisteredSubject>> {
+        var message = ""
         try {
             val payload = JSONObject(
                 "{\"instituteid\":\"${instituteid}\",\"registrationid\":\"${registrationid}\",\"studentid\":\"${studentid}\"}\n"
@@ -128,12 +133,15 @@ class PortalRepositoryImpl @Inject constructor(
             return Resource.Success(data = resultList, true)
         } catch (e: HttpException) {
             Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
+            message = e.message()?:""
         } catch (e: IOException) {
+            message = e.message?:""
             Log.d(TAG, "loginUser: IO Exception : ${e.message}")
         } catch (e: Exception) {
+            message = e.message?:""
             Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
         }
-        return Resource.Error("Not Found")
+        return Resource.Error(message)
     }
 
     override suspend fun updateUserLastAttendanceRegistrationId(
@@ -148,6 +156,7 @@ class PortalRepositoryImpl @Inject constructor(
         studentid: String,
         token: String
     ): Resource<List<MarksRegistration>> {
+        var message = ""
         try {
             val payload = JSONObject(
                 "{\"instituteid\":\"${instituteid}\",\"studentid\":\"${studentid}\"}\n"
@@ -164,12 +173,15 @@ class PortalRepositoryImpl @Inject constructor(
             return Resource.Success(data = resultList, true)
         } catch (e: HttpException) {
             Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
+            message = e.message()?:""
         } catch (e: IOException) {
+            message = e.message?:""
             Log.d(TAG, "loginUser: IO Exception : ${e.message}")
         } catch (e: Exception) {
+            message = e.message?:""
             Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
         }
-        return Resource.Error("Not Found")
+        return Resource.Error(message)
     }
 
     override suspend fun getMarksPdf(
@@ -276,15 +288,15 @@ class PortalRepositoryImpl @Inject constructor(
             var jsonObject =
                 JSONObject("{\"otppwd\":\"PWD\",\"username\":\"$enrollmentno\",\"passwordotpvalue\":\"$password\",\"Modulename\":\"STUDENTMODULE\"}")
             val regdata = api.login(RequestBody(jsonObject), "Bearer")
+            val loginDetails =
+                JSONObject(regdata).getJSONObject("response").getJSONObject("regdata")
+            token = loginDetails.getString("token")
             with(sharedPreferences.edit()) {
                 clear()
                 putString("LastEnroll", enrollmentno)
                 putString("LastPass", password)
                 apply()
             }
-            val loginDetails =
-                JSONObject(regdata).getJSONObject("response").getJSONObject("regdata")
-            token = loginDetails.getString("token")
             Log.d(TAG, "login Success: $regdata")
             jsonObject = JSONObject(
                 "{\"clientid\":\"SOAU\",\"memberid\":\"${loginDetails.getString("memberid")}\",\"instituteid\":\"${
@@ -300,6 +312,7 @@ class PortalRepositoryImpl @Inject constructor(
                 .getJSONObject("generalinformation")
             val loggedInUser = UserEntity(
                 password,
+                enrollmentno,
                 loginDetails.getString("clientid"),
                 loginDetails.getString("enrollmentno"),
                 loginDetails.getString("memberid"),
@@ -320,6 +333,7 @@ class PortalRepositoryImpl @Inject constructor(
                 generalInformation.getString("studentpersonalemailid")?:"",
                 requiredUser?.lastAttendanceRegistrationId
             )
+            Log.d(TAG, "loginUser: ${loggedInUser.toString()}")
             dao.insertUser(loggedInUser)
             isOnline = true
         } catch (e: HttpException) {
@@ -336,6 +350,7 @@ class PortalRepositoryImpl @Inject constructor(
             errorMessage = e.message?:e.printStackTrace().toString()
         }
         val newAllUsers = dao.getUserByEnrollPass(enrollmentno, password)
+        Log.d(TAG, "loginUser: $newAllUsers")
         if (newAllUsers.isNotEmpty()) {
             requiredUser = newAllUsers[0]
         }
@@ -515,6 +530,7 @@ class PortalRepositoryImpl @Inject constructor(
         membertype: String,
         token: String
     ): Resource<List<StudentAttendanceRegistrationEntity>> {
+        var message = ""
         val oldData = dao.getStudentAttendanceRegistrationDetails(studentid)
         try {
             val payload = JSONObject(
@@ -534,16 +550,20 @@ class PortalRepositoryImpl @Inject constructor(
             dao.insertAttendanceRegistrations(registrationList)
             return Resource.Success(data = registrationList, true)
         } catch (e: HttpException) {
-            Log.d(TAG, "attendanceRegistration: HTTP Exception : ${e.message()}")
+            Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
+            message = e.message()?:""
         } catch (e: IOException) {
-            Log.d(TAG, "attendanceRegistration: IO Exception : ${e.message}")
+            message = e.message?:""
+            Log.d(TAG, "loginUser: IO Exception : ${e.message}")
         } catch (e: Exception) {
-            Log.d(TAG, "attendanceRegistration: Kotlin Exception : ${e.message}")
+            message = e.message?:""
+            Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
         }
+
         if (oldData.isNotEmpty()) {
             return Resource.Success(data = oldData, false)
         }
-        return Resource.Error("Not Found")
+        return Resource.Error(message)
     }
 
     override suspend fun getAttendanceDetails(
@@ -554,6 +574,7 @@ class PortalRepositoryImpl @Inject constructor(
         registrationid: String,
         token: String
     ): Resource<List<StudentAttendanceEntity>> {
+        var message = ""
         val oldData = dao.getStudentAttendanceOfRegistrationId(studentid, registrationid)
         try {
             val payload = JSONObject(
@@ -625,17 +646,20 @@ class PortalRepositoryImpl @Inject constructor(
             }
             dao.insertAttendanceEntities(resultList)
             return Resource.Success(data = resultList, true)
-        } catch (e: HttpException) {
-            Log.d(TAG, "getStudentResultData: HTTP Exception : ${e.message()}")
+        }  catch (e: HttpException) {
+            Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
+            message = e.message()?:""
         } catch (e: IOException) {
-            Log.d(TAG, "getStudentResultData: IO Exception : ${e.message}")
+            message = e.message?:""
+            Log.d(TAG, "loginUser: IO Exception : ${e.message}")
         } catch (e: Exception) {
-            Log.d(TAG, "getStudentResultData: Kotlin Exception : ${e.message}")
+            message = e.message?:""
+            Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
         }
         if (oldData.isNotEmpty()) {
             return Resource.Success(data = oldData, false)
         }
-        return Resource.Error(message = "Not Found")
+        return Resource.Error(message = message)
     }
 
     override suspend fun getStudentResultData(
@@ -643,6 +667,7 @@ class PortalRepositoryImpl @Inject constructor(
         studentid: String,
         token: String
     ): Resource<List<ResultEntity>> {
+        var message = ""
         try {
 
             val loadingData = api.sgpaLoadData(
@@ -668,16 +693,17 @@ class PortalRepositoryImpl @Inject constructor(
                 adapter.fromJson(array.getJSONObject(it).toString())!!
             }
             return Resource.Success(data = resultList, true)
-        } catch (e: HttpException) {
-            Log.d(TAG, "getStudentResultData: HTTP Exception : ${e.message()}")
-
+        }  catch (e: HttpException) {
+            Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
+            message = e.message()?:""
         } catch (e: IOException) {
-            Log.d(TAG, "getStudentResultData: IO Exception : ${e.message}")
-
+            message = e.message?:""
+            Log.d(TAG, "loginUser: IO Exception : ${e.message}")
         } catch (e: Exception) {
-            Log.d(TAG, "getStudentResultData: Kotlin Exception : ${e.message}")
+            message = e.message?:""
+            Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
         }
-        return Resource.Error(message = "Not Found")
+        return Resource.Error(message)
     }
 
     private fun RequestBody(jsonObject: JSONObject): RequestBody {
@@ -694,6 +720,7 @@ class PortalRepositoryImpl @Inject constructor(
         cmpidkey: String,
         token: String
     ): Resource<List<AttendanceEntry>> {
+        var message = ""
         try {
             val postParams = JSONObject(
                 "{\"clientid\":\"${
@@ -716,15 +743,16 @@ class PortalRepositoryImpl @Inject constructor(
                 adapter.fromJson(array.getJSONObject(it).toString())!!
             }
             return Resource.Success(data = resultList, isOnline = true)
-        } catch (e: HttpException) {
-            Log.d(TAG, "getStudentResultData: HTTP Exception : ${e.message()}")
-
+        }  catch (e: HttpException) {
+            Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
+            message = e.message()?:""
         } catch (e: IOException) {
-            Log.d(TAG, "getStudentResultData: IO Exception : ${e.message}")
-
+            message = e.message?:""
+            Log.d(TAG, "loginUser: IO Exception : ${e.message}")
         } catch (e: Exception) {
-            Log.d(TAG, "getStudentResultData: Kotlin Exception : ${e.printStackTrace()}")
+            message = e.message?:""
+            Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
         }
-        return Resource.Error(message = "Unknown")
+        return Resource.Error(message)
     }
 }

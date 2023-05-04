@@ -57,7 +57,7 @@ class GradesViewModel @Inject constructor(
                         state = result.data?.let { state.copy(results = it) }!!
                     }
                     is Resource.Error -> {
-
+                        result.message?.let { UiEvent.ShowSnackbar(it) }?.let { sendUiEvent(it) }
                     }
                 }
             }
@@ -73,7 +73,7 @@ class GradesViewModel @Inject constructor(
                     }
                 }
                 is Resource.Error ->{
-
+                    result.message?.let { UiEvent.ShowSnackbar(it) }?.let { sendUiEvent(it) }
                 }
             }
         }
@@ -91,6 +91,7 @@ class GradesViewModel @Inject constructor(
 
                 } 
                 is Resource.Error->{
+                    result.message?.let { UiEvent.ShowSnackbar(it) }?.let { sendUiEvent(it) }
                     Log.d(TAG, "downloadAndOpenMarksPdf: ${result.message}")
                 }
             }
@@ -108,7 +109,7 @@ class GradesViewModel @Inject constructor(
                     }
                 }
                 is Resource.Error->{
-                    
+                    result.message?.let { UiEvent.ShowSnackbar(it) }?.let { sendUiEvent(it) }
                 }
             }
         }

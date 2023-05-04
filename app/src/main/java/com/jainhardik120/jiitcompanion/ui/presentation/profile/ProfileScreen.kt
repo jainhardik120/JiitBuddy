@@ -25,10 +25,14 @@ import com.jainhardik120.jiitcompanion.ui.components.icons.NavigateNext
 import com.jainhardik120.jiitcompanion.ui.components.icons.OpenInNew
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.material3.surfaceColorAtElevation
 import androidx.compose.runtime.Composable
@@ -66,6 +70,7 @@ fun ProfileScreen(
 ) {
     val state = viewModel.state
     val uriHandler = LocalUriHandler.current
+    val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(key1 = true) {
         viewModel.initialize()
         viewModel.uiEvent.collect {
@@ -75,6 +80,9 @@ fun ProfileScreen(
                     uriHandler.openUri(it.url)
                 }
 
+                is UiEvent.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(it.message)
+                }
                 else -> {
 
                 }
@@ -86,71 +94,75 @@ fun ProfileScreen(
 
     val screenWidth = configuration.screenWidthDp.dp
 
-    ScrollbarLazyColumn(content = {
-        item {
-            if (state.user != null) {
-                val userEntity = state.user
-                Card(
-                    modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
-                    onClick = {},
-                    shape = RoundedCornerShape(16.dp),
-                    colors = CardDefaults.cardColors(
-                        containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
-                            3.dp
+    Scaffold(
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) {
+
+        ScrollbarLazyColumn(Modifier.padding(it), content = {
+            item {
+                if (state.user != null) {
+                    val userEntity = state.user
+                    Card(
+                        modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
+                        onClick = {},
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(
+                            containerColor = MaterialTheme.colorScheme.surfaceColorAtElevation(
+                                3.dp
+                            )
                         )
-                    )
-                ) {
-                    Column(
-                        Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp)
                     ) {
-                        Text(text = userEntity.name, style = MaterialTheme.typography.bodyLarge)
-                        Text(
-                            text = userEntity.enrollmentno,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Text(
-                            text = userEntity.instituteLabel,
-                            style = MaterialTheme.typography.bodyLarge
-                        )
-                        Text(
-                            text = "${userEntity.programcode} ${userEntity.branch} ${userEntity.admissionyear} ${userEntity.batch}",
-                            style = MaterialTheme.typography.bodyLarge
-                        )
+                        Column(
+                            Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Text(text = userEntity.name, style = MaterialTheme.typography.bodyLarge)
+                            Text(
+                                text = userEntity.enrollmentno,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Text(
+                                text = userEntity.instituteLabel,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                            Text(
+                                text = "${userEntity.programcode} ${userEntity.branch} ${userEntity.admissionyear} ${userEntity.batch}",
+                                style = MaterialTheme.typography.bodyLarge
+                            )
+                        }
                     }
                 }
             }
-        }
 //        item{
 //            Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.Center) {
 //                BannerAdView(true)
 //                NativeAdView(true)
 //            }
 //        }
-        item {
-            if (state.feedItems.isNotEmpty()) {
-                Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
-                    FeedCard(
-                        feedItem = state.feedItems[state.currentItemIndex],
-                        screenWidth - 32.dp,
-                        onPrevClicked = { viewModel.onEvent(ProfileScreenEvent.PrevButtonClicked) },
-                        onNextClicked = { viewModel.onEvent(ProfileScreenEvent.NextButtonClicked) },
-                        isPrevAvailable = state.isPrevAvailable,
-                        isNextAvailable = state.isNextAvailable,
-                        onItemClicked = {
-                            viewModel.onEvent(ProfileScreenEvent.OpenInBrowserClicked)
-                        }
-                    )
+            item {
+                if (state.feedItems.isNotEmpty()) {
+                    Box(modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp)) {
+                        FeedCard(
+                            feedItem = state.feedItems[state.currentItemIndex],
+                            screenWidth - 32.dp,
+                            onPrevClicked = { viewModel.onEvent(ProfileScreenEvent.PrevButtonClicked) },
+                            onNextClicked = { viewModel.onEvent(ProfileScreenEvent.NextButtonClicked) },
+                            isPrevAvailable = state.isPrevAvailable,
+                            isNextAvailable = state.isNextAvailable,
+                            onItemClicked = {
+                                viewModel.onEvent(ProfileScreenEvent.OpenInBrowserClicked)
+                            }
+                        )
+                    }
                 }
             }
-        }
-        item {
-            Signature()
-        }
+            item {
+                Signature()
+            }
 
 
-    })
+        })
+    }
 }
 
 @Composable
@@ -206,7 +218,11 @@ fun Signature() {
                 .fillMaxWidth()
                 .padding(16.dp)
         ) {
-            Text(text = "Crafted with " + String(Character.toChars(0x2764)) + " by Hardik Jain", Modifier.fillMaxWidth(), textAlign = TextAlign.Center)
+            Text(
+                text = "Crafted with " + String(Character.toChars(0x2764)) + " by Hardik Jain",
+                Modifier.fillMaxWidth(),
+                textAlign = TextAlign.Center
+            )
             Row(
                 modifier = Modifier
                     .fillMaxWidth(),

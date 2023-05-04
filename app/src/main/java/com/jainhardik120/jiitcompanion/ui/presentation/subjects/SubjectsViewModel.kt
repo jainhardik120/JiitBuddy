@@ -74,7 +74,7 @@ class SubjectsViewModel @Inject constructor(
                             }
                         }
                         is Resource.Error->{
-                            
+                            result.message?.let { UiEvent.ShowSnackbar(it) }?.let { sendUiEvent(it) }
                         }
                     }
                 }
@@ -93,7 +93,7 @@ class SubjectsViewModel @Inject constructor(
                     }
                 }
                 is Resource.Error->{
-                    
+                    result.message?.let { UiEvent.ShowSnackbar(it) }?.let { sendUiEvent(it) }
                 }
             }
         }

@@ -23,6 +23,8 @@ import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -40,14 +42,29 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jainhardik120.jiitcompanion.domain.model.SubjectItem
+import com.jainhardik120.jiitcompanion.util.UiEvent
 
 @Composable
 fun SubjectsScreen(
     viewModel: SubjectsViewModel = hiltViewModel()
 ) {
+    val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(key1 = true) {
         viewModel.initialize()
+        viewModel.uiEvent.collect {
+            when (it) {
+                is UiEvent.ShowSnackbar -> {
+                    snackbarHostState.showSnackbar(it.message)
+                }
+
+                else -> {
+
+                }
+
+            }
+        }
     }
+
     var expanded by remember { mutableStateOf(false) }
     var dropMenuSize by remember {
         mutableStateOf(Size.Zero)
@@ -58,7 +75,10 @@ fun SubjectsScreen(
         Icons.Filled.KeyboardArrowDown
     val state = viewModel.state
     if (!state.isOffline) {
-        Scaffold(Modifier.fillMaxSize()) {
+        Scaffold(
+            snackbarHost = { SnackbarHost(hostState = snackbarHostState) },
+            modifier = Modifier.fillMaxSize()
+        ) {
             Column(
                 Modifier
                     .padding(it)
@@ -132,15 +152,18 @@ fun SubjectsScreen(
 
 @Composable
 fun SubjectItem(item: SubjectItem) {
-    Row(modifier = Modifier
-        .fillMaxWidth()
-        .padding(8.dp)) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
         Column(
             Modifier
                 .fillMaxWidth()
-                .weight(1f)) {
+                .weight(1f)
+        ) {
             Row(Modifier.fillMaxWidth()) {
-                Column(){
+                Column() {
                     Text(text = item.subjectdesc)
                     Text(text = item.subjectcode)
                 }
@@ -148,14 +171,28 @@ fun SubjectItem(item: SubjectItem) {
             Spacer(Modifier.height(4.dp))
             Row(Modifier.fillMaxWidth()) {
                 Column() {
-                    for(i in item.faculties){
+                    for (i in item.faculties) {
                         Row(Modifier.fillMaxWidth()) {
                             Text(
-                                text = "${when (i.subjectcomponentcode) {
-                                    "L" -> {"Lecture"}
-                                    "T" -> {"Tutorial"}
-                                    "P" -> {"Practical"}
-                                    else -> {i.subjectcomponentcode}}} : ${i.employeename}"
+                                text = "${
+                                    when (i.subjectcomponentcode) {
+                                        "L" -> {
+                                            "Lecture"
+                                        }
+
+                                        "T" -> {
+                                            "Tutorial"
+                                        }
+
+                                        "P" -> {
+                                            "Practical"
+                                        }
+
+                                        else -> {
+                                            i.subjectcomponentcode
+                                        }
+                                    }
+                                } : ${i.employeename}"
                             )
                         }
                     }
@@ -163,7 +200,10 @@ fun SubjectItem(item: SubjectItem) {
             }
         }
         Spacer(modifier = Modifier.width(8.dp))
-        Column(horizontalAlignment = Alignment.CenterHorizontally, verticalArrangement = Arrangement.Center) {
+        Column(
+            horizontalAlignment = Alignment.CenterHorizontally,
+            verticalArrangement = Arrangement.Center
+        ) {
             Text(text = item.credits.toString(), style = MaterialTheme.typography.headlineLarge)
         }
     }

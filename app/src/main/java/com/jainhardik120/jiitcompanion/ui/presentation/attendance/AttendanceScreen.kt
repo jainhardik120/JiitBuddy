@@ -36,6 +36,9 @@ import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -107,6 +110,7 @@ fun AttendanceScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
+    val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(key1 = true) {
         viewModel.getRegistrations()
         if (viewModel.state.isOffline) {
@@ -117,8 +121,16 @@ fun AttendanceScreen(
             ).show()
         }
         viewModel.uiEvent.collect {
-            if (it is UiEvent.LaunchReview) {
-                onReview()
+            when(it){
+                is UiEvent.LaunchReview->{
+                    onReview()
+                }
+                is UiEvent.ShowSnackbar->{
+                    snackbarHostState.showSnackbar(it.message)
+                }
+                else -> {
+
+                }
             }
         }
     }
@@ -135,96 +147,99 @@ fun AttendanceScreen(
     else
         Icons.Filled.KeyboardArrowDown
 
-    Column(Modifier.fillMaxSize()) {
-        Column(
-            Modifier
-                .fillMaxWidth()
-                .padding(12.dp)
-        ) {
-            Row(Modifier.fillMaxWidth()) {
-                Column(Modifier.fillMaxWidth(0.7f)) {
-                    OutlinedTextField(
-                        value = viewModel.state.selectedSemesterCode,
-                        onValueChange = {
+    Scaffold(modifier = Modifier.fillMaxSize(), snackbarHost = { SnackbarHost(hostState = snackbarHostState)}) {padding->
+        Column(Modifier.fillMaxSize().padding(padding)) {
+            Column(
+                Modifier
+                    .fillMaxWidth()
+                    .padding(12.dp)
+            ) {
+                Row(Modifier.fillMaxWidth()) {
+                    Column(Modifier.fillMaxWidth(0.7f)) {
+                        OutlinedTextField(
+                            value = viewModel.state.selectedSemesterCode,
+                            onValueChange = {
 
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .onGloballyPositioned { layoutCoordinates ->
-                                dropMenuSize = layoutCoordinates.size.toSize()
-                            }
-                            .clickable(enabled = true) {
-                                expanded = !expanded
                             },
-                        label = { Text(text = "Semester") },
-                        trailingIcon = {
-                            IconButton(onClick = { expanded = !expanded }) {
-                                Icon(icon, "Expand/Collapse Menu")
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .onGloballyPositioned { layoutCoordinates ->
+                                    dropMenuSize = layoutCoordinates.size.toSize()
+                                }
+                                .clickable(enabled = true) {
+                                    expanded = !expanded
+                                },
+                            label = { Text(text = "Semester") },
+                            trailingIcon = {
+                                IconButton(onClick = { expanded = !expanded }) {
+                                    Icon(icon, "Expand/Collapse Menu")
+                                }
+                            }, readOnly = true
+                        )
+                        DropdownMenu(
+                            expanded = expanded,
+                            onDismissRequest = { expanded = false },
+                            modifier = Modifier
+                                .width(with(LocalDensity.current) { dropMenuSize.width.toDp() })
+                        ) {
+                            viewModel.state.registrations.forEach {
+                                DropdownMenuItem(
+                                    text = { Text(text = it.registrationcode) },
+                                    onClick = {
+                                        viewModel.onEvent(AttendanceScreenEvent.OnSemesterChanged(it))
+                                        expanded = false
+                                    })
                             }
-                        }, readOnly = true
-                    )
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        modifier = Modifier
-                            .width(with(LocalDensity.current) { dropMenuSize.width.toDp() })
-                    ) {
-                        viewModel.state.registrations.forEach {
-                            DropdownMenuItem(
-                                text = { Text(text = it.registrationcode) },
-                                onClick = {
-                                    viewModel.onEvent(AttendanceScreenEvent.OnSemesterChanged(it))
-                                    expanded = false
-                                })
                         }
                     }
+                    Spacer(Modifier.width(8.dp))
+                    OutlinedTextField(
+                        value = if (viewModel.state.attendanceWarning == 0) {
+                            ""
+                        } else {
+                            viewModel.state.attendanceWarning.toString()
+                        },
+                        onValueChange = {
+                            viewModel.onEvent(AttendanceScreenEvent.OnAttendanceWarningTextChanged(it))
+                        },
+                        label = {
+                            Text(text = "Criteria")
+                        },
+                        keyboardOptions = KeyboardOptions.Default.copy(
+                            imeAction = ImeAction.Done,
+                            keyboardType = KeyboardType.Number
+                        ),
+                        keyboardActions = KeyboardActions(
+                            onDone = {
+                                keyboardController?.hide()
+                                focusManager.clearFocus()
+                                viewModel.onEvent(
+                                    AttendanceScreenEvent.OnKeyboardDone
+                                )
+                            }
+                        ),
+                        singleLine = true
+                    )
                 }
-                Spacer(Modifier.width(8.dp))
-                OutlinedTextField(
-                    value = if (viewModel.state.attendanceWarning == 0) {
-                        ""
-                    } else {
-                        viewModel.state.attendanceWarning.toString()
-                    },
-                    onValueChange = {
-                        viewModel.onEvent(AttendanceScreenEvent.OnAttendanceWarningTextChanged(it))
-                    },
-                    label = {
-                        Text(text = "Criteria")
-                    },
-                    keyboardOptions = KeyboardOptions.Default.copy(
-                        imeAction = ImeAction.Done,
-                        keyboardType = KeyboardType.Number
-                    ),
-                    keyboardActions = KeyboardActions(
-                        onDone = {
-                            keyboardController?.hide()
-                            focusManager.clearFocus()
-                            viewModel.onEvent(
-                                AttendanceScreenEvent.OnKeyboardDone
-                            )
-                        }
-                    ),
-                    singleLine = true
-                )
+
             }
 
-        }
-
-        LazyColumn {
-            items(state.attendanceData.size) {
-                AttendanceItem(warningNumber = state.attendanceWarningNumbers[it],
-                    attendanceItem = state.attendanceData[it],
-                    enabled = !state.isOffline,
-                    onClick = {
-                        viewModel.onEvent(AttendanceScreenEvent.OnAttendanceItemClicked(state.attendanceData[it]))
-                    })
-                if (it != state.attendanceData.size - 1) {
-                    Divider(Modifier.padding(horizontal = 12.dp))
+            LazyColumn {
+                items(state.attendanceData.size) {
+                    AttendanceItem(warningNumber = state.attendanceWarningNumbers[it],
+                        attendanceItem = state.attendanceData[it],
+                        enabled = !state.isOffline,
+                        onClick = {
+                            viewModel.onEvent(AttendanceScreenEvent.OnAttendanceItemClicked(state.attendanceData[it]))
+                        })
+                    if (it != state.attendanceData.size - 1) {
+                        Divider(Modifier.padding(horizontal = 12.dp))
+                    }
                 }
             }
         }
     }
+
 
     if (state.isBottomSheetExpanded && state.isDetailDataReady) {
         ModalBottomSheet(onDismissRequest = {

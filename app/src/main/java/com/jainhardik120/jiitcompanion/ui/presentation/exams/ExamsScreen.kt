@@ -55,6 +55,8 @@ fun ExamsScreen(
                 is UiEvent.ShowSnackbar -> {
                     snackBarHostState.showSnackbar(it.message)
                 }
+
+
                 else -> {
 
                 }
