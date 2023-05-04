@@ -1,12 +1,12 @@
 package com.jainhardik120.jiitcompanion.ui.presentation.home
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Event
 import androidx.compose.material.icons.filled.Home
-import androidx.compose.material.icons.filled.Insights
-import androidx.compose.material.icons.filled.Monitor
-import androidx.compose.material.icons.filled.School
+import com.jainhardik120.jiitcompanion.ui.components.icons.Insights
+import com.jainhardik120.jiitcompanion.ui.components.icons.Monitor
+import com.jainhardik120.jiitcompanion.ui.components.icons.School
 import androidx.compose.ui.graphics.vector.ImageVector
+import com.jainhardik120.jiitcompanion.ui.components.icons.Event
 
 
 sealed class BottomBarScreen(

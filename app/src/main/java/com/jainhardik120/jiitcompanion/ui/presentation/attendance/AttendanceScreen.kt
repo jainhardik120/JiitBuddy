@@ -2,6 +2,7 @@ package com.jainhardik120.jiitcompanion.ui.presentation.attendance
 
 import android.widget.Toast
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -26,8 +27,8 @@ import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.KeyboardArrowDown
 import androidx.compose.material.icons.filled.KeyboardArrowUp
-import androidx.compose.material.icons.filled.NavigateBefore
-import androidx.compose.material.icons.filled.NavigateNext
+import com.jainhardik120.jiitcompanion.ui.components.icons.NavigateBefore
+import com.jainhardik120.jiitcompanion.ui.components.icons.NavigateNext
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
@@ -67,11 +68,15 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.jainhardik120.jiitcompanion.data.repository.model.AttendanceEntry
+import com.jainhardik120.jiitcompanion.data.remote.model.AttendanceEntry
 import com.jainhardik120.jiitcompanion.domain.model.AttendanceItem
 import com.jainhardik120.jiitcompanion.ui.presentation.attendance.AttendanceScreenComponents.CalendarHeader
 import com.jainhardik120.jiitcompanion.ui.presentation.attendance.AttendanceScreenComponents.Day
 import com.jainhardik120.jiitcompanion.ui.presentation.attendance.AttendanceScreenComponents.MonthAndWeekCalendarTitle
+import com.jainhardik120.jiitcompanion.ui.theme.dark_GreenContainer
+import com.jainhardik120.jiitcompanion.ui.theme.dark_onGreenContainer
+import com.jainhardik120.jiitcompanion.ui.theme.light_GreenContainer
+import com.jainhardik120.jiitcompanion.ui.theme.light_onGreenContainer
 import com.jainhardik120.jiitcompanion.util.UiEvent
 import com.kizitonwose.calendar.compose.CalendarLayoutInfo
 import com.kizitonwose.calendar.compose.CalendarState
@@ -97,18 +102,22 @@ import java.util.Locale
 @Composable
 fun AttendanceScreen(
     viewModel: AttendanceViewModel = hiltViewModel(),
-    onReview: ()-> Unit
+    onReview: () -> Unit
 ) {
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
     LaunchedEffect(key1 = true) {
         viewModel.getRegistrations()
-        if(viewModel.state.isOffline){
-            Toast.makeText(context, "Old Attendance Data is being shown because app is offline", Toast.LENGTH_LONG).show()
+        if (viewModel.state.isOffline) {
+            Toast.makeText(
+                context,
+                "Old Attendance Data is being shown because app is offline",
+                Toast.LENGTH_LONG
+            ).show()
         }
-        viewModel.uiEvent.collect{
-            if(it is UiEvent.LaunchReview){
+        viewModel.uiEvent.collect {
+            if (it is UiEvent.LaunchReview) {
                 onReview()
             }
         }
@@ -327,7 +336,11 @@ object AttendanceScreenComponents {
         onClick: (LocalDate) -> Unit,
         errorPercentage: Float = 0.0f
     ) {
-        val primaryColor = MaterialTheme.colorScheme.primaryContainer
+        val primaryColor = if (isSystemInDarkTheme()) {
+            dark_GreenContainer
+        } else {
+            light_GreenContainer
+        }
         val errorColor = MaterialTheme.colorScheme.errorContainer
         val primaryPercentage = 1.0f - errorPercentage
         Box(
@@ -362,7 +375,11 @@ object AttendanceScreenComponents {
                     if (errorPercentage > 0.5f) {
                         MaterialTheme.colorScheme.onErrorContainer
                     } else {
-                        MaterialTheme.colorScheme.onPrimaryContainer
+                        if (isSystemInDarkTheme()) {
+                            dark_onGreenContainer
+                        } else {
+                            light_onGreenContainer
+                        }
                     }
                 } else {
                     MaterialTheme.colorScheme.onSurface

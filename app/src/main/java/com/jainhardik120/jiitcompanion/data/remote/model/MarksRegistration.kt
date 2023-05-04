@@ -1,4 +1,4 @@
-package com.jainhardik120.jiitcompanion.domain.model
+package com.jainhardik120.jiitcompanion.data.remote.model
 
 data class MarksRegistration(
     val registrationcode: String,

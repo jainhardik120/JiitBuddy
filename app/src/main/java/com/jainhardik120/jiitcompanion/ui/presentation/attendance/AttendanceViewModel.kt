@@ -8,7 +8,7 @@ import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
-import com.jainhardik120.jiitcompanion.data.repository.model.AttendanceEntry
+import com.jainhardik120.jiitcompanion.data.remote.model.AttendanceEntry
 import com.jainhardik120.jiitcompanion.domain.model.AttendanceItem
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
 import com.jainhardik120.jiitcompanion.util.Resource

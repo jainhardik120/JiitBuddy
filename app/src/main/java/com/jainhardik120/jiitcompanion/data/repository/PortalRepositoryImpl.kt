@@ -11,11 +11,11 @@ import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceRegistrationEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.data.remote.PortalApi
-import com.jainhardik120.jiitcompanion.data.repository.model.AttendanceEntry
-import com.jainhardik120.jiitcompanion.data.repository.model.RegisteredSubject
-import com.jainhardik120.jiitcompanion.data.repository.model.ResultDetailEntity
-import com.jainhardik120.jiitcompanion.data.repository.model.SubjectSemesterRegistrations
-import com.jainhardik120.jiitcompanion.domain.model.MarksRegistration
+import com.jainhardik120.jiitcompanion.data.remote.model.AttendanceEntry
+import com.jainhardik120.jiitcompanion.data.remote.model.RegisteredSubject
+import com.jainhardik120.jiitcompanion.data.remote.model.ResultDetailEntity
+import com.jainhardik120.jiitcompanion.data.remote.model.SubjectSemesterRegistrations
+import com.jainhardik120.jiitcompanion.data.remote.model.MarksRegistration
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
 import com.jainhardik120.jiitcompanion.util.Resource
 import com.squareup.moshi.Moshi
@@ -216,7 +216,7 @@ class PortalRepositoryImpl @Inject constructor(
         stynumber: Int,
         token: String
     ): Resource<List<ResultDetailEntity>> {
-        var errorMessage: String = ""
+        var errorMessage = ""
         try {
             val payload = JSONObject(
                 "{\"instituteid\":\"${
@@ -271,6 +271,7 @@ class PortalRepositoryImpl @Inject constructor(
             requiredUser = allUsers[0]
         }
         var isOnline = false
+        var errorMessage = ""
         try {
             var jsonObject =
                 JSONObject("{\"otppwd\":\"PWD\",\"username\":\"$enrollmentno\",\"passwordotpvalue\":\"$password\",\"Modulename\":\"STUDENTMODULE\"}")
@@ -302,34 +303,37 @@ class PortalRepositoryImpl @Inject constructor(
                 loginDetails.getString("clientid"),
                 loginDetails.getString("enrollmentno"),
                 loginDetails.getString("memberid"),
-                loginDetails.getString("membertype"),
+                loginDetails.getString("membertype")?:"S",
                 loginDetails.getJSONArray("institutelist").getJSONObject(0).getString("label"),
                 loginDetails.getJSONArray("institutelist").getJSONObject(0).getString("value"),
                 loginDetails.getString("name"),
                 loginDetails.getString("userDOB"),
                 loginDetails.getString("userid"),
-                generalInformation.getString("admissionyear"),
-                generalInformation.getString("batch"),
-                generalInformation.getString("branch"),
-                generalInformation.getString("gender"),
-                generalInformation.getString("institutecode"),
-                generalInformation.getString("programcode"),
-                generalInformation.getInt("semester"),
-                generalInformation.getString("studentcellno"),
-                generalInformation.getString("studentpersonalemailid"),
+                generalInformation.getString("admissionyear")?:"",
+                generalInformation.getString("batch")?:"",
+                generalInformation.getString("branch")?:"",
+                generalInformation.getString("gender")?:"",
+                generalInformation.getString("institutecode")?:"",
+                generalInformation.getString("programcode")?:"",
+                generalInformation.getInt("semester")?:0,
+                generalInformation.getString("studentcellno")?:"",
+                generalInformation.getString("studentpersonalemailid")?:"",
                 requiredUser?.lastAttendanceRegistrationId
             )
-            isOnline = true
             dao.insertUser(loggedInUser)
+            isOnline = true
         } catch (e: HttpException) {
             Log.d(TAG, "loginUser: HTTP Exception : ${e.response()?.code()}")
+            errorMessage = e.message()
             if (e.response()?.code() == 404) {
                 return Resource.Error("Wrong Enrollment No or Password")
             }
         } catch (e: IOException) {
             Log.d(TAG, "loginUser: IO Exception : ${e.message}")
+            errorMessage = e.message?:"Server Not Reachable"
         } catch (e: Exception) {
             Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
+            errorMessage = e.message?:e.printStackTrace().toString()
         }
         val newAllUsers = dao.getUserByEnrollPass(enrollmentno, password)
         if (newAllUsers.isNotEmpty()) {
@@ -338,7 +342,7 @@ class PortalRepositoryImpl @Inject constructor(
         if (requiredUser != null) {
             return (Resource.Success(data = Pair(requiredUser, token), isOnline = isOnline))
         }
-        return Resource.Error("Servers Not Reachable")
+        return Resource.Error(errorMessage)
     }
 
     override suspend fun getExamRegistrations(

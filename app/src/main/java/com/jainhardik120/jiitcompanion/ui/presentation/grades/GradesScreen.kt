@@ -10,7 +10,7 @@ import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.FileDownload
+import com.jainhardik120.jiitcompanion.ui.components.icons.FileDownload
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
@@ -34,8 +34,8 @@ import androidx.compose.ui.unit.dp
 import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jainhardik120.jiitcompanion.data.remote.model.ResultEntity
-import com.jainhardik120.jiitcompanion.data.repository.model.ResultDetailEntity
-import com.jainhardik120.jiitcompanion.domain.model.MarksRegistration
+import com.jainhardik120.jiitcompanion.data.remote.model.ResultDetailEntity
+import com.jainhardik120.jiitcompanion.data.remote.model.MarksRegistration
 import com.jainhardik120.jiitcompanion.util.UiEvent
 import java.io.File
 
@@ -88,7 +88,7 @@ fun GradesScreen(
                 expanded = true,
                 icon = {
                     Icon(
-                        Icons.Outlined.FileDownload,
+                        Icons.Filled.FileDownload,
                         contentDescription = "Files Download Icon"
                     )
                 },
@@ -188,7 +188,7 @@ fun ResultDetailItemPreview() {
 }
 
 @Composable
-fun ResultDetailItem(item:ResultDetailEntity) {
+fun ResultDetailItem(item: ResultDetailEntity) {
     Column(
         Modifier
             .fillMaxWidth()

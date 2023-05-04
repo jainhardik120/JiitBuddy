@@ -20,9 +20,9 @@ import androidx.compose.foundation.lazy.LazyListState
 import androidx.compose.foundation.lazy.rememberLazyListState
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.NavigateBefore
-import androidx.compose.material.icons.filled.NavigateNext
-import androidx.compose.material.icons.filled.OpenInNew
+import com.jainhardik120.jiitcompanion.ui.components.icons.NavigateBefore
+import com.jainhardik120.jiitcompanion.ui.components.icons.NavigateNext
+import com.jainhardik120.jiitcompanion.ui.components.icons.OpenInNew
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.ExperimentalMaterial3Api

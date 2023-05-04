@@ -8,11 +8,11 @@ import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceEntity
 import com.jainhardik120.jiitcompanion.util.Resource
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceRegistrationEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
-import com.jainhardik120.jiitcompanion.data.repository.model.AttendanceEntry
-import com.jainhardik120.jiitcompanion.data.repository.model.RegisteredSubject
-import com.jainhardik120.jiitcompanion.data.repository.model.ResultDetailEntity
-import com.jainhardik120.jiitcompanion.data.repository.model.SubjectSemesterRegistrations
-import com.jainhardik120.jiitcompanion.domain.model.MarksRegistration
+import com.jainhardik120.jiitcompanion.data.remote.model.AttendanceEntry
+import com.jainhardik120.jiitcompanion.data.remote.model.RegisteredSubject
+import com.jainhardik120.jiitcompanion.data.remote.model.ResultDetailEntity
+import com.jainhardik120.jiitcompanion.data.remote.model.SubjectSemesterRegistrations
+import com.jainhardik120.jiitcompanion.data.remote.model.MarksRegistration
 
 
 interface PortalRepository {

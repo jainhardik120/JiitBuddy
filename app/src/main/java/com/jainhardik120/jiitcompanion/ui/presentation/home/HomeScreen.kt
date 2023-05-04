@@ -1,7 +1,7 @@
 package com.jainhardik120.jiitcompanion.ui.presentation.home
 
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Logout
+import com.jainhardik120.jiitcompanion.ui.components.icons.Logout
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar

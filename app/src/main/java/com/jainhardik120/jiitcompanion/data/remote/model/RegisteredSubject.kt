@@ -1,4 +1,4 @@
-package com.jainhardik120.jiitcompanion.data.repository.model
+package com.jainhardik120.jiitcompanion.data.remote.model
 
 data class RegisteredSubject(
     val audtsubject: String,
