@@ -265,7 +265,6 @@ class AttendanceViewModel @Inject constructor(
                                         }
                                         attendanceText += "\n"
                                     }
-
                                 } catch (e: Exception) {
                                     Log.d("myApp", e.message.toString())
                                 }
@@ -285,13 +284,11 @@ class AttendanceViewModel @Inject constructor(
                                         }
                                         attendanceText += "\n"
                                     }
-
                                 } catch (e: Exception) {
                                     Log.d("myApp", e.message.toString())
                                 }
                             }
-                            val absent = attendanceEntity.abseent?.minus((totalClass - totalPres))
-                                ?.toInt()
+                            val absent = (attendanceEntity.abseent?:0.0).toInt()
                             if (attendanceEntity.Psubjectcomponentcode == "P") {
                                 try {
                                     if (attendanceEntity.Ppercentage == 100.0 || absent == 0) {
@@ -299,9 +296,9 @@ class AttendanceViewModel @Inject constructor(
                                     } else {
                                         attendanceText += "Practical : " + attendanceEntity.Ppercentage
                                         totalPres +=
-                                            ((100 / ((100 - attendanceEntity.Ppercentage!!) / absent!!)).roundToInt() - attendanceEntity.abseent.roundToInt())
+                                            (((attendanceEntity.Ppercentage?:0.0) / ((100 - (attendanceEntity.Ppercentage?:0.0)) / absent)).roundToInt())
                                         totalClass +=
-                                            ((100 / ((100 - attendanceEntity.Ppercentage) / absent)).roundToInt())
+                                            ((100 / ((100 - (attendanceEntity.Ppercentage?:0.0)) / absent)).roundToInt())
                                         attendanceText += "\n"
                                     }
                                     attendanceEntity.Psubjectcomponentid?.let { it1 ->
@@ -313,13 +310,11 @@ class AttendanceViewModel @Inject constructor(
                                     Log.d("myApp", e.message.toString())
                                 }
                             }
-
                             val percentage = if (totalClass == 0) {
                                 100
                             } else {
                                 (totalPres * 100) / totalClass
                             }
-
                             AttendanceItem(
                                 attendanceEntity.subjectid,
                                 attendanceEntity.subjectcode,
