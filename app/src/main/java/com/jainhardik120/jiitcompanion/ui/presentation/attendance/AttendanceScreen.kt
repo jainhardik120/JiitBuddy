@@ -22,17 +22,15 @@ import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import com.jainhardik120.jiitcompanion.ui.components.icons.NavigateBefore
 import com.jainhardik120.jiitcompanion.ui.components.icons.NavigateNext
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
@@ -53,12 +51,9 @@ import androidx.compose.ui.ExperimentalComposeUiApi
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawBehind
-import androidx.compose.ui.geometry.Size
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.compose.ui.layout.onGloballyPositioned
 import androidx.compose.ui.platform.LocalContext
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalFocusManager
 import androidx.compose.ui.platform.LocalSoftwareKeyboardController
 import androidx.compose.ui.platform.testTag
@@ -69,7 +64,6 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jainhardik120.jiitcompanion.data.remote.model.AttendanceEntry
 import com.jainhardik120.jiitcompanion.domain.model.AttendanceItem
@@ -121,13 +115,15 @@ fun AttendanceScreen(
             ).show()
         }
         viewModel.uiEvent.collect {
-            when(it){
-                is UiEvent.LaunchReview->{
+            when (it) {
+                is UiEvent.LaunchReview -> {
                     onReview()
                 }
-                is UiEvent.ShowSnackbar->{
+
+                is UiEvent.ShowSnackbar -> {
                     snackbarHostState.showSnackbar(it.message)
                 }
+
                 else -> {
 
                 }
@@ -138,17 +134,15 @@ fun AttendanceScreen(
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
-    var dropMenuSize by remember {
-        mutableStateOf(Size.Zero)
-    }
     val state = viewModel.state
-    val icon = if (expanded)
-        Icons.Filled.KeyboardArrowUp
-    else
-        Icons.Filled.KeyboardArrowDown
-
-    Scaffold(modifier = Modifier.fillMaxSize(), snackbarHost = { SnackbarHost(hostState = snackbarHostState)}) {padding->
-        Column(Modifier.fillMaxSize().padding(padding)) {
+    Scaffold(
+        modifier = Modifier.fillMaxSize(),
+        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { padding ->
+        Column(
+            Modifier
+                .fillMaxSize()
+                .padding(padding)
+        ) {
             Column(
                 Modifier
                     .fillMaxWidth()
@@ -156,39 +150,40 @@ fun AttendanceScreen(
             ) {
                 Row(Modifier.fillMaxWidth()) {
                     Column(Modifier.fillMaxWidth(0.7f)) {
-                        OutlinedTextField(
-                            value = viewModel.state.selectedSemesterCode,
-                            onValueChange = {
+                        ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = {
+                            expanded = !expanded
+                        }) {
+                            OutlinedTextField(
+                                value = viewModel.state.selectedSemesterCode,
+                                onValueChange = {
 
-                            },
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .onGloballyPositioned { layoutCoordinates ->
-                                    dropMenuSize = layoutCoordinates.size.toSize()
-                                }
-                                .clickable(enabled = true) {
-                                    expanded = !expanded
                                 },
-                            label = { Text(text = "Semester") },
-                            trailingIcon = {
-                                IconButton(onClick = { expanded = !expanded }) {
-                                    Icon(icon, "Expand/Collapse Menu")
+                                modifier = Modifier
+                                    .menuAnchor(),
+                                label = { Text(text = "Semester") },
+                                trailingIcon = {
+                                    ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                                }, readOnly = true
+                            )
+                            if (viewModel.state.registrations.isNotEmpty()) {
+                                ExposedDropdownMenu(
+                                    expanded = expanded,
+                                    onDismissRequest = { expanded = false }) {
+                                    viewModel.state.registrations.forEach {
+                                        DropdownMenuItem(
+                                            text = { Text(text = it.registrationcode) },
+                                            onClick = {
+                                                viewModel.onEvent(
+                                                    AttendanceScreenEvent.OnSemesterChanged(
+                                                        it
+                                                    )
+                                                )
+                                                expanded = false
+                                            },
+                                            contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                                        )
+                                    }
                                 }
-                            }, readOnly = true
-                        )
-                        DropdownMenu(
-                            expanded = expanded,
-                            onDismissRequest = { expanded = false },
-                            modifier = Modifier
-                                .width(with(LocalDensity.current) { dropMenuSize.width.toDp() })
-                        ) {
-                            viewModel.state.registrations.forEach {
-                                DropdownMenuItem(
-                                    text = { Text(text = it.registrationcode) },
-                                    onClick = {
-                                        viewModel.onEvent(AttendanceScreenEvent.OnSemesterChanged(it))
-                                        expanded = false
-                                    })
                             }
                         }
                     }
@@ -200,7 +195,11 @@ fun AttendanceScreen(
                             viewModel.state.attendanceWarning.toString()
                         },
                         onValueChange = {
-                            viewModel.onEvent(AttendanceScreenEvent.OnAttendanceWarningTextChanged(it))
+                            viewModel.onEvent(
+                                AttendanceScreenEvent.OnAttendanceWarningTextChanged(
+                                    it
+                                )
+                            )
                         },
                         label = {
                             Text(text = "Criteria")
