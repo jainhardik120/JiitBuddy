@@ -3,7 +3,6 @@ package com.jainhardik120.jiitcompanion.data.local.entity
 import androidx.room.Entity
 
 @Entity(tableName = "user_table", primaryKeys = ["username", "password"])
-@kotlinx.serialization.Serializable
 data class UserEntity(
     val password: String,
     val username: String,
