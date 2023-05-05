@@ -121,7 +121,6 @@ class PortalRepositoryImpl @Inject constructor(
                 JSONObject(regdata).getJSONObject("response").getJSONObject("regdata")
             token = loginDetails.getString("token")
             with(sharedPreferences.edit()) {
-                clear()
                 putString(SharedPreferencesKeys.LastUserName.key, enrollmentno)
                 putString(SharedPreferencesKeys.LastPassword.key, password)
                 apply()
