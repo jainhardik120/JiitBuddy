@@ -44,6 +44,7 @@ import androidx.compose.ui.platform.LocalConfiguration
 import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.platform.LocalLayoutDirection
 import androidx.compose.ui.platform.LocalUriHandler
+import androidx.compose.ui.platform.UriHandler
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.Dp
@@ -76,9 +77,11 @@ fun ProfileScreen(
                 is UiEvent.OpenUrl -> {
                     uriHandler.openUri(it.url)
                 }
+
                 is UiEvent.ShowSnackbar -> {
                     snackBarHostState.showSnackbar(it.message)
                 }
+
                 else -> {
 
                 }
@@ -153,7 +156,7 @@ fun ProfileScreen(
                 }
             }
             item {
-                Signature()
+                Signature(uriHandler)
             }
 
 
@@ -199,7 +202,7 @@ fun ScrollbarLazyColumn(
 
 
 @Composable
-fun Signature() {
+fun Signature(uriHandler: UriHandler) {
     Card(
         modifier = Modifier.padding(horizontal = 16.dp, vertical = 8.dp),
         shape = RoundedCornerShape(16.dp),
@@ -228,28 +231,46 @@ fun Signature() {
                     label = "Twitter",
                     icon = SimpleIcons.Twitter,
                     url = "https://twitter.com/jainhardik17",
+                    uriHandler = uriHandler
                 )
                 LinkIcon(
                     label = "Reddit",
                     icon = SimpleIcons.Reddit,
                     url = "https://www.reddit.com/user/HardikJain17",
+                    uriHandler = uriHandler
                 )
                 LinkIcon(
                     label = "Instagram",
                     icon = SimpleIcons.Instagram,
                     url = "https://instagram.com/_.hardikj",
+                    uriHandler = uriHandler
                 )
                 LinkIcon(
                     label = "LinkedIn",
                     icon = SimpleIcons.Linkedin,
                     url = "https://www.linkedin.com/in/jainhardik120/",
+                    uriHandler = uriHandler
                 )
                 LinkIcon(
                     label = "GitHub",
                     icon = SimpleIcons.Github,
                     url = "https://github.com/jainhardik120",
+                    uriHandler = uriHandler
                 )
             }
+            Text(
+                text = "Report an issue",
+                Modifier
+                    .fillMaxWidth()
+                    .clickable(
+                        enabled = true,
+                        onClick = {
+                            uriHandler.openUri("https://docs.google.com/forms/d/e/1FAIpQLScpK0CC5PlwUe2pwY0AUAKBs5KS78_nK8xvJ-S8pv6u2V7yxg/viewform?usp=sf_link")
+                        }
+                    ),
+                textAlign = TextAlign.Center,
+                color = MaterialTheme.colorScheme.primary
+            )
         }
     }
 
@@ -261,8 +282,8 @@ fun LinkIcon(
     label: String,
     icon: ImageVector,
     url: String,
+    uriHandler: UriHandler
 ) {
-    val uriHandler = LocalUriHandler.current
     IconButton(
         modifier = modifier.padding(4.dp),
         onClick = { uriHandler.openUri(url) },

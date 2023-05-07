@@ -1,9 +1,11 @@
 package com.jainhardik120.jiitcompanion.ui.presentation.login
 
+import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
+import androidx.compose.foundation.layout.fillMaxHeight
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
@@ -12,6 +14,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.Warning
 import com.jainhardik120.jiitcompanion.ui.components.icons.Visibility
 import com.jainhardik120.jiitcompanion.ui.components.icons.VisibilityOff
 import androidx.compose.material3.*
@@ -19,14 +22,17 @@ import androidx.compose.runtime.*
 import androidx.compose.runtime.saveable.rememberSaveable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalUriHandler
 import androidx.compose.ui.text.input.ImeAction
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.text.input.PasswordVisualTransformation
 import androidx.compose.ui.text.input.VisualTransformation
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.window.DialogProperties
 import androidx.hilt.navigation.compose.hiltViewModel
+import com.jainhardik120.jiitcompanion.ui.components.icons.BugReport
 import com.jainhardik120.jiitcompanion.util.UiEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -35,6 +41,7 @@ fun LoginScreen(
     onNavigate: (UiEvent.Navigate) -> Unit,
     viewModel: LoginViewModel = hiltViewModel()
 ) {
+    val uriHandler = LocalUriHandler.current
     val state = viewModel.state
     val snackbarHostState = remember { SnackbarHostState() }
     LaunchedEffect(key1 = true) {
@@ -56,6 +63,12 @@ fun LoginScreen(
     Scaffold(topBar = {
         CenterAlignedTopAppBar(title = {
             Text(text = "JIIT Buddy")
+        }, actions = {
+            IconButton(onClick = {
+                uriHandler.openUri("https://docs.google.com/forms/d/e/1FAIpQLScpK0CC5PlwUe2pwY0AUAKBs5KS78_nK8xvJ-S8pv6u2V7yxg/viewform?usp=sf_link")
+            }) {
+                Icon(Icons.Filled.BugReport, contentDescription = "Report an issue")
+            }
         })
     },snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) {
         Column(
@@ -68,7 +81,9 @@ fun LoginScreen(
         }
     }
     if(state.isLoading){
-        AlertDialog(onDismissRequest = { /*TODO*/ }, properties = DialogProperties(
+        AlertDialog(onDismissRequest = {
+
+        }, properties = DialogProperties(
             dismissOnBackPress = false,
             dismissOnClickOutside = false,
         )) {

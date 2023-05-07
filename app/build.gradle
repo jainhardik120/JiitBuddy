@@ -14,8 +14,8 @@ android {
         applicationId "com.jainhardik120.jiitcompanion"
         minSdk 24
         targetSdk 33
-        versionCode 11
-        versionName "0.5.7"
+        versionCode 13
+        versionName "0.5.73"
 
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables {
