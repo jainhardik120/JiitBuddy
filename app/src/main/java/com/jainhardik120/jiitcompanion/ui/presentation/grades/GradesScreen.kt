@@ -1,46 +1,30 @@
 package com.jainhardik120.jiitcompanion.ui.presentation.grades
 
-
-import android.content.Intent
-import android.util.Log
-import androidx.activity.compose.rememberLauncherForActivityResult
-import androidx.activity.result.contract.ActivityResultContracts
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import com.jainhardik120.jiitcompanion.ui.components.icons.FileDownload
-import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.Divider
-import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.ExtendedFloatingActionButton
-import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Text
-import androidx.compose.material3.TextButton
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
-import androidx.core.content.FileProvider
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jainhardik120.jiitcompanion.data.remote.model.ResultEntity
 import com.jainhardik120.jiitcompanion.data.remote.model.ResultDetailEntity
-import com.jainhardik120.jiitcompanion.data.remote.model.MarksRegistration
 import com.jainhardik120.jiitcompanion.util.UiEvent
-import java.io.File
 
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -128,7 +112,7 @@ fun GradesScreen(
     }
 }
 
-@Preview
+@Preview(showBackground = true)
 @Composable
 fun ResultDetailItemPreview() {
     val item = ResultDetailEntity(
@@ -157,11 +141,10 @@ fun ResultDetailItem(item: ResultDetailEntity) {
             .fillMaxWidth()
             .padding(12.dp)) {
         Row(Modifier.fillMaxWidth()) {
-            Text(text = "${item.subjectdesc} ${item.subjectcode}", textAlign = TextAlign.Center)
+            Text(text = "${item.subjectdesc} ${item.subjectcode} (${item.earned_credit}/${item.course_credits})", textAlign = TextAlign.Center, modifier = Modifier.fillMaxWidth())
         }
         Spacer(modifier = Modifier.height(4.dp))
         Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround, verticalAlignment = Alignment.CenterVertically) {
-            Text(text = "Credit : ${item.earned_credit}/${item.course_credits}")
             Text(text = "Grade : ${item.gradepoint} ${item.grade}")
             Text(text = "SGPA Points : ${item.sgpapoint}")
         }

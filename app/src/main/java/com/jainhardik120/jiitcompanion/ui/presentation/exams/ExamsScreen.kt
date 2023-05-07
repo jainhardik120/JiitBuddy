@@ -19,6 +19,9 @@ import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedTextField
@@ -41,8 +44,10 @@ import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jainhardik120.jiitcompanion.data.local.entity.ExamScheduleEntity
+import com.jainhardik120.jiitcompanion.ui.presentation.attendance.AttendanceScreenEvent
 import com.jainhardik120.jiitcompanion.util.UiEvent
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun ExamsScreen(
     viewModel: ExamsViewModel = hiltViewModel()
@@ -55,8 +60,6 @@ fun ExamsScreen(
                 is UiEvent.ShowSnackbar -> {
                     snackBarHostState.showSnackbar(it.message)
                 }
-
-
                 else -> {
 
                 }
@@ -64,21 +67,7 @@ fun ExamsScreen(
         }
     })
     var expanded1 by remember { mutableStateOf(false) }
-    var dropMenuSize1 by remember {
-        mutableStateOf(Size.Zero)
-    }
-    val icon1 = if (expanded1)
-        Icons.Filled.KeyboardArrowUp
-    else
-        Icons.Filled.KeyboardArrowDown
     var expanded2 by remember { mutableStateOf(false) }
-    var dropMenuSize2 by remember {
-        mutableStateOf(Size.Zero)
-    }
-    val icon2 = if (expanded2)
-        Icons.Filled.KeyboardArrowUp
-    else
-        Icons.Filled.KeyboardArrowDown
     Scaffold(snackbarHost = { SnackbarHost(hostState = snackBarHostState) }) {
         Column(
             Modifier
@@ -90,90 +79,90 @@ fun ExamsScreen(
                     .fillMaxWidth()
                     .padding(12.dp)
             ) {
-                OutlinedTextField(
-                    value = viewModel.state.selectedSemesterCode,
-                    onValueChange = {
+                ExposedDropdownMenuBox(expanded = expanded1, onExpandedChange = {
+                    expanded1 = !expanded1
+                }, modifier = Modifier.fillMaxWidth()) {
+                    OutlinedTextField(
+                        value = viewModel.state.selectedSemesterCode,
+                        onValueChange = {
 
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onGloballyPositioned { layoutCoordinates ->
-                            dropMenuSize1 = layoutCoordinates.size.toSize()
-                        }
-                        .clickable(enabled = true) {
-                            expanded1 = !expanded1
                         },
-                    label = { Text(text = "Semester") },
-                    trailingIcon = {
-                        IconButton(onClick = {
-                            expanded1 = !expanded1
-                            expanded2 = false
-                        }) {
-                            Icon(icon1, "Expand/Collapse Menu")
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth(),
+                        label = { Text(text = "Semester") },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded1)
+                        }, readOnly = true
+                    )
+                    if (viewModel.state.registrations.isNotEmpty()) {
+                        ExposedDropdownMenu(
+                            expanded = expanded1,
+                            modifier = Modifier.fillMaxWidth(),
+                            onDismissRequest = { expanded1 = false }) {
+                            viewModel.state.registrations.forEach {
+                                DropdownMenuItem(
+                                    text = { Text(text = it.registrationcode) },
+                                    onClick = {
+                                        viewModel.onEvent(
+                                            ExamScreenEvent.OnSemesterChanged(
+                                                it
+                                            )
+                                        )
+                                        expanded1 = false
+                                    },
+                                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                                )
+                            }
                         }
-                    }, readOnly = true
-                )
-                DropdownMenu(
-                    expanded = expanded1,
-                    onDismissRequest = { expanded1 = false },
-                    modifier = Modifier
-                        .width(with(LocalDensity.current) { dropMenuSize1.width.toDp() })
-                ) {
-                    viewModel.state.registrations.forEach {
-                        DropdownMenuItem(text = { Text(text = it.registrationcode) }, onClick = {
-                            viewModel.onEvent(ExamScreenEvent.OnSemesterChanged(it))
-                            expanded1 = false
-                        })
                     }
                 }
-            }
-            Column(
-                Modifier
-                    .fillMaxWidth()
-                    .padding(12.dp)
-            ) {
-                OutlinedTextField(
-                    value = viewModel.state.selectedEventDesc,
-                    onValueChange = {
+                Spacer(modifier = Modifier.height(12.dp))
+                ExposedDropdownMenuBox(modifier = Modifier.fillMaxWidth(),expanded = expanded2, onExpandedChange = {
+                    expanded2 = !expanded2
+                }) {
+                    OutlinedTextField(
+                        value = viewModel.state.selectedEventDesc,
+                        onValueChange = {
 
-                    },
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .onGloballyPositioned { layoutCoordinates ->
-                            dropMenuSize2 = layoutCoordinates.size.toSize()
-                        }
-                        .clickable(enabled = true) {
-                            expanded2 = !expanded2
                         },
-                    label = { Text(text = "Exam Event") },
-                    trailingIcon = {
-                        IconButton(onClick = {
-                            expanded2 = !expanded2
-                            expanded1 = false}) {
-                            Icon(icon2, "Expand/Collapse Menu")
+                        modifier = Modifier
+                            .menuAnchor()
+                            .fillMaxWidth(),
+                        label = { Text(text = "Exam Event") },
+                        trailingIcon = {
+                            ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded2)
+                        }, readOnly = true
+                    )
+                    if (viewModel.state.events.isNotEmpty()) {
+                        ExposedDropdownMenu(
+                            expanded = expanded2,
+                            modifier = Modifier.fillMaxWidth(),
+                            onDismissRequest = { expanded2 = false }) {
+                            viewModel.state.events.forEach {
+                                DropdownMenuItem(
+                                    text = { Text(text = it.exameventdesc) },
+                                    onClick = {
+                                        viewModel.onEvent(
+                                            ExamScreenEvent.OnExamEventChanged(
+                                                it
+                                            )
+                                        )
+                                        expanded2 = false
+                                    },
+                                    contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                                )
+                            }
                         }
-                    }, readOnly = true
-                )
-                DropdownMenu(
-                    expanded = expanded2,
-                    onDismissRequest = { expanded2 = false },
-                    modifier = Modifier
-                        .width(with(LocalDensity.current) { dropMenuSize2.width.toDp() })
-                ) {
-                    viewModel.state.events.forEach {
-                        DropdownMenuItem(text = { Text(text = it.exameventdesc) }, onClick = {
-                            viewModel.onEvent(ExamScreenEvent.OnExamEventChanged(it))
-                            expanded2 = false
-                        })
                     }
                 }
             }
             LazyColumn(modifier = Modifier
                 .fillMaxWidth()
-                .fillMaxHeight(),content = {
-                itemsIndexed(viewModel.state.schedule){index, item->
+                .fillMaxHeight(), content = {
+                itemsIndexed(viewModel.state.schedule) { index, item ->
                     ExamScheduleItem(item)
-                    if(index!=viewModel.state.schedule.size-1){
+                    if (index != viewModel.state.schedule.size - 1) {
                         Divider()
                     }
                 }
@@ -185,16 +174,26 @@ fun ExamsScreen(
 @Preview(showBackground = true)
 @Composable
 fun ExamScheduleItemPreview() {
-    ExamScheduleItem(item = ExamScheduleEntity(
-        "JIAC2202375","JIEXV2208A0000005","20/02/2023","01:00 pm to 02:00 pm","PRINCIPLES OF MANAGEMENT (15B1NHS434)","G5","A11"
-    ))
+    ExamScheduleItem(
+        item = ExamScheduleEntity(
+            "JIAC2202375",
+            "JIEXV2208A0000005",
+            "20/02/2023",
+            "01:00 pm to 02:00 pm",
+            "PRINCIPLES OF MANAGEMENT (15B1NHS434)",
+            "G5",
+            "A11"
+        )
+    )
 }
 
 @Composable
-fun ExamScheduleItem(item:ExamScheduleEntity) {
-    Column(modifier = Modifier
-        .fillMaxWidth()
-        .padding(8.dp)) {
+fun ExamScheduleItem(item: ExamScheduleEntity) {
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(8.dp)
+    ) {
         Row(Modifier.fillMaxWidth()) {
             Text(text = item.subjectdesc)
         }

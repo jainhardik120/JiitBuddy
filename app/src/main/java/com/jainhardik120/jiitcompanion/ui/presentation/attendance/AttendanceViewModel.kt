@@ -37,7 +37,6 @@ class AttendanceViewModel @Inject constructor(
     private lateinit var token: String
     private lateinit var user: LoginInfo
 
-
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
 
@@ -111,7 +110,7 @@ class AttendanceViewModel @Inject constructor(
             }
 
             is AttendanceScreenEvent.OnAttendanceItemClicked -> {
-                state = state.copy(isDetailDataReady = false, isBottomSheetExpanded = true)
+                state = state.copy(isDetailDataReady = false, isBottomSheetExpanded = true, isCalendarViewDataReady = false)
                 loadSubjectAttendanceDetails(event.attendanceItem)
             }
 
@@ -173,11 +172,15 @@ class AttendanceViewModel @Inject constructor(
                 is Resource.Success -> {
                     if (result.data != null) {
                         state = state.copy(attendanceEntries = result.data)
-                        convertMap()
-                        state = state.copy(isDetailDataReady = true)
+                        state = try{
+                            convertMap()
+                            state.copy(isDetailDataReady = true, isCalendarViewDataReady = true)
+                        }catch (e: Exception){
+                            e.printStackTrace()
+                            state.copy(isDetailDataReady = true, isCalendarViewDataReady = false)
+                        }
                     }
                 }
-
                 is Resource.Error -> {
                     result.message?.let { UiEvent.ShowSnackbar(it) }?.let { sendUiEvent(it) }
 

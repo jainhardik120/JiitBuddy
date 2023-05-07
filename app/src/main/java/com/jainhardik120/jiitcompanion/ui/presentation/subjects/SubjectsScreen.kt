@@ -1,6 +1,5 @@
 package com.jainhardik120.jiitcompanion.ui.presentation.subjects
 
-import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -12,14 +11,11 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.KeyboardArrowDown
-import androidx.compose.material.icons.filled.KeyboardArrowUp
 import androidx.compose.material3.Divider
-import androidx.compose.material3.DropdownMenu
 import androidx.compose.material3.DropdownMenuItem
-import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
+import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExposedDropdownMenuBox
+import androidx.compose.material3.ExposedDropdownMenuDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
@@ -34,16 +30,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.geometry.Size
-import androidx.compose.ui.layout.onGloballyPositioned
-import androidx.compose.ui.platform.LocalDensity
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.unit.dp
-import androidx.compose.ui.unit.toSize
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jainhardik120.jiitcompanion.domain.model.SubjectItem
 import com.jainhardik120.jiitcompanion.util.UiEvent
 
+@OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun SubjectsScreen(
     viewModel: SubjectsViewModel = hiltViewModel()
@@ -66,13 +59,6 @@ fun SubjectsScreen(
     }
 
     var expanded by remember { mutableStateOf(false) }
-    var dropMenuSize by remember {
-        mutableStateOf(Size.Zero)
-    }
-    val icon = if (expanded)
-        Icons.Filled.KeyboardArrowUp
-    else
-        Icons.Filled.KeyboardArrowDown
     val state = viewModel.state
     if (!state.isOffline) {
         Scaffold(
@@ -89,39 +75,40 @@ fun SubjectsScreen(
                         .fillMaxWidth()
                         .padding(12.dp)
                 ) {
-                    OutlinedTextField(
-                        value = viewModel.state.selectedSemesterCode,
-                        onValueChange = {
+                    ExposedDropdownMenuBox(expanded = expanded, onExpandedChange = {
+                        expanded = !expanded
+                    }) {
+                        OutlinedTextField(
+                            value = viewModel.state.selectedSemesterCode,
+                            onValueChange = {
 
-                        },
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .onGloballyPositioned { layoutCoordinates ->
-                                dropMenuSize = layoutCoordinates.size.toSize()
-                            }
-                            .clickable(enabled = true) {
-                                expanded = !expanded
                             },
-                        label = { Text(text = "Semester") },
-                        trailingIcon = {
-                            IconButton(onClick = { expanded = !expanded }) {
-                                Icon(icon, "Expand/Collapse Menu")
+                            modifier = Modifier
+                                .menuAnchor().fillMaxWidth(),
+                            label = { Text(text = "Semester") },
+                            trailingIcon = {
+                                ExposedDropdownMenuDefaults.TrailingIcon(expanded = expanded)
+                            }, readOnly = true
+                        )
+                        if (viewModel.state.registrations.isNotEmpty()) {
+                            ExposedDropdownMenu(
+                                expanded = expanded,
+                                onDismissRequest = { expanded = false }) {
+                                viewModel.state.registrations.forEach {
+                                    DropdownMenuItem(
+                                        text = { Text(text = it.registrationcode) },
+                                        onClick = {
+                                            viewModel.onEvent(
+                                                SubjectsScreenEvent.OnSemesterChanged(
+                                                    it
+                                                )
+                                            )
+                                            expanded = false
+                                        },
+                                        contentPadding = ExposedDropdownMenuDefaults.ItemContentPadding
+                                    )
+                                }
                             }
-                        }, readOnly = true
-                    )
-                    DropdownMenu(
-                        expanded = expanded,
-                        onDismissRequest = { expanded = false },
-                        modifier = Modifier
-                            .width(with(LocalDensity.current) { dropMenuSize.width.toDp() })
-                    ) {
-                        viewModel.state.registrations.forEach {
-                            DropdownMenuItem(
-                                text = { Text(text = it.registrationcode) },
-                                onClick = {
-                                    viewModel.onEvent(SubjectsScreenEvent.OnSemesterChanged(it))
-                                    expanded = false
-                                })
                         }
                     }
                 }

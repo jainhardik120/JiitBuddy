@@ -19,5 +19,6 @@ data class AttendanceScreenState(
     val stringMap: Map<LocalDate, List<AttendanceEntry>> = emptyMap(),
     val lastAttendanceDate:LocalDate?=null,
     val selectedDate:LocalDate?=null,
-    val isOffline : Boolean = false
+    val isOffline : Boolean = false,
+    val isCalendarViewDataReady:Boolean = false
 )
