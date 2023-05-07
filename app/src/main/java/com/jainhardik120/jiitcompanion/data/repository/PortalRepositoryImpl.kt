@@ -90,6 +90,19 @@ class PortalRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getLastAttendanceRegistration(enrollmentno: String): Resource<String> {
+        val result = dao.getStudentLastAttendanceRegistration(enrollmentno)
+        return if(result.isNotEmpty()){
+            try{
+                Resource.Success(data = result[0], true)
+            } catch (e : Exception){
+                Resource.Error(message = e.message?:"")
+            }
+        }else{
+            Resource.Error("Empty List")
+        }
+    }
+
     override fun getAttendanceWarning(): Int {
         return sharedPreferences.getInt(SharedPreferencesKeys.AttendanceWarningCriteria.key, 80)
     }

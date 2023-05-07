@@ -7,6 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
+import com.jainhardik120.jiitcompanion.domain.model.LoginInfo
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
 import com.jainhardik120.jiitcompanion.ui.presentation.root.Screen
 import com.jainhardik120.jiitcompanion.util.Resource
@@ -29,7 +30,7 @@ class LoginViewModel @Inject constructor(
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
 
-    companion object{
+    companion object {
         private const val TAG = "LoginViewModel"
     }
 
@@ -70,18 +71,43 @@ class LoginViewModel @Inject constructor(
             state = state.copy(isLoading = false)
             when (result) {
                 is Resource.Success -> {
-                    val json =
-                        Moshi.Builder().build().adapter(UserEntity::class.java).lenient().toJson(
-                            result.data?.first
+                    if (result.data != null) {
+                        val json =
+                            Moshi.Builder().build().adapter(LoginInfo::class.java).lenient().toJson(
+                                toLoginInfo(result.data.first)
+                            )
+                        sendUiEvent(
+                            UiEvent.Navigate(
+                                Screen.HomeScreen.withArgs(
+                                    json,
+                                    result.data.second
+                                )
+                            )
                         )
-                    result.data?.let { Screen.HomeScreen.withArgs(json, it.second) }
-                        ?.let { UiEvent.Navigate(it) }?.let { sendUiEvent(it) }
+                    }
                 }
                 is Resource.Error -> {
                     result.message?.let { UiEvent.ShowSnackbar(it) }?.let { sendUiEvent(it) }
                 }
             }
         }
+    }
+
+    private fun toLoginInfo(user: UserEntity): LoginInfo {
+        return LoginInfo(
+            clientid = user.clientid,
+            enrollmentno = user.enrollmentno,
+            memberid = user.memberid,
+            membertype = user.membertype,
+            instituteLabel = user.instituteLabel,
+            instituteValue = user.instituteValue,
+            name = user.name,
+            admissionyear = user.admissionyear,
+            batch = user.batch,
+            branch = user.branch,
+            institutecode = user.institutecode,
+            programcode = user.programcode,
+        )
     }
 
     private fun sendUiEvent(event: UiEvent) {

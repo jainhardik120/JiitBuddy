@@ -7,7 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
+import com.jainhardik120.jiitcompanion.domain.model.LoginInfo
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
 import com.jainhardik120.jiitcompanion.util.Resource
 import com.jainhardik120.jiitcompanion.util.UiEvent
@@ -31,7 +31,7 @@ class ExamsViewModel @Inject constructor(
     var state by mutableStateOf(ExamScreenState())
 
     private lateinit var token: String
-    private lateinit var user: UserEntity
+    private lateinit var user: LoginInfo
 
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
@@ -45,20 +45,23 @@ class ExamsViewModel @Inject constructor(
     fun getRegistrations(){
         viewModelScope.launch(Dispatchers.IO) {
             token = savedStateHandle.get<String>("token") ?: return@launch
-            user = Moshi.Builder().build().adapter(UserEntity::class.java).lenient()
+            user = Moshi.Builder().build().adapter(LoginInfo::class.java).lenient()
                 .fromJson(savedStateHandle.get<String>("userInfo") ?: return@launch)!!
+            val lastRegistrationInfo = repository.getLastAttendanceRegistration(user.enrollmentno)
+            var lastRegistrationId = ""
+            if(lastRegistrationInfo is Resource.Success){
+                lastRegistrationId = lastRegistrationInfo.data?:""
+            }
             val result =
                 repository.getExamRegistrations(user.clientid,user.instituteValue, user.memberid, token)
             when (result) {
                 is Resource.Success -> {
                     if(result.data!=null){
                         state = state.copy(registrations = result.data)
-                        if(user.lastAttendanceRegistrationId!=null){
-                            for (i in state.registrations){
-                                if(i.registrationid == user.lastAttendanceRegistrationId){
-                                    state = state.copy(selectedSemesterId = i.registrationid, selectedSemesterCode = i.registrationcode)
-                                    loadExamEvents()
-                                }
+                        for (i in state.registrations){
+                            if(i.registrationid == lastRegistrationId){
+                                state = state.copy(selectedSemesterId = i.registrationid, selectedSemesterCode = i.registrationcode)
+                                loadExamEvents()
                             }
                         }
                     }

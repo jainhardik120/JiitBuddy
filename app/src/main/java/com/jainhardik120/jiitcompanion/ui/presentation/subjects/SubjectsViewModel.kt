@@ -7,9 +7,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.data.remote.model.RegisteredSubject
 import com.jainhardik120.jiitcompanion.domain.model.Faculty
+import com.jainhardik120.jiitcompanion.domain.model.LoginInfo
 import com.jainhardik120.jiitcompanion.domain.model.SubjectItem
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
 import com.jainhardik120.jiitcompanion.util.Resource
@@ -34,7 +34,7 @@ class SubjectsViewModel @Inject constructor(
 
     var state by mutableStateOf(SubjectsState())
     private lateinit var token: String
-    private lateinit var user: UserEntity
+    private lateinit var user: LoginInfo
 
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
@@ -48,8 +48,13 @@ class SubjectsViewModel @Inject constructor(
     fun initialize() {
         viewModelScope.launch {
             token = savedStateHandle.get<String>("token") ?: return@launch
-            user = Moshi.Builder().build().adapter(UserEntity::class.java).lenient()
+            user = Moshi.Builder().build().adapter(LoginInfo::class.java).lenient()
                 .fromJson(savedStateHandle.get<String>("userInfo") ?: return@launch)!!
+            var lastRegistrationId = ""
+            val lastRegistrationInfo = repository.getLastAttendanceRegistration(user.enrollmentno)
+            if(lastRegistrationInfo is Resource.Success){
+                lastRegistrationId = lastRegistrationInfo.data?:""
+            }
             if(token=="offline"){
                 state=state.copy(isOffline = true)
             }else{
@@ -60,11 +65,7 @@ class SubjectsViewModel @Inject constructor(
                             Log.d(TAG, "initialize: ${result.data.toString()}")
                             state = result.data?.let { state.copy(registrations = it) }!!
                             for (i in state.registrations) {
-                                Log.d(
-                                    TAG,
-                                    "SemesterMatching: ${i.registrationid}:${user.lastAttendanceRegistrationId}"
-                                )
-                                if (i.registrationid == user.lastAttendanceRegistrationId) {
+                                if (i.registrationid == lastRegistrationId) {
                                     state = state.copy(
                                         selectedSemesterCode = i.registrationcode,
                                         selectedSemesterId = i.registrationid

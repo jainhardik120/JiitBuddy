@@ -81,16 +81,6 @@ fun LoginScreen(
     }
 }
 
-@Preview(showBackground = true)
-@Composable
-fun LoginCardPreview() {
-    LoginCard(
-        state = LoginState(enrollmentNo = "21103185", password = "E1CAEE"),
-        onEvent = {
-
-        })
-}
-
 @Composable
 fun LoginCard(state: LoginState, onEvent: (LoginScreenEvent) -> Unit) {
     val showPassword = rememberSaveable { mutableStateOf(false) }

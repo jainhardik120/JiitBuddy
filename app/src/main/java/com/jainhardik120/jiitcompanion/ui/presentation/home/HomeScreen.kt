@@ -128,7 +128,8 @@ fun HomeScreen(
                 TextButton(onClick = { viewModel.onEvent(HomeScreenEvent.onLogOutDismissed) }) {
                     Text(text = "Cancel")
                 }
-            })
+            }
+        )
     }
 
     if (viewModel.state.offlineDialogOpened) {

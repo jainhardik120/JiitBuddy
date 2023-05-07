@@ -7,9 +7,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.data.remote.model.AttendanceEntry
 import com.jainhardik120.jiitcompanion.domain.model.AttendanceItem
+import com.jainhardik120.jiitcompanion.domain.model.LoginInfo
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
 import com.jainhardik120.jiitcompanion.util.Resource
 import com.jainhardik120.jiitcompanion.util.UiEvent
@@ -35,7 +35,7 @@ class AttendanceViewModel @Inject constructor(
 
     var state by mutableStateOf(AttendanceScreenState())
     private lateinit var token: String
-    private lateinit var user: UserEntity
+    private lateinit var user: LoginInfo
 
 
     private val _uiEvent = Channel<UiEvent>()
@@ -54,11 +54,16 @@ class AttendanceViewModel @Inject constructor(
 
     fun getRegistrations() {
         token = savedStateHandle.get<String>("token") ?: return
-        user = Moshi.Builder().build().adapter(UserEntity::class.java).lenient()
+        user = Moshi.Builder().build().adapter(LoginInfo::class.java).lenient()
             .fromJson(savedStateHandle.get<String>("userInfo") ?: return)!!
         state = state.copy(isOffline = (token=="offline"))
+        var lastRegistrationId = ""
         viewModelScope.launch(Dispatchers.IO) {
             Log.d(TAG, "UserInfo: ${savedStateHandle.get<String>("userInfo")}")
+            val lastRegistrationInfo = repository.getLastAttendanceRegistration(user.enrollmentno)
+            if(lastRegistrationInfo is Resource.Success){
+                lastRegistrationId = lastRegistrationInfo.data?:""
+            }
             val result = repository.getAttendanceRegistrationDetails(
                 user.clientid,
                 user.instituteValue,
@@ -70,11 +75,7 @@ class AttendanceViewModel @Inject constructor(
                 is Resource.Success -> {
                     state = result.data?.let { state.copy(registrations = it) }!!
                     for (i in state.registrations) {
-                        Log.d(
-                            TAG,
-                            "AttendanceMatching: ${i.registrationid}:${user.lastAttendanceRegistrationId}"
-                        )
-                        if (i.registrationid == user.lastAttendanceRegistrationId) {
+                        if (i.registrationid == lastRegistrationId) {
                             state = state.copy(
                                 selectedSemesterCode = i.registrationcode,
                                 selectedSemesterId = i.registrationid

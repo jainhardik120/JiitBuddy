@@ -7,8 +7,8 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.data.remote.model.MarksRegistration
+import com.jainhardik120.jiitcompanion.domain.model.LoginInfo
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
 import com.jainhardik120.jiitcompanion.util.Resource
 import com.jainhardik120.jiitcompanion.util.UiEvent
@@ -31,7 +31,7 @@ class GradesViewModel @Inject constructor(
 
     var state by mutableStateOf(GradesState())
     private lateinit var token: String
-    private lateinit var user: UserEntity
+    private lateinit var user: LoginInfo
 
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
@@ -45,7 +45,7 @@ class GradesViewModel @Inject constructor(
     fun initialize() {
         viewModelScope.launch {
             token = savedStateHandle.get<String>("token") ?: return@launch
-            user = Moshi.Builder().build().adapter(UserEntity::class.java).lenient()
+            user = Moshi.Builder().build().adapter(LoginInfo::class.java).lenient()
                 .fromJson(savedStateHandle.get<String>("userInfo") ?: return@launch)!!
             if(token=="offline"){
                 state=state.copy(isOffline = true)

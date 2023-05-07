@@ -23,6 +23,9 @@ interface PortalDao {
     @Query("SELECT * FROM user_table WHERE username = :username AND password = :password")
     suspend fun getUserByEnrollPass(username: String, password: String): List<UserEntity>
 
+    @Query("SELECT lastAttendanceRegistrationId FROM user_table WHERE enrollmentno = :enrollmentno")
+    suspend fun getStudentLastAttendanceRegistration(enrollmentno: String): List<String>
+
     @Query("SELECT * FROM attendance_registration_table WHERE studentid = :studentid")
     suspend fun getStudentAttendanceRegistrationDetails(studentid: String): List<StudentAttendanceRegistrationEntity>
 

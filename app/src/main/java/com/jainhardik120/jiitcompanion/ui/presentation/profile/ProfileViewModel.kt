@@ -7,7 +7,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
+import com.jainhardik120.jiitcompanion.domain.model.LoginInfo
 import com.jainhardik120.jiitcompanion.domain.repository.FeedRepository
 import com.jainhardik120.jiitcompanion.util.UiEvent
 import com.squareup.moshi.Moshi
@@ -43,7 +43,7 @@ class ProfileViewModel @Inject constructor(
     
     fun initialize() {
         val user = savedStateHandle.get<String>("userInfo")?.let {
-            Moshi.Builder().build().adapter(UserEntity::class.java).lenient()
+            Moshi.Builder().build().adapter(LoginInfo::class.java).lenient()
                 .fromJson(it)
         }
         if (user != null) {

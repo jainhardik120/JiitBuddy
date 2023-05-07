@@ -6,7 +6,7 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
+import com.jainhardik120.jiitcompanion.domain.model.LoginInfo
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
 import com.jainhardik120.jiitcompanion.ui.presentation.root.Screen
 import com.jainhardik120.jiitcompanion.util.UiEvent
@@ -28,7 +28,7 @@ class HomeViewModel @Inject constructor(
     }
 
     private lateinit var token: String
-    private lateinit var user: UserEntity
+    private lateinit var user: LoginInfo
 
     private val _uiEvent = Channel<UiEvent>()
     val uiEvent = _uiEvent.receiveAsFlow()
@@ -44,7 +44,7 @@ class HomeViewModel @Inject constructor(
     init {
         viewModelScope.launch {
             token = savedStateHandle.get<String>("token") ?: return@launch
-            user = Moshi.Builder().build().adapter(UserEntity::class.java).lenient()
+            user = Moshi.Builder().build().adapter(LoginInfo::class.java).lenient()
                 .fromJson(savedStateHandle.get<String>("userInfo") ?: return@launch)!!
         }
     }
