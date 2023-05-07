@@ -48,11 +48,7 @@ import java.io.File
 fun GradesScreen(
     viewModel: GradesViewModel = hiltViewModel()
 ) {
-    val launcher = rememberLauncherForActivityResult(
-        contract = ActivityResultContracts.StartActivityForResult(),
-        onResult = {
-        })
-    val context = LocalContext.current
+
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
@@ -61,23 +57,7 @@ fun GradesScreen(
         viewModel.initialize()
         viewModel.uiEvent.collect {
             when (it) {
-                is UiEvent.OpenPdf -> {
-                    try {
-                        val pdfOpenIntent = Intent(Intent.ACTION_VIEW)
-                        pdfOpenIntent.flags = Intent.FLAG_ACTIVITY_CLEAR_TOP
-                        pdfOpenIntent.addFlags(Intent.FLAG_GRANT_READ_URI_PERMISSION)
-                        pdfOpenIntent.setDataAndType(
-                            FileProvider.getUriForFile(
-                                context,
-                                context.applicationContext.packageName + ".provider",
-                                File(it.path)
-                            ), "application/pdf"
-                        )
-                        launcher.launch(pdfOpenIntent)
-                    } catch (e: Exception) {
-                        Log.d("myApp", "onCreateView: $e")
-                    }
-                }
+
                 is UiEvent.ShowSnackbar -> {
                     snackbarHostState.showSnackbar(it.message)}
                 else -> {}
@@ -86,22 +66,7 @@ fun GradesScreen(
     }
     val state = viewModel.state
     if (!state.isOffline) {
-        Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState)},floatingActionButton = {
-            ExtendedFloatingActionButton(
-                onClick = { viewModel.onEvent(GradesScreenEvent.ButtonViewMarksClicked) },
-                shape = MaterialTheme.shapes.large,
-                expanded = true,
-                icon = {
-                    Icon(
-                        Icons.Filled.FileDownload,
-                        contentDescription = "Files Download Icon"
-                    )
-                },
-                text = {
-                    Text(text = "View Marks")
-                }
-            )
-        }
+        Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState)}
         ) {
             Column(
                 Modifier
@@ -146,13 +111,6 @@ fun GradesScreen(
         }
     }
 
-    if (state.isMarksDialogOpened && state.isMarksRegistrationsLoaded) {
-        SubjectMarksDialog(registrations = state.marksRegistrations, onClick = {
-            viewModel.onEvent(GradesScreenEvent.MarksClicked(it))
-        }, onDismiss = {
-            viewModel.onEvent(GradesScreenEvent.MarksDialogDismissed)
-        })
-    }
 
     if (state.isBottomSheetExpanded && state.isDetailDataReady) {
         ModalBottomSheet(onDismissRequest = {
@@ -209,49 +167,6 @@ fun ResultDetailItem(item: ResultDetailEntity) {
         }
     }
 }
-
-
-@Composable
-fun SubjectMarksDialog(
-    registrations: List<MarksRegistration>,
-    onClick: (registration: MarksRegistration) -> Unit,
-    onDismiss: () -> Unit
-) {
-    AlertDialog(
-        onDismissRequest = {
-            onDismiss()
-        },
-        title = {
-            Text(
-                text = "Subject Marks",
-                modifier = Modifier.fillMaxWidth(),
-                textAlign = TextAlign.Center
-            )
-        },
-        text = {
-            LazyColumn(modifier = Modifier.fillMaxWidth(), content = {
-                itemsIndexed(registrations) { _, registration ->
-                    DropdownMenuItem(text = {
-                        Text(
-                            text = registration.registrationcode,
-                            modifier = Modifier
-                                .fillMaxWidth(),
-                            textAlign = TextAlign.Center
-                        )
-                    }, onClick = { onClick(registration) })
-                }
-            })
-        },
-        confirmButton = {
-
-        },
-        dismissButton = {
-            TextButton(onClick = { onDismiss() }) {
-                Text(text = "Cancel")
-            }
-        })
-}
-
 
 @Composable
 fun ResultItem(resultEntity: ResultEntity, onClick: () -> Unit) {

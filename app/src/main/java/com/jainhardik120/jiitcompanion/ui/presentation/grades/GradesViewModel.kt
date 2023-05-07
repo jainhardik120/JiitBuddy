@@ -64,40 +64,6 @@ class GradesViewModel @Inject constructor(
         }
     }
 
-    private fun loadMarksRegistrations(){
-        viewModelScope.launch(Dispatchers.IO){
-            when(val result = repository.getMarksRegistration(user.instituteValue, user.memberid, token)){
-                is Resource.Success ->{
-                    if(result.data!=null){
-                        state= state.copy(marksRegistrations = result.data, isMarksRegistrationsLoaded = true)
-                    }
-                }
-                is Resource.Error ->{
-                    result.message?.let { UiEvent.ShowSnackbar(it) }?.let { sendUiEvent(it) }
-                }
-            }
-        }
-    }
-    
-    private fun downloadAndOpenMarksPdf(registration : MarksRegistration){
-        Log.d(TAG, "downloadAndOpenMarksPdf: ${registration.registrationcode}")
-        viewModelScope.launch(Dispatchers.IO) {
-            when(val result = repository.getMarksPdf(user.memberid, user.instituteValue, registration.registrationid, registration.registrationcode, token)){
-                is Resource.Success->{
-                    Log.d(TAG, "downloadAndOpenMarksPdf: ${result.data}")
-                    if(result.data!=null){
-                        sendUiEvent(UiEvent.OpenPdf(result.data))
-                    }
-
-                } 
-                is Resource.Error->{
-                    result.message?.let { UiEvent.ShowSnackbar(it) }?.let { sendUiEvent(it) }
-                    Log.d(TAG, "downloadAndOpenMarksPdf: ${result.message}")
-                }
-            }
-        }
-
-    }
 
     private fun loadResultDetails(stynumber:Int){
         viewModelScope.launch(Dispatchers.IO) {
@@ -118,25 +84,10 @@ class GradesViewModel @Inject constructor(
 
     fun onEvent(event: GradesScreenEvent){
         when(event){
-            is GradesScreenEvent.ButtonViewMarksClicked ->{
-                state = state.copy(isMarksDialogOpened = true)
-                if(!state.isMarksRegistrationsLoaded){
-                    loadMarksRegistrations()
-                }
-            }
-            is GradesScreenEvent.MarksClicked -> {
-                state = state.copy(isMarksDialogOpened = false)
-                downloadAndOpenMarksPdf(registration  = event.registration)
-            }
-            is GradesScreenEvent.MarksDialogDismissed -> {
-                state = state.copy(isMarksDialogOpened = false)
-            }
-
             is GradesScreenEvent.ResultItemClicked -> {
                 state = state.copy(isBottomSheetExpanded = true, isDetailDataReady = false)
                 loadResultDetails(event.stynumber)
             }
-
             is GradesScreenEvent.BottomSheetDismissed -> {
                 state = state.copy(isBottomSheetExpanded = false)
             }
