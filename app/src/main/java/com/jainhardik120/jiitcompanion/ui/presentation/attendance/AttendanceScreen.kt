@@ -116,11 +116,9 @@ fun AttendanceScreen(
                 is UiEvent.LaunchReview -> {
                     onReview()
                 }
-
                 is UiEvent.ShowSnackbar -> {
                     snackbarHostState.showSnackbar(it.message)
                 }
-
                 else -> {
 
                 }
