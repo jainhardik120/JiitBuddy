@@ -143,7 +143,7 @@ class AttendanceViewModel @Inject constructor(
             }
             AttendanceScreenEvent.OnKeyboardDone -> {
                 repository.updateAttendanceWarning(state.attendanceWarning)
-                calcWarnings()
+                state = state.copy(attendanceWarningNumbers = calcWarnings(state.attendanceData))
             }
         }
     }
@@ -329,8 +329,8 @@ class AttendanceViewModel @Inject constructor(
                                 componentIdText
                             )
                         }
-                        state = state.copy(attendanceData = attendanceData)
-                        calcWarnings()
+                        val warnings = calcWarnings(attendanceData)
+                        state = state.copy(attendanceData = attendanceData, attendanceWarningNumbers = warnings)
                     }
                     Log.d(TAG, "loadAttendanceDetails: ${result.data}")
                 }
@@ -342,11 +342,11 @@ class AttendanceViewModel @Inject constructor(
         }
     }
 
-    private fun calcWarnings(){
-        val warningNumbers=List(state.attendanceData.size){
+    private fun calcWarnings(attendanceData: List<AttendanceItem>) : List<Int>{
+        val warningNumbers=List(attendanceData.size){
             val attendanceWarning = state.attendanceWarning
-            val totalClass = state.attendanceData[it].totalClass
-            val totalPres = state.attendanceData[it].totalPres
+            val totalClass = attendanceData[it].totalClass
+            val totalPres = attendanceData[it].totalPres
             var warningNumber =
                 ((attendanceWarning * (totalClass)) - (100 * totalPres
                     .toDouble()
@@ -358,6 +358,6 @@ class AttendanceViewModel @Inject constructor(
             }
             warningNumber
         }
-        state = state.copy(attendanceWarningNumbers = warningNumbers)
+        return warningNumbers
     }
 }

@@ -77,6 +77,6 @@ interface PortalDao {
     @Query("SELECT * FROM exam_events_table WHERE studentId = :studentid AND registrationid = :registrationid")
     suspend fun getExamEvents(studentid: String, registrationid:String): List<ExamEventsEntity>
 
-    @Query("SELECT * FROM exam_schedule_table WHERE studentId = :studentid AND examEvent = :examEvent")
+    @Query("SELECT * FROM exam_schedule_table WHERE studentId = :studentid AND examEvent = :examEvent ORDER BY datetime")
     suspend fun getExamSchedules(studentid: String, examEvent:String): List<ExamScheduleEntity>
 }
