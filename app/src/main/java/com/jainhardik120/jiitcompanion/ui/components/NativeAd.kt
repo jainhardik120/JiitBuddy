@@ -4,21 +4,20 @@ import android.util.Log
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.viewinterop.AndroidView
 import com.google.android.gms.ads.AdListener
 import com.google.android.gms.ads.AdLoader
 import com.google.android.gms.ads.AdRequest
 import com.google.android.gms.ads.LoadAdError
 import com.google.android.gms.ads.nativead.NativeAdOptions
-import com.google.android.gms.ads.nativead.NativeAdView
 import com.jainhardik120.jiitcompanion.R
+
+private const val TAG = "NativeAdView"
 
 @Composable
 fun NativeAdView(isTest: Boolean = true) {
     val unitId = if (isTest) stringResource(id = R.string.native_ad_test_id) else stringResource(
         id = R.string.native_ad_id
     )
-    val TAG = "NativeAdView"
     val context = LocalContext.current
     val adLoader = AdLoader.Builder(context, unitId)
         .forNativeAd {

@@ -59,8 +59,7 @@ class SubjectsViewModel @Inject constructor(
                 state=state.copy(isOffline = true)
             }else{
                 withContext(Dispatchers.IO){
-                    val result = repository.getSubjectsRegistrations(user.instituteValue, user.memberid, token)
-                    when(result){
+                    when(val result = repository.getSubjectsRegistrations(user.instituteValue, user.memberid, token)){
                         is Resource.Success->{
                             Log.d(TAG, "initialize: ${result.data.toString()}")
                             state = result.data?.let { state.copy(registrations = it) }!!
@@ -75,7 +74,7 @@ class SubjectsViewModel @Inject constructor(
                             }
                         }
                         is Resource.Error->{
-                            result.message?.let { UiEvent.ShowSnackbar(it) }?.let { sendUiEvent(it) }
+                            sendUiEvent(UiEvent.ShowSnackbar(message = result.message?:"Unknown Error Occurred"))
                         }
                     }
                 }
@@ -85,8 +84,7 @@ class SubjectsViewModel @Inject constructor(
     
     private fun loadFaculties(){
         viewModelScope.launch { 
-            val result = repository.getSubjects(user.instituteValue, state.selectedSemesterId, user.memberid, token)
-            when(result){
+            when(val result = repository.getSubjects(user.instituteValue, state.selectedSemesterId, user.memberid, token)){
                 is Resource.Success->{
                     Log.d(TAG, "loadFaculties: ${result.data.toString()}")
                     if(result.data!=null){
@@ -94,7 +92,7 @@ class SubjectsViewModel @Inject constructor(
                     }
                 }
                 is Resource.Error->{
-                    result.message?.let { UiEvent.ShowSnackbar(it) }?.let { sendUiEvent(it) }
+                    sendUiEvent(UiEvent.ShowSnackbar(message = result.message?:"Unknown Error Occurred"))
                 }
             }
         }

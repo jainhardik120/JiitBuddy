@@ -64,6 +64,7 @@ import androidx.compose.ui.unit.LayoutDirection
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.util.fastFirstOrNull
 import androidx.compose.ui.util.fastSumBy
+import kotlinx.coroutines.FlowPreview
 import kotlinx.coroutines.channels.BufferOverflow
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.collectLatest
@@ -74,11 +75,6 @@ object Scroller {
     const val STICKY_HEADER_KEY_PREFIX = "sticky:"
 }
 
-/**
- * Draws horizontal scrollbar to a LazyList.
- *
- * Set key with [STICKY_HEADER_KEY_PREFIX] prefix to any sticky header item in the list.
- */
 fun Modifier.drawHorizontalScrollbar(
     state: LazyListState,
     reverseScrolling: Boolean = false,
@@ -86,11 +82,6 @@ fun Modifier.drawHorizontalScrollbar(
     positionOffsetPx: Float = 0f,
 ): Modifier = drawScrollbar(state, Orientation.Horizontal, reverseScrolling, positionOffsetPx)
 
-/**
- * Draws vertical scrollbar to a LazyList.
- *
- * Set key with [STICKY_HEADER_KEY_PREFIX] prefix to any sticky header item in the list.
- */
 fun Modifier.drawVerticalScrollbar(
     state: LazyListState,
     reverseScrolling: Boolean = false,
@@ -178,6 +169,7 @@ private fun ContentDrawScope.onDrawScrollbar(
     }
 }
 
+@OptIn(FlowPreview::class)
 private fun Modifier.drawScrollbar(
     orientation: Orientation,
     reverseScrolling: Boolean,

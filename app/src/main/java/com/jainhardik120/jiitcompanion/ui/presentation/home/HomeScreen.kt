@@ -39,7 +39,6 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.jainhardik120.jiitcompanion.data.remote.model.MarksRegistration
 import com.jainhardik120.jiitcompanion.ui.components.icons.FileDownload
-import com.jainhardik120.jiitcompanion.ui.presentation.grades.GradesScreenEvent
 import com.jainhardik120.jiitcompanion.ui.presentation.root.Screen
 import com.jainhardik120.jiitcompanion.util.UiEvent
 import java.io.File
@@ -106,7 +105,7 @@ fun HomeScreen(
         }, actions = {
             if (token == "offline") {
                 IconButton(onClick = {
-                    viewModel.onEvent(HomeScreenEvent.onOfflineAlertClicked)
+                    viewModel.onEvent(HomeScreenEvent.OnOfflineAlertClicked)
                 }) {
                     Icon(Icons.Filled.Warning, contentDescription = "Warning Icon")
                 }
@@ -132,7 +131,7 @@ fun HomeScreen(
                 }
             }
             IconButton(onClick = {
-                viewModel.onEvent(HomeScreenEvent.onLogOutClicked)
+                viewModel.onEvent(HomeScreenEvent.OnLogOutClicked)
             }) {
                 Icon(Icons.Filled.Logout, contentDescription = "Logout Icon")
             }
@@ -156,7 +155,7 @@ fun HomeScreen(
                         it.route?.contains(screen.route) ?: false
                     } == true,
                     onClick = {
-                        viewModel.onEvent(HomeScreenEvent.bottomNavItemClicked(screen))
+                        viewModel.onEvent(HomeScreenEvent.BottomNavItemClicked(screen))
                     }
                 )
             }
@@ -176,18 +175,18 @@ fun HomeScreen(
                 Icon(Icons.Filled.Logout, contentDescription = "Logout Icon")
             },
             onDismissRequest = {
-                viewModel.onEvent(HomeScreenEvent.onLogOutDismissed)
+                viewModel.onEvent(HomeScreenEvent.OnLogOutDismissed)
             },
             text = {
                 Text(text = "Are you sure you want to log out?")
             },
             confirmButton = {
-                TextButton(onClick = { viewModel.onEvent(HomeScreenEvent.onLogOutConfirmed) }) {
+                TextButton(onClick = { viewModel.onEvent(HomeScreenEvent.OnLogOutConfirmed) }) {
                     Text(text = "Yes")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { viewModel.onEvent(HomeScreenEvent.onLogOutDismissed) }) {
+                TextButton(onClick = { viewModel.onEvent(HomeScreenEvent.OnLogOutDismissed) }) {
                     Text(text = "Cancel")
                 }
             }
@@ -208,18 +207,18 @@ fun HomeScreen(
                 Icon(Icons.Filled.Warning, contentDescription = "Warning Icon")
             },
             onDismissRequest = {
-                viewModel.onEvent(HomeScreenEvent.offlineDialogDismisse)
+                viewModel.onEvent(HomeScreenEvent.OfflineDialogDismissed)
             },
             text = {
                 Text(text = "The app is working in offline mode because servers were not reachable at time of login. Click below button to retry connection.")
             },
             confirmButton = {
-                TextButton(onClick = { viewModel.onEvent(HomeScreenEvent.offlineDialogConfirmed) }) {
+                TextButton(onClick = { viewModel.onEvent(HomeScreenEvent.OfflineDialogConfirmed) }) {
                     Text(text = "Retry")
                 }
             },
             dismissButton = {
-                TextButton(onClick = { viewModel.onEvent(HomeScreenEvent.offlineDialogDismisse) }) {
+                TextButton(onClick = { viewModel.onEvent(HomeScreenEvent.OfflineDialogDismissed) }) {
                     Text(text = "Cancel")
                 }
             })

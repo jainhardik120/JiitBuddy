@@ -7,7 +7,6 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
-import com.jainhardik120.jiitcompanion.data.remote.model.MarksRegistration
 import com.jainhardik120.jiitcompanion.domain.model.LoginInfo
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
 import com.jainhardik120.jiitcompanion.util.Resource
@@ -57,7 +56,7 @@ class GradesViewModel @Inject constructor(
                         state = result.data?.let { state.copy(results = it) }!!
                     }
                     is Resource.Error -> {
-                        result.message?.let { UiEvent.ShowSnackbar(it) }?.let { sendUiEvent(it) }
+                        sendUiEvent(UiEvent.ShowSnackbar(message = result.message?:"Unknown Error Occurred"))
                     }
                 }
             }
@@ -75,7 +74,7 @@ class GradesViewModel @Inject constructor(
                     }
                 }
                 is Resource.Error->{
-                    result.message?.let { UiEvent.ShowSnackbar(it) }?.let { sendUiEvent(it) }
+                    sendUiEvent(UiEvent.ShowSnackbar(message = result.message?:"Unknown Error Occurred"))
                 }
             }
         }

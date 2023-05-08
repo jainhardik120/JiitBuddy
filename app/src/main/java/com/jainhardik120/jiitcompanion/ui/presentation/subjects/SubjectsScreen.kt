@@ -112,7 +112,7 @@ fun SubjectsScreen(
                         }
                     }
                 }
-                LazyColumn() {
+                LazyColumn {
                     itemsIndexed(state.subjects) { index, item ->
                         SubjectItem(item)
                         if (index != state.subjects.size - 1) {
@@ -150,14 +150,14 @@ fun SubjectItem(item: SubjectItem) {
                 .weight(1f)
         ) {
             Row(Modifier.fillMaxWidth()) {
-                Column() {
+                Column {
                     Text(text = item.subjectdesc)
                     Text(text = item.subjectcode)
                 }
             }
             Spacer(Modifier.height(4.dp))
             Row(Modifier.fillMaxWidth()) {
-                Column() {
+                Column {
                     for (i in item.faculties) {
                         Row(Modifier.fillMaxWidth()) {
                             Text(

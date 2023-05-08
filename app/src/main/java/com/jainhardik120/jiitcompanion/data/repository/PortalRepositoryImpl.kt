@@ -19,6 +19,8 @@ import com.jainhardik120.jiitcompanion.data.remote.model.MarksRegistration
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
 import com.jainhardik120.jiitcompanion.util.Resource
 import com.squareup.moshi.Moshi
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
 import okhttp3.MediaType.Companion.toMediaTypeOrNull
 import okhttp3.RequestBody
 import okhttp3.RequestBody.Companion.toRequestBody
@@ -168,7 +170,7 @@ class PortalRepositoryImpl @Inject constructor(
                 generalInformation.getString("gender")?:"",
                 generalInformation.getString("institutecode")?:"",
                 generalInformation.getString("programcode")?:"",
-                generalInformation.getInt("semester")?:0,
+                generalInformation.getInt("semester"),
                 generalInformation.getString("studentcellno")?:"",
                 generalInformation.getString("studentpersonalemailid")?:"",
                 requiredUser?.lastAttendanceRegistrationId
@@ -227,7 +229,7 @@ class PortalRepositoryImpl @Inject constructor(
         membertype: String,
         token: String
     ): Resource<List<StudentAttendanceRegistrationEntity>> {
-        var message = ""
+        val message: String
         val oldData = dao.getStudentAttendanceRegistrationDetails(studentid)
         try {
             val payload = JSONObject(
@@ -271,7 +273,7 @@ class PortalRepositoryImpl @Inject constructor(
         registrationid: String,
         token: String
     ): Resource<List<StudentAttendanceEntity>> {
-        var message = ""
+        val message: String
         val oldData = dao.getStudentAttendanceOfRegistrationId(studentid, registrationid)
         try {
             val payload = JSONObject(
@@ -369,7 +371,7 @@ class PortalRepositoryImpl @Inject constructor(
         cmpidkey: String,
         token: String
     ): Resource<List<AttendanceEntry>> {
-        var message = ""
+        val message: String
         try {
             val postParams = JSONObject(
                 "{\"clientid\":\"${
@@ -410,7 +412,7 @@ class PortalRepositoryImpl @Inject constructor(
         studentid: String,
         token: String
     ): Resource<List<ResultEntity>> {
-        var message = ""
+        val message: String
         try {
             val loadingData = api.sgpaLoadData(
                 RequestBody(
@@ -454,7 +456,7 @@ class PortalRepositoryImpl @Inject constructor(
         stynumber: Int,
         token: String
     ): Resource<List<ResultDetailEntity>> {
-        var errorMessage = ""
+        val errorMessage: String
         try {
             val payload = JSONObject(
                 "{\"instituteid\":\"${
@@ -489,7 +491,7 @@ class PortalRepositoryImpl @Inject constructor(
         studentid: String,
         token: String
     ): Resource<List<MarksRegistration>> {
-        var message = ""
+        val message: String
         try {
             val payload = JSONObject(
                 "{\"instituteid\":\"${instituteid}\",\"studentid\":\"${studentid}\"}\n"
@@ -525,19 +527,21 @@ class PortalRepositoryImpl @Inject constructor(
         token: String
     ): Resource<String> {
         return try {
-            val response = api.getMarksPdf(
-                "https://webportal.jiit.ac.in:6011/StudentPortalAPI/studentsexamview/printstudent-exammarks/$studentid/$instituteid/$registrationid/$registrationCode",
-                "Bearer $token"
-            )
-            val file = File(externalFilesDir + "/${registrationCode}.pdf")
-            Log.d(TAG, "getMarksPdf: ${file.path}")
-            if (!file.exists()) {
-                file.createNewFile()
+            withContext(Dispatchers.IO){
+                val response = api.getMarksPdf(
+                    "https://webportal.jiit.ac.in:6011/StudentPortalAPI/studentsexamview/printstudent-exammarks/$studentid/$instituteid/$registrationid/$registrationCode",
+                    "Bearer $token"
+                )
+                val file = File(externalFilesDir + "/${registrationCode}.pdf")
+                Log.d(TAG, "getMarksPdf: ${file.path}")
+                if (!file.exists()) {
+                    file.createNewFile()
+                }
+                val fos = FileOutputStream(file)
+                fos.write(response.body()?.bytes() ?: ByteArray(0))
+                fos.close()
+                Resource.Success(data = file.path, true)
             }
-            val fos = FileOutputStream(file)
-            fos.write(response.body()?.bytes() ?: ByteArray(0))
-            fos.close()
-            Resource.Success(data = file.path, true)
         } catch (e: Exception) {
             Log.d(TAG, "getMarksPdf: ${e.printStackTrace()}")
             Resource.Error(e.message.toString())
@@ -712,7 +716,7 @@ class PortalRepositoryImpl @Inject constructor(
         studentid: String,
         token: String
     ): Resource<List<SubjectSemesterRegistrations>> {
-        var message = ""
+        val message: String
         try {
             val payload = JSONObject(
                 "{\"instituteid\":\"${instituteid}\",\"studentid\":\"${studentid}\"}\n"
@@ -746,7 +750,7 @@ class PortalRepositoryImpl @Inject constructor(
         studentid: String,
         token: String
     ): Resource<List<RegisteredSubject>> {
-        var message = ""
+        val message: String
         try {
             val payload = JSONObject(
                 "{\"instituteid\":\"${instituteid}\",\"registrationid\":\"${registrationid}\",\"studentid\":\"${studentid}\"}\n"

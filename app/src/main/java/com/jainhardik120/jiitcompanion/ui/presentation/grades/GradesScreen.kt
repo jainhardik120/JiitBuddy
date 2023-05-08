@@ -36,21 +36,21 @@ fun GradesScreen(
     val bottomSheetState = rememberModalBottomSheetState(
         skipPartiallyExpanded = true
     )
-    val snackbarHostState = remember { SnackbarHostState() }
+    val hostState = remember { SnackbarHostState() }
     LaunchedEffect(key1 = true) {
         viewModel.initialize()
         viewModel.uiEvent.collect {
             when (it) {
 
                 is UiEvent.ShowSnackbar -> {
-                    snackbarHostState.showSnackbar(it.message)}
+                    hostState.showSnackbar(it.message)}
                 else -> {}
             }
         }
     }
     val state = viewModel.state
     if (!state.isOffline) {
-        Scaffold(snackbarHost = { SnackbarHost(hostState = snackbarHostState)}
+        Scaffold(snackbarHost = { SnackbarHost(hostState = hostState)}
         ) {
             Column(
                 Modifier
@@ -67,7 +67,7 @@ fun GradesScreen(
                     )
                     Spacer(Modifier.height(16.dp))
                 }
-                LazyColumn() {
+                LazyColumn {
                     items(state.results.size) { index ->
                         ResultItem(resultEntity = state.results[index], onClick = {
                             viewModel.onEvent(GradesScreenEvent.ResultItemClicked(state.results[index].stynumber))

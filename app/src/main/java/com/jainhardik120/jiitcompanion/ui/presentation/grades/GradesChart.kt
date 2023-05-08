@@ -137,7 +137,7 @@ fun GradesChart(
             end = Offset(x = spacing, y = spacing / 2)
         )
         var lastX = spacing
-        var circles : MutableList<Offset> = mutableListOf()
+        val circles : MutableList<Offset> = mutableListOf()
         val strokePath = Path().apply {
             for (i in resultEntities.indices) {
                 val info = resultEntities[i]

@@ -87,7 +87,7 @@ class LoginViewModel @Inject constructor(
                     }
                 }
                 is Resource.Error -> {
-                    result.message?.let { UiEvent.ShowSnackbar(it) }?.let { sendUiEvent(it) }
+                    sendUiEvent(UiEvent.ShowSnackbar(message = result.message?:"Unknown Error Occurred"))
                 }
             }
         }

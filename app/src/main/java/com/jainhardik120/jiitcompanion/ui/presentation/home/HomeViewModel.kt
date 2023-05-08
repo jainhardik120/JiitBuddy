@@ -1,6 +1,5 @@
 package com.jainhardik120.jiitcompanion.ui.presentation.home
 
-import android.util.Log
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
@@ -10,8 +9,6 @@ import androidx.lifecycle.viewModelScope
 import com.jainhardik120.jiitcompanion.data.remote.model.MarksRegistration
 import com.jainhardik120.jiitcompanion.domain.model.LoginInfo
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
-import com.jainhardik120.jiitcompanion.ui.presentation.grades.GradesScreenEvent
-import com.jainhardik120.jiitcompanion.ui.presentation.grades.GradesViewModel
 import com.jainhardik120.jiitcompanion.ui.presentation.root.Screen
 import com.jainhardik120.jiitcompanion.util.Resource
 import com.jainhardik120.jiitcompanion.util.UiEvent
@@ -28,10 +25,6 @@ class HomeViewModel @Inject constructor(
     private val savedStateHandle: SavedStateHandle,
     private val repository: PortalRepository
 ):ViewModel(){
-
-    companion object{
-        private const val TAG = "HomeViewModel"
-    }
 
     private lateinit var token: String
     private lateinit var user: LoginInfo
@@ -64,7 +57,7 @@ class HomeViewModel @Inject constructor(
                     }
                 }
                 is Resource.Error ->{
-                    result.message?.let { UiEvent.ShowSnackbar(it) }?.let { sendUiEvent(it) }
+                    sendUiEvent(UiEvent.ShowSnackbar(message = result.message?:"Unknown Error Occurred"))
                 }
             }
         }
@@ -79,7 +72,7 @@ class HomeViewModel @Inject constructor(
                     }
                 }
                 is Resource.Error->{
-                    result.message?.let { UiEvent.ShowSnackbar(it) }?.let { sendUiEvent(it) }
+                    sendUiEvent(UiEvent.ShowSnackbar(message = result.message?:"Unknown Error Occurred"))
                 }
             }
         }
@@ -101,32 +94,32 @@ class HomeViewModel @Inject constructor(
             is HomeScreenEvent.MarksDialogDismissed -> {
                 state = state.copy(isMarksDialogOpened = false)
             }
-            is HomeScreenEvent.onLogOutClicked->{
+            is HomeScreenEvent.OnLogOutClicked->{
                 state = state.copy(logOutDialogOpened = true)
             }
-            is HomeScreenEvent.onLogOutConfirmed -> {
+            is HomeScreenEvent.OnLogOutConfirmed -> {
                 viewModelScope.launch {
                     state = state.copy(logOutDialogOpened = false)
                     repository.logOut(user.memberid)
                     sendUiEvent(UiEvent.Navigate(Screen.LoginScreen.route))
                 }
             }
-            is HomeScreenEvent.onLogOutDismissed -> {
+            is HomeScreenEvent.OnLogOutDismissed -> {
                 state= state.copy(logOutDialogOpened = false)
             }
-            is HomeScreenEvent.bottomNavItemClicked -> {
+            is HomeScreenEvent.BottomNavItemClicked -> {
                 sendUiEvent(UiEvent.Navigate("${event.screen.route}/${savedStateHandle.get<String>("userInfo")}/${savedStateHandle.get<String>("token")}"))
             }
-            is HomeScreenEvent.onOfflineAlertClicked -> {
+            is HomeScreenEvent.OnOfflineAlertClicked -> {
                 state = state.copy(offlineDialogOpened = true)
             }
-            HomeScreenEvent.offlineDialogConfirmed -> {
+            HomeScreenEvent.OfflineDialogConfirmed -> {
                 viewModelScope.launch {
                     state = state.copy(offlineDialogOpened = false)
                     sendUiEvent(UiEvent.Navigate(Screen.LoginScreen.route))
                 }
             }
-            HomeScreenEvent.offlineDialogDismisse -> {
+            HomeScreenEvent.OfflineDialogDismissed -> {
                 state = state.copy(offlineDialogOpened = false)
             }
         }

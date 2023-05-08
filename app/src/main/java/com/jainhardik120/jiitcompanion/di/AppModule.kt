@@ -1,3 +1,5 @@
+@file:Suppress("SpellCheckingInspection")
+
 package com.jainhardik120.jiitcompanion.di
 
 import android.app.Application

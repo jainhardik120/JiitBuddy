@@ -101,7 +101,7 @@ fun AttendanceScreen(
     val keyboardController = LocalSoftwareKeyboardController.current
     val focusManager = LocalFocusManager.current
     val context = LocalContext.current
-    val snackbarHostState = remember { SnackbarHostState() }
+    val hostState = remember { SnackbarHostState() }
     LaunchedEffect(key1 = true) {
         viewModel.getRegistrations()
         if (viewModel.state.isOffline) {
@@ -117,7 +117,7 @@ fun AttendanceScreen(
                     onReview()
                 }
                 is UiEvent.ShowSnackbar -> {
-                    snackbarHostState.showSnackbar(it.message)
+                    hostState.showSnackbar(it.message)
                 }
                 else -> {
 
@@ -132,7 +132,7 @@ fun AttendanceScreen(
     val state = viewModel.state
     Scaffold(
         modifier = Modifier.fillMaxSize(),
-        snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) { padding ->
+        snackbarHost = { SnackbarHost(hostState = hostState) }) { padding ->
         Column(
             Modifier
                 .fillMaxSize()
