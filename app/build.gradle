@@ -3,6 +3,7 @@ plugins {
     id 'org.jetbrains.kotlin.android'
     id 'dagger.hilt.android.plugin'
     id 'kotlin-kapt'
+    id 'com.google.devtools.ksp'
 }
 
 
@@ -85,7 +86,7 @@ dependencies {
     implementation "com.squareup.retrofit2:converter-scalars:2.9.0"
     implementation 'io.coil-kt:coil-compose:2.3.0'
     implementation "androidx.room:room-runtime:2.5.1"
-    kapt "androidx.room:room-compiler:2.5.1"
+    ksp "androidx.room:room-compiler:2.5.1"
     implementation "androidx.room:room-ktx:2.5.1"
     implementation "androidx.core:core-splashscreen:1.0.1"
     implementation "androidx.constraintlayout:constraintlayout-compose:1.0.1"

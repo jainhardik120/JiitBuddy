@@ -15,7 +15,7 @@ import androidx.compose.ui.unit.dp
 import androidx.core.splashscreen.SplashScreen.Companion.installSplashScreen
 import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
-import com.google.android.gms.ads.MobileAds
+//import com.google.android.gms.ads.MobileAds
 import com.google.android.play.core.review.ReviewManagerFactory
 import com.jainhardik120.jiitcompanion.ui.presentation.root.RootNavigationGraph
 import com.jainhardik120.jiitcompanion.ui.theme.JIITBuddyTheme
@@ -24,13 +24,12 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-        MobileAds.initialize(this){
-
-        }
+//        MobileAds.initialize(this){
+//
+//        }
         super.onCreate(savedInstanceState)
         installSplashScreen()
         setContent {
-
             JIITBuddyTheme {
                 val systemUiController = rememberSystemUiController()
                 val isSystemInDarkTheme = isSystemInDarkTheme()

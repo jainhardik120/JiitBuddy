@@ -9,7 +9,6 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.material.icons.Icons
-import com.jainhardik120.jiitcompanion.ui.components.icons.Logout
 import androidx.compose.material.icons.filled.Warning
 import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
@@ -19,7 +18,6 @@ import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
 import androidx.compose.material3.NavigationBarItem
-import androidx.compose.material3.PlainTooltipBox
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextButton
@@ -39,6 +37,7 @@ import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
 import com.jainhardik120.jiitcompanion.data.remote.model.MarksRegistration
 import com.jainhardik120.jiitcompanion.ui.components.icons.FileDownload
+import com.jainhardik120.jiitcompanion.ui.components.icons.Logout
 import com.jainhardik120.jiitcompanion.ui.presentation.root.Screen
 import com.jainhardik120.jiitcompanion.util.UiEvent
 import java.io.File
@@ -111,22 +110,15 @@ fun HomeScreen(
                 }
             } else {
                 if (currentDestination?.route?.contains(BottomBarScreen.Performance.route) == true) {
-                    PlainTooltipBox(
-                        tooltip = {
-                            Text("View Subject Marks")
+                    IconButton(
+                        onClick = {
+                            viewModel.onEvent(HomeScreenEvent.ButtonViewMarksClicked)
                         }
                     ) {
-                        IconButton(
-                            onClick = {
-                                viewModel.onEvent(HomeScreenEvent.ButtonViewMarksClicked)
-                            },
-                            modifier = Modifier.tooltipAnchor()
-                        ) {
-                            Icon(
-                                Icons.Filled.FileDownload,
-                                contentDescription = "Download Marks Button"
-                            )
-                        }
+                        Icon(
+                            Icons.Filled.FileDownload,
+                            contentDescription = "Download Marks Button"
+                        )
                     }
                 }
             }
