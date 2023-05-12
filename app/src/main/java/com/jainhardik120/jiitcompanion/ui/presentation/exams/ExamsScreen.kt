@@ -31,7 +31,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
-import com.jainhardik120.jiitcompanion.data.local.entity.ExamScheduleEntity
+import com.jainhardik120.jiitcompanion.domain.ExamScheduleModel
 import com.jainhardik120.jiitcompanion.util.UiEvent
 
 @OptIn(ExperimentalMaterial3Api::class)
@@ -162,20 +162,20 @@ fun ExamsScreen(
 @Composable
 fun ExamScheduleItemPreview() {
     ExamScheduleItem(
-        item = ExamScheduleEntity(
-            "JIAC2202375",
-            "JIEXV2208A0000005",
+        item = ExamScheduleModel(
             "20/02/2023",
             "01:00 pm to 02:00 pm",
             "PRINCIPLES OF MANAGEMENT (15B1NHS434)",
             "G5",
-            "A11"
+            "A11",
+            true,
+            "Monday"
         )
     )
 }
 
 @Composable
-fun ExamScheduleItem(item: ExamScheduleEntity) {
+fun ExamScheduleItem(item: ExamScheduleModel) {
     Column(
         modifier = Modifier
             .fillMaxWidth()

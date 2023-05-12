@@ -2,17 +2,17 @@ package com.jainhardik120.jiitcompanion.domain.repository
 
 import com.jainhardik120.jiitcompanion.data.local.entity.ExamEventsEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.ExamRegistrationsEntity
-import com.jainhardik120.jiitcompanion.data.local.entity.ExamScheduleEntity
-import com.jainhardik120.jiitcompanion.data.remote.model.ResultEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceEntity
-import com.jainhardik120.jiitcompanion.util.Resource
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceRegistrationEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.data.remote.model.AttendanceEntry
+import com.jainhardik120.jiitcompanion.data.remote.model.MarksRegistration
 import com.jainhardik120.jiitcompanion.data.remote.model.RegisteredSubject
 import com.jainhardik120.jiitcompanion.data.remote.model.ResultDetailEntity
+import com.jainhardik120.jiitcompanion.data.remote.model.ResultEntity
 import com.jainhardik120.jiitcompanion.data.remote.model.SubjectSemesterRegistrations
-import com.jainhardik120.jiitcompanion.data.remote.model.MarksRegistration
+import com.jainhardik120.jiitcompanion.domain.ExamScheduleModel
+import com.jainhardik120.jiitcompanion.util.Resource
 
 
 interface PortalRepository {
@@ -79,11 +79,11 @@ interface PortalRepository {
     ): Resource<List<ExamEventsEntity>>
 
     suspend fun getExamSchedules(
-        exameventid:String,
+        exameventid: String,
         registrationid: String,
         instituteid: String,
         studentid: String, token: String
-    ): Resource<List<ExamScheduleEntity>>
+    ): Resource<List<ExamScheduleModel>>
 
     suspend fun getMarksRegistration(
         instituteid: String, studentid: String, token: String

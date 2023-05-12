@@ -6,16 +6,17 @@ import com.jainhardik120.jiitcompanion.data.local.PortalDatabase
 import com.jainhardik120.jiitcompanion.data.local.entity.ExamEventsEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.ExamRegistrationsEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.ExamScheduleEntity
-import com.jainhardik120.jiitcompanion.data.remote.model.ResultEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceRegistrationEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.data.remote.PortalApi
 import com.jainhardik120.jiitcompanion.data.remote.model.AttendanceEntry
+import com.jainhardik120.jiitcompanion.data.remote.model.MarksRegistration
 import com.jainhardik120.jiitcompanion.data.remote.model.RegisteredSubject
 import com.jainhardik120.jiitcompanion.data.remote.model.ResultDetailEntity
+import com.jainhardik120.jiitcompanion.data.remote.model.ResultEntity
 import com.jainhardik120.jiitcompanion.data.remote.model.SubjectSemesterRegistrations
-import com.jainhardik120.jiitcompanion.data.remote.model.MarksRegistration
+import com.jainhardik120.jiitcompanion.domain.ExamScheduleModel
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
 import com.jainhardik120.jiitcompanion.util.Resource
 import com.squareup.moshi.Moshi
@@ -30,6 +31,7 @@ import retrofit2.HttpException
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.time.LocalDate
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -646,18 +648,42 @@ class PortalRepositoryImpl @Inject constructor(
         return Resource.Error(errorMessage)
     }
 
+    private fun dayOfDateTime(dateTime: String): String {
+        return try {
+            val calendarDate = dateTime.split("/")
+            val year = Integer.parseInt(calendarDate[2])
+            val month = Integer.parseInt(calendarDate[1])
+            val date = Integer.parseInt(calendarDate[0])
+            val dateEntity = LocalDate.of(year, month, date)
+            dateEntity.dayOfWeek.name
+        } catch (e: Exception) {
+            "NULL"
+        }
+    }
+
     override suspend fun getExamSchedules(
         exameventid: String,
         registrationid: String,
         instituteid: String,
         studentid: String,
         token: String
-    ): Resource<List<ExamScheduleEntity>> {
+    ): Resource<List<ExamScheduleModel>> {
         Log.d(TAG, "getExamEvents: $studentid $exameventid")
         var oldData = dao.getExamSchedules(studentid, exameventid)
+        var data = List(oldData.size) {
+            ExamScheduleModel(
+                oldData[it].datetime,
+                oldData[it].datetimeupto,
+                oldData[it].subjectdesc,
+                oldData[it].roomcode,
+                oldData[it].seatno,
+                false,
+                dayOfDateTime(oldData[it].datetime)
+            )
+        }
         Log.d(TAG, "getExamEvents: $oldData")
         if (token == "offline") {
-            return Resource.Success(oldData, isOnline = false)
+            return Resource.Success(data, isOnline = false)
         }
         val errorMessage: String
         try {
@@ -694,7 +720,18 @@ class PortalRepositoryImpl @Inject constructor(
             }
             dao.insertExamSchedules(registrationList)
             oldData = dao.getExamSchedules(studentid, exameventid)
-            return Resource.Success(data = oldData, true)
+            data = List(oldData.size) {
+                ExamScheduleModel(
+                    oldData[it].datetime,
+                    oldData[it].datetimeupto,
+                    oldData[it].subjectdesc,
+                    oldData[it].roomcode,
+                    oldData[it].seatno,
+                    registrationList.contains(oldData[it]),
+                    dayOfDateTime(oldData[it].datetime)
+                )
+            }
+            return Resource.Success(data = data, true)
         } catch (e: HttpException) {
             Log.d(TAG, "attendanceRegistration: HTTP Exception : ${e.message()}")
             errorMessage = e.message()
@@ -706,7 +743,7 @@ class PortalRepositoryImpl @Inject constructor(
             errorMessage = e.message.toString()
         }
         if (oldData.isNotEmpty()) {
-            return Resource.Success(data = oldData, false)
+            return Resource.Success(data = data, false)
         }
         return Resource.Error(errorMessage)
     }

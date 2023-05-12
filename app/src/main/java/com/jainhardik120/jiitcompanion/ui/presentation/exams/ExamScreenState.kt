@@ -2,7 +2,7 @@ package com.jainhardik120.jiitcompanion.ui.presentation.exams
 
 import com.jainhardik120.jiitcompanion.data.local.entity.ExamEventsEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.ExamRegistrationsEntity
-import com.jainhardik120.jiitcompanion.data.local.entity.ExamScheduleEntity
+import com.jainhardik120.jiitcompanion.domain.ExamScheduleModel
 
 data class ExamScreenState(
     val registrations:List<ExamRegistrationsEntity> = emptyList(),
@@ -11,5 +11,5 @@ data class ExamScreenState(
     val events:List<ExamEventsEntity> = emptyList(),
     val selectedEventDesc: String = "",
     val selectedExamId: String = "",
-    val schedule:List<ExamScheduleEntity> = emptyList()
+    val schedule: List<ExamScheduleModel> = emptyList()
 )
