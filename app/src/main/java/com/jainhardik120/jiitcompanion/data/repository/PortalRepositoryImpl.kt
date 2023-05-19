@@ -32,6 +32,7 @@ import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
 import java.time.LocalDate
+import java.time.LocalDateTime
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -648,16 +649,30 @@ class PortalRepositoryImpl @Inject constructor(
         return Resource.Error(errorMessage)
     }
 
-    private fun dayOfDateTime(dateTime: String): String {
+    private fun dayOfDateTime(dateTime: String, dateTimeUpto: String): LocalDateTime? {
         return try {
             val calendarDate = dateTime.split("/")
             val year = Integer.parseInt(calendarDate[2])
             val month = Integer.parseInt(calendarDate[1])
             val date = Integer.parseInt(calendarDate[0])
-            val dateEntity = LocalDate.of(year, month, date)
-            dateEntity.dayOfWeek.name
+            val timeVal = dateTimeUpto.split(" ")
+            val finishTime = timeVal[3]
+            val finishTimeValues = finishTime.split(":")
+            var hour = Integer.parseInt(finishTimeValues[0])
+            val minutes = Integer.parseInt(finishTimeValues[1])
+            if(timeVal[4] == "pm"){
+                if(hour<12){
+                    hour+=12
+                }
+            }else{
+                if(hour==12){
+                    hour = 0
+                }
+            }
+            LocalDateTime.of(year, month, date, hour, minutes)
         } catch (e: Exception) {
-            "NULL"
+            Log.d(TAG, "dayOfDateTime: ${e.printStackTrace()}")
+            null
         }
     }
 
@@ -669,8 +684,14 @@ class PortalRepositoryImpl @Inject constructor(
         token: String
     ): Resource<List<ExamScheduleModel>> {
         Log.d(TAG, "getExamEvents: $studentid $exameventid")
+        val dateNow = LocalDateTime.now()
+        Log.d(TAG, "getExamSchedules: ${dateNow.hour}:${dateNow.minute}")
         var oldData = dao.getExamSchedules(studentid, exameventid)
         var data = List(oldData.size) {
+            val date = dayOfDateTime(oldData[it].datetime, oldData[it].datetimeupto)
+            if (date != null) {
+                Log.d(TAG, "getExamSchedules: ${date.hour}:${date.minute}")
+            }
             ExamScheduleModel(
                 oldData[it].datetime,
                 oldData[it].datetimeupto,
@@ -678,7 +699,7 @@ class PortalRepositoryImpl @Inject constructor(
                 oldData[it].roomcode,
                 oldData[it].seatno,
                 false,
-                dayOfDateTime(oldData[it].datetime)
+                date?.dayOfWeek.toString()
             )
         }
         Log.d(TAG, "getExamEvents: $oldData")
@@ -721,14 +742,20 @@ class PortalRepositoryImpl @Inject constructor(
             dao.insertExamSchedules(registrationList)
             oldData = dao.getExamSchedules(studentid, exameventid)
             data = List(oldData.size) {
+                val date = dayOfDateTime(oldData[it].datetime, oldData[it].datetimeupto)
+                val bool = if(date==null){
+                    registrationList.contains(oldData[it])
+                }else{
+                    registrationList.contains(oldData[it]) && (date>dateNow)
+                }
                 ExamScheduleModel(
                     oldData[it].datetime,
                     oldData[it].datetimeupto,
                     oldData[it].subjectdesc,
                     oldData[it].roomcode,
                     oldData[it].seatno,
-                    registrationList.contains(oldData[it]),
-                    dayOfDateTime(oldData[it].datetime)
+                    bool,
+                    date?.dayOfWeek.toString()
                 )
             }
             return Resource.Success(data = data, true)

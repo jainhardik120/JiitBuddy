@@ -14,6 +14,7 @@ import androidx.compose.material3.AlertDialog
 import androidx.compose.material3.CenterAlignedTopAppBar
 import androidx.compose.material3.DropdownMenuItem
 import androidx.compose.material3.ExperimentalMaterial3Api
+import androidx.compose.material3.ExtendedFloatingActionButton
 import androidx.compose.material3.Icon
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.NavigationBar
@@ -98,30 +99,37 @@ fun HomeScreen(
             }
         }
     })
-    Scaffold(topBar = {
-        CenterAlignedTopAppBar(title = {
-            Text(text = "JIIT Buddy")
-        }, actions = {
-            if (token == "offline") {
-                IconButton(onClick = {
-                    viewModel.onEvent(HomeScreenEvent.OnOfflineAlertClicked)
-                }) {
-                    Icon(Icons.Filled.Warning, contentDescription = "Warning Icon")
-                }
-            } else {
+    Scaffold(
+        floatingActionButton = {
+            if (token != "offline") {
                 if (currentDestination?.route?.contains(BottomBarScreen.Performance.route) == true) {
-                    IconButton(
+                    ExtendedFloatingActionButton(
                         onClick = {
                             viewModel.onEvent(HomeScreenEvent.ButtonViewMarksClicked)
+                        },
+                        icon = {
+                            Icon(
+                                Icons.Filled.FileDownload,
+                                contentDescription = "Download Marks Button"
+                            )
+                        },
+                        text = {
+                            Text(text = "View Marks")
                         }
-                    ) {
-                        Icon(
-                            Icons.Filled.FileDownload,
-                            contentDescription = "Download Marks Button"
-                        )
-                    }
+                    )
                 }
             }
+        }, topBar = {
+            CenterAlignedTopAppBar(title = {
+                Text(text = "JIIT Buddy")
+            }, actions = {
+                if (token == "offline") {
+                    IconButton(onClick = {
+                        viewModel.onEvent(HomeScreenEvent.OnOfflineAlertClicked)
+                    }) {
+                        Icon(Icons.Filled.Warning, contentDescription = "Warning Icon")
+                    }
+                }
             IconButton(onClick = {
                 viewModel.onEvent(HomeScreenEvent.OnLogOutClicked)
             }) {

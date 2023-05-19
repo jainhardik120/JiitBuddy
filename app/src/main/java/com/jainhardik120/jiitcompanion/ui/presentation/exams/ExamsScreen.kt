@@ -20,6 +20,7 @@ import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
@@ -27,7 +28,9 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
+import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.hilt.navigation.compose.hiltViewModel
@@ -176,20 +179,29 @@ fun ExamScheduleItemPreview() {
 
 @Composable
 fun ExamScheduleItem(item: ExamScheduleModel) {
-    Column(
-        modifier = Modifier
-            .fillMaxWidth()
-            .padding(8.dp)
-    ) {
-        Row(Modifier.fillMaxWidth()) {
-            Text(text = item.subjectdesc)
-        }
-        Spacer(Modifier.height(4.dp))
-        Row(Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceAround) {
-            Text(text = item.datetime)
-            Text(text = item.datetimeupto)
-            Text(text = item.roomcode)
-            Text(text = item.seatno)
+    Surface(/*color = if(item.isCurrentPresent){MaterialTheme.colorScheme.surface}else{MaterialTheme.colorScheme.errorContainer}*/) {
+        Column(
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
+        ) {
+            Row(Modifier.fillMaxWidth()) {
+                Text(text = item.subjectdesc)
+            }
+            Spacer(Modifier.height(4.dp))
+            Row(
+                Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceAround,
+                verticalAlignment = Alignment.CenterVertically
+            ) {
+                Text(
+                    text = "${item.day.subSequence(0, 3)} ${item.datetime.subSequence(0, 5)}",
+                    textAlign = TextAlign.Center
+                )
+                Text(text = item.datetimeupto)
+                Text(text = item.roomcode)
+                Text(text = item.seatno)
+            }
         }
     }
 }
