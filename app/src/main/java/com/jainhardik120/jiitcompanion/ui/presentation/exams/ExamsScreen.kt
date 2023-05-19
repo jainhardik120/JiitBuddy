@@ -172,14 +172,14 @@ fun ExamScheduleItemPreview() {
             "G5",
             "A11",
             true,
-            "Monday"
+            ""
         )
     )
 }
 
 @Composable
 fun ExamScheduleItem(item: ExamScheduleModel) {
-    Surface(/*color = if(item.isCurrentPresent){MaterialTheme.colorScheme.surface}else{MaterialTheme.colorScheme.errorContainer}*/) {
+    Surface/*(color = if(item.isCurrentPresent){MaterialTheme.colorScheme.surface}else{MaterialTheme.colorScheme.errorContainer})*/ {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
@@ -195,7 +195,7 @@ fun ExamScheduleItem(item: ExamScheduleModel) {
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = "${item.day.subSequence(0, 3)} ${item.datetime.subSequence(0, 5)}",
+                    text = "${item.day} ${item.datetime}",
                     textAlign = TextAlign.Center
                 )
                 Text(text = item.datetimeupto)

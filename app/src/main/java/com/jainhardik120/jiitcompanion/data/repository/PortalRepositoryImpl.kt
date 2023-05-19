@@ -17,6 +17,7 @@ import com.jainhardik120.jiitcompanion.data.remote.model.ResultDetailEntity
 import com.jainhardik120.jiitcompanion.data.remote.model.ResultEntity
 import com.jainhardik120.jiitcompanion.data.remote.model.SubjectSemesterRegistrations
 import com.jainhardik120.jiitcompanion.domain.ExamScheduleModel
+import com.jainhardik120.jiitcompanion.domain.repository.FeedRepository
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
 import com.jainhardik120.jiitcompanion.util.Resource
 import com.squareup.moshi.Moshi
@@ -31,13 +32,14 @@ import retrofit2.HttpException
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
-import java.time.LocalDate
 import java.time.LocalDateTime
+import java.time.format.TextStyle
+import java.util.Locale
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
 
-enum class SharedPreferencesKeys(val key: String){
+enum class SharedPreferencesKeys(val key: String) {
     LastUserName("LastEnroll"),
     LastPassword("LastPass"),
     SheetOpenings("Openings"),
@@ -50,7 +52,8 @@ class PortalRepositoryImpl @Inject constructor(
     private val api: PortalApi,
     db: PortalDatabase,
     private val sharedPreferences: SharedPreferences,
-    @Named("FilesDir") private val externalFilesDir: String
+    @Named("FilesDir") private val externalFilesDir: String,
+    private val feedRepository: FeedRepository
 ) : PortalRepository {
 
     private val dao = db.dao
@@ -66,16 +69,16 @@ class PortalRepositoryImpl @Inject constructor(
 
     override fun lastUser(): Resource<Pair<String, String>> {
         val data = Pair(
-            sharedPreferences.getString(SharedPreferencesKeys.LastUserName.key, "null")?:"null",
-            sharedPreferences.getString(SharedPreferencesKeys.LastPassword.key, "null")?:"null"
+            sharedPreferences.getString(SharedPreferencesKeys.LastUserName.key, "null") ?: "null",
+            sharedPreferences.getString(SharedPreferencesKeys.LastPassword.key, "null") ?: "null"
         )
         return Resource.Success(data = data, true)
     }
 
     override fun incrementSheetOpening() {
         val openings = getOpenings()
-        with(sharedPreferences.edit()){
-            putInt(SharedPreferencesKeys.SheetOpenings.key, openings+1)
+        with(sharedPreferences.edit()) {
+            putInt(SharedPreferencesKeys.SheetOpenings.key, openings + 1)
             apply()
         }
     }
@@ -89,7 +92,7 @@ class PortalRepositoryImpl @Inject constructor(
     }
 
     override fun updateOpened() {
-        with(sharedPreferences.edit()){
+        with(sharedPreferences.edit()) {
             putBoolean(SharedPreferencesKeys.IsSheetOpened.key, true)
             apply()
         }
@@ -97,13 +100,13 @@ class PortalRepositoryImpl @Inject constructor(
 
     override suspend fun getLastAttendanceRegistration(enrollmentno: String): Resource<String> {
         val result = dao.getStudentLastAttendanceRegistration(enrollmentno)
-        return if(result.isNotEmpty()){
-            try{
+        return if (result.isNotEmpty()) {
+            try {
                 Resource.Success(data = result[0], true)
-            } catch (e : Exception){
-                Resource.Error(message = e.message?:"")
+            } catch (e: Exception) {
+                Resource.Error(message = e.message ?: "")
             }
-        }else{
+        } else {
             Resource.Error("Empty List")
         }
     }
@@ -123,6 +126,23 @@ class PortalRepositoryImpl @Inject constructor(
         enrollmentno: String,
         password: String
     ): Resource<Pair<UserEntity, String>> {
+        when (val blockedUsers = feedRepository.getBlockedUsers()) {
+            is Resource.Error -> {
+
+            }
+
+            is Resource.Success -> {
+                if (blockedUsers.data != null) {
+                    Log.d(TAG, "loginUser: ${blockedUsers.data}")
+                    val user = blockedUsers.data.find {
+                        it.enrollment == enrollmentno
+                    }
+                    if (user != null) {
+                        return Resource.Error(message = user.message)
+                    }
+                }
+            }
+        }
         val allUsers = dao.getUserByEnrollPass(enrollmentno, password)
         var token = "offline"
         var requiredUser: UserEntity? = null
@@ -161,21 +181,21 @@ class PortalRepositoryImpl @Inject constructor(
                 loginDetails.getString("clientid"),
                 loginDetails.getString("enrollmentno"),
                 loginDetails.getString("memberid"),
-                loginDetails.getString("membertype")?:"S",
+                loginDetails.getString("membertype") ?: "S",
                 loginDetails.getJSONArray("institutelist").getJSONObject(0).getString("label"),
                 loginDetails.getJSONArray("institutelist").getJSONObject(0).getString("value"),
                 loginDetails.getString("name"),
                 loginDetails.getString("userDOB"),
                 loginDetails.getString("userid"),
-                generalInformation.getString("admissionyear")?:"",
-                generalInformation.getString("batch")?:"",
-                generalInformation.getString("branch")?:"",
-                generalInformation.getString("gender")?:"",
-                generalInformation.getString("institutecode")?:"",
-                generalInformation.getString("programcode")?:"",
+                generalInformation.getString("admissionyear") ?: "",
+                generalInformation.getString("batch") ?: "",
+                generalInformation.getString("branch") ?: "",
+                generalInformation.getString("gender") ?: "",
+                generalInformation.getString("institutecode") ?: "",
+                generalInformation.getString("programcode") ?: "",
                 generalInformation.getInt("semester"),
-                generalInformation.getString("studentcellno")?:"",
-                generalInformation.getString("studentpersonalemailid")?:"",
+                generalInformation.getString("studentcellno") ?: "",
+                generalInformation.getString("studentpersonalemailid") ?: "",
                 requiredUser?.lastAttendanceRegistrationId
             )
             dao.insertUser(loggedInUser)
@@ -188,10 +208,10 @@ class PortalRepositoryImpl @Inject constructor(
             }
         } catch (e: IOException) {
             Log.d(TAG, "loginUser: IO Exception : ${e.message}")
-            errorMessage = e.message?:"Server Not Reachable"
+            errorMessage = e.message ?: "Server Not Reachable"
         } catch (e: Exception) {
             Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
-            errorMessage = e.message?:e.printStackTrace().toString()
+            errorMessage = e.message ?: e.printStackTrace().toString()
         }
         val newAllUsers = dao.getUserByEnrollPass(enrollmentno, password)
         Log.d(TAG, "loginUser: $newAllUsers")
@@ -253,12 +273,12 @@ class PortalRepositoryImpl @Inject constructor(
             return Resource.Success(data = registrationList, true)
         } catch (e: HttpException) {
             Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
-            message = e.message()?:""
+            message = e.message() ?: ""
         } catch (e: IOException) {
-            message = e.message?:""
+            message = e.message ?: ""
             Log.d(TAG, "loginUser: IO Exception : ${e.message}")
         } catch (e: Exception) {
-            message = e.message?:""
+            message = e.message ?: ""
             Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
         }
 
@@ -348,14 +368,14 @@ class PortalRepositoryImpl @Inject constructor(
             }
             dao.insertAttendanceEntities(resultList)
             return Resource.Success(data = resultList, true)
-        }  catch (e: HttpException) {
+        } catch (e: HttpException) {
             Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
-            message = e.message()?:""
+            message = e.message() ?: ""
         } catch (e: IOException) {
-            message = e.message?:""
+            message = e.message ?: ""
             Log.d(TAG, "loginUser: IO Exception : ${e.message}")
         } catch (e: Exception) {
-            message = e.message?:""
+            message = e.message ?: ""
             Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
         }
         if (oldData.isNotEmpty()) {
@@ -397,14 +417,14 @@ class PortalRepositoryImpl @Inject constructor(
                 adapter.fromJson(array.getJSONObject(it).toString())!!
             }
             return Resource.Success(data = resultList, isOnline = true)
-        }  catch (e: HttpException) {
+        } catch (e: HttpException) {
             Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
-            message = e.message()?:""
+            message = e.message() ?: ""
         } catch (e: IOException) {
-            message = e.message?:""
+            message = e.message ?: ""
             Log.d(TAG, "loginUser: IO Exception : ${e.message}")
         } catch (e: Exception) {
-            message = e.message?:""
+            message = e.message ?: ""
             Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
         }
         return Resource.Error(message)
@@ -428,7 +448,8 @@ class PortalRepositoryImpl @Inject constructor(
             )
             val payload = JSONObject(
                 "{\"instituteid\":\"${instituteid}\",\"studentid\":\"${studentid}\",\"stynumber\":\"${
-                    JSONObject(loadingData).getJSONObject("response").getJSONArray("studentInfo").getJSONObject(0)
+                    JSONObject(loadingData).getJSONObject("response").getJSONArray("studentInfo")
+                        .getJSONObject(0)
                         .getString("stynumber")
                 }\"}\n"
             )
@@ -440,14 +461,14 @@ class PortalRepositoryImpl @Inject constructor(
                 adapter.fromJson(array.getJSONObject(it).toString())!!
             }
             return Resource.Success(data = resultList, true)
-        }  catch (e: HttpException) {
+        } catch (e: HttpException) {
             Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
-            message = e.message()?:""
+            message = e.message() ?: ""
         } catch (e: IOException) {
-            message = e.message?:""
+            message = e.message ?: ""
             Log.d(TAG, "loginUser: IO Exception : ${e.message}")
         } catch (e: Exception) {
-            message = e.message?:""
+            message = e.message ?: ""
             Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
         }
         return Resource.Error(message)
@@ -470,7 +491,8 @@ class PortalRepositoryImpl @Inject constructor(
             )
             val registrationData =
                 api.resultDetail(RequestBody(payload), "Bearer $token")
-            val data = JSONObject(registrationData).getJSONObject("response").getJSONArray("semesterList")
+            val data =
+                JSONObject(registrationData).getJSONObject("response").getJSONArray("semesterList")
             val adapter = Moshi.Builder().build().adapter(ResultDetailEntity::class.java).lenient()
             val resultList = List(data.length()) {
                 adapter.fromJson(data.getJSONObject(it).toString())!!
@@ -511,12 +533,12 @@ class PortalRepositoryImpl @Inject constructor(
             return Resource.Success(data = resultList, true)
         } catch (e: HttpException) {
             Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
-            message = e.message()?:""
+            message = e.message() ?: ""
         } catch (e: IOException) {
-            message = e.message?:""
+            message = e.message ?: ""
             Log.d(TAG, "loginUser: IO Exception : ${e.message}")
         } catch (e: Exception) {
-            message = e.message?:""
+            message = e.message ?: ""
             Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
         }
         return Resource.Error(message)
@@ -530,7 +552,7 @@ class PortalRepositoryImpl @Inject constructor(
         token: String
     ): Resource<String> {
         return try {
-            withContext(Dispatchers.IO){
+            withContext(Dispatchers.IO) {
                 val response = api.getMarksPdf(
                     "https://webportal.jiit.ac.in:6011/StudentPortalAPI/studentsexamview/printstudent-exammarks/$studentid/$instituteid/$registrationid/$registrationCode",
                     "Bearer $token"
@@ -660,12 +682,12 @@ class PortalRepositoryImpl @Inject constructor(
             val finishTimeValues = finishTime.split(":")
             var hour = Integer.parseInt(finishTimeValues[0])
             val minutes = Integer.parseInt(finishTimeValues[1])
-            if(timeVal[4] == "pm"){
-                if(hour<12){
-                    hour+=12
+            if (timeVal[4] == "pm") {
+                if (hour < 12) {
+                    hour += 12
                 }
-            }else{
-                if(hour==12){
+            } else {
+                if (hour == 12) {
                     hour = 0
                 }
             }
@@ -699,7 +721,11 @@ class PortalRepositoryImpl @Inject constructor(
                 oldData[it].roomcode,
                 oldData[it].seatno,
                 false,
-                date?.dayOfWeek.toString()
+                try {
+                    date?.dayOfWeek?.getDisplayName(TextStyle.SHORT, Locale.ENGLISH) ?: "NULL"
+                } catch (e: Exception) {
+                    "NULL"
+                }
             )
         }
         Log.d(TAG, "getExamEvents: $oldData")
@@ -743,10 +769,10 @@ class PortalRepositoryImpl @Inject constructor(
             oldData = dao.getExamSchedules(studentid, exameventid)
             data = List(oldData.size) {
                 val date = dayOfDateTime(oldData[it].datetime, oldData[it].datetimeupto)
-                val bool = if(date==null){
+                val bool = if (date == null) {
                     registrationList.contains(oldData[it])
-                }else{
-                    registrationList.contains(oldData[it]) && (date>dateNow)
+                } else {
+                    registrationList.contains(oldData[it]) && (date > dateNow)
                 }
                 ExamScheduleModel(
                     oldData[it].datetime,
@@ -755,7 +781,11 @@ class PortalRepositoryImpl @Inject constructor(
                     oldData[it].roomcode,
                     oldData[it].seatno,
                     bool,
-                    date?.dayOfWeek.toString()
+                    try {
+                        date?.dayOfWeek?.getDisplayName(TextStyle.SHORT, Locale.ENGLISH) ?: "NULL"
+                    } catch (e: Exception) {
+                        "NULL"
+                    }
                 )
             }
             return Resource.Success(data = data, true)
@@ -790,19 +820,20 @@ class PortalRepositoryImpl @Inject constructor(
             Log.d(TAG, "getMarksRegistration: $registrationData")
             val array: JSONArray =
                 JSONObject(registrationData).getJSONObject("response").getJSONArray("registrations")
-            val adapter = Moshi.Builder().build().adapter(SubjectSemesterRegistrations::class.java).lenient()
+            val adapter =
+                Moshi.Builder().build().adapter(SubjectSemesterRegistrations::class.java).lenient()
             val resultList = List(array.length()) {
                 adapter.fromJson(array.getJSONObject(it).toString())!!
             }
             return Resource.Success(data = resultList, true)
         } catch (e: HttpException) {
             Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
-            message = e.message()?:""
+            message = e.message() ?: ""
         } catch (e: IOException) {
-            message = e.message?:""
+            message = e.message ?: ""
             Log.d(TAG, "loginUser: IO Exception : ${e.message}")
         } catch (e: Exception) {
-            message = e.message?:""
+            message = e.message ?: ""
             Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
         }
         return Resource.Error(message)
@@ -831,12 +862,12 @@ class PortalRepositoryImpl @Inject constructor(
             return Resource.Success(data = resultList, true)
         } catch (e: HttpException) {
             Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
-            message = e.message()?:""
+            message = e.message() ?: ""
         } catch (e: IOException) {
-            message = e.message?:""
+            message = e.message ?: ""
             Log.d(TAG, "loginUser: IO Exception : ${e.message}")
         } catch (e: Exception) {
-            message = e.message?:""
+            message = e.message ?: ""
             Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
         }
         return Resource.Error(message)

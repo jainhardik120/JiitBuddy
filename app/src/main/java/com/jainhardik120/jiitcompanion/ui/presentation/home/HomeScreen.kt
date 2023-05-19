@@ -27,6 +27,7 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.core.content.FileProvider
@@ -36,6 +37,7 @@ import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.rememberNavController
+import com.jainhardik120.jiitcompanion.R
 import com.jainhardik120.jiitcompanion.data.remote.model.MarksRegistration
 import com.jainhardik120.jiitcompanion.ui.components.icons.FileDownload
 import com.jainhardik120.jiitcompanion.ui.components.icons.Logout
@@ -121,7 +123,7 @@ fun HomeScreen(
             }
         }, topBar = {
             CenterAlignedTopAppBar(title = {
-                Text(text = "JIIT Buddy")
+                Text(text = stringResource(id = R.string.app_name))
             }, actions = {
                 if (token == "offline") {
                     IconButton(onClick = {

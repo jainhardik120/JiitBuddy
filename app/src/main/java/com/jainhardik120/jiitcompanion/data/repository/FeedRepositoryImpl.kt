@@ -1,6 +1,7 @@
 package com.jainhardik120.jiitcompanion.data.repository
 
 import com.jainhardik120.jiitcompanion.data.remote.FeedApi
+import com.jainhardik120.jiitcompanion.data.remote.model.BlockedUserItem
 import com.jainhardik120.jiitcompanion.data.remote.model.FeedItem
 import com.jainhardik120.jiitcompanion.domain.repository.FeedRepository
 import com.jainhardik120.jiitcompanion.util.Resource
@@ -21,14 +22,31 @@ class FeedRepositoryImpl @Inject constructor(
                 FeedItem(
                     title=currItem.getString(0),
                     description = currItem.getString(1),
-                    date=currItem.getString(2),
+                    date = currItem.getString(2),
                     imageUrl = currItem.getString(3),
-                    webUrl=currItem.getString(4),
+                    webUrl = currItem.getString(4),
                 )
             }
             return Resource.Success(data = items, isOnline = true)
-        }catch (e:Exception){
+        } catch (e: Exception) {
             return Resource.Error(message = e.message.toString())
+        }
+    }
+
+    override suspend fun getBlockedUsers(): Resource<List<BlockedUserItem>> {
+        return try {
+            val result = api.getBlockedUsers()
+            val json = JSONObject(result).getJSONArray("values")
+            val items = List(json.length()) {
+                val currItem = json.getJSONArray(it)
+                BlockedUserItem(
+                    enrollment = currItem.getString(0),
+                    message = currItem.getString(1)
+                )
+            }
+            Resource.Success(data = items, isOnline = true)
+        } catch (e: Exception) {
+            Resource.Error(message = e.message.toString())
         }
     }
 }
