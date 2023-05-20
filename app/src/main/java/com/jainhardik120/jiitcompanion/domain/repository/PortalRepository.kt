@@ -17,7 +17,7 @@ import com.jainhardik120.jiitcompanion.util.Resource
 
 interface PortalRepository {
 
-    fun lastUser(): Resource<Pair<String, String>>
+    fun lastUser(): Pair<String, String>
 
     fun incrementSheetOpening()
 

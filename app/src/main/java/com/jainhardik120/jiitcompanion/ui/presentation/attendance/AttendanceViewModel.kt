@@ -72,7 +72,7 @@ class AttendanceViewModel @Inject constructor(
             )
             when (result) {
                 is Resource.Success -> {
-                    state = result.data?.let { state.copy(registrations = it) }!!
+                    state = state.copy(registrations = result.data ?: emptyList())
                     for (i in state.registrations) {
                         if (i.registrationid == lastRegistrationId) {
                             state = state.copy(
@@ -344,18 +344,20 @@ class AttendanceViewModel @Inject constructor(
     private fun calcWarnings(attendanceData: List<AttendanceItem>) : List<Int>{
         val warningNumbers=List(attendanceData.size){
             val attendanceWarning = state.attendanceWarning
-            val totalClass = attendanceData[it].totalClass
-            val totalPres = attendanceData[it].totalPres
-            var warningNumber =
-                ((attendanceWarning * (totalClass)) - (100 * totalPres
-                    .toDouble()
-                    .roundToInt())) / (100 - attendanceWarning)
-            if (totalClass != 0 && (totalClass + warningNumber) != 0) {
-                if (((totalPres + warningNumber)) / (totalClass + warningNumber) < attendanceWarning.toDouble()) {
-                    warningNumber++
+            if (attendanceData[it].attendancePercentage >= attendanceWarning) {
+                0
+            } else {
+                val totalClass = attendanceData[it].totalClass
+                val totalPres = attendanceData[it].totalPres
+                var warningNumber =
+                    ((attendanceWarning * (totalClass)) - (100 * totalPres)) / (100 - attendanceWarning)
+                if (totalClass != 0 && (totalClass + warningNumber) != 0) {
+                    if ((totalPres + warningNumber) / (totalClass + warningNumber) < attendanceWarning.toDouble()) {
+                        warningNumber++
+                    }
                 }
+                warningNumber
             }
-            warningNumber
         }
         return warningNumbers
     }

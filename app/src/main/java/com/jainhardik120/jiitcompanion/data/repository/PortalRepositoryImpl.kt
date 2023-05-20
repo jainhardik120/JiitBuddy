@@ -17,7 +17,6 @@ import com.jainhardik120.jiitcompanion.data.remote.model.ResultDetailEntity
 import com.jainhardik120.jiitcompanion.data.remote.model.ResultEntity
 import com.jainhardik120.jiitcompanion.data.remote.model.SubjectSemesterRegistrations
 import com.jainhardik120.jiitcompanion.domain.ExamScheduleModel
-import com.jainhardik120.jiitcompanion.domain.repository.FeedRepository
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
 import com.jainhardik120.jiitcompanion.util.Resource
 import com.squareup.moshi.Moshi
@@ -53,7 +52,7 @@ class PortalRepositoryImpl @Inject constructor(
     db: PortalDatabase,
     private val sharedPreferences: SharedPreferences,
     @Named("FilesDir") private val externalFilesDir: String,
-    private val feedRepository: FeedRepository
+//    private val feedRepository: FeedRepository
 ) : PortalRepository {
 
     private val dao = db.dao
@@ -67,12 +66,11 @@ class PortalRepositoryImpl @Inject constructor(
             .toRequestBody("application/json".toMediaTypeOrNull())
     }
 
-    override fun lastUser(): Resource<Pair<String, String>> {
-        val data = Pair(
+    override fun lastUser(): Pair<String, String> {
+        return Pair(
             sharedPreferences.getString(SharedPreferencesKeys.LastUserName.key, "null") ?: "null",
             sharedPreferences.getString(SharedPreferencesKeys.LastPassword.key, "null") ?: "null"
         )
-        return Resource.Success(data = data, true)
     }
 
     override fun incrementSheetOpening() {
@@ -126,23 +124,6 @@ class PortalRepositoryImpl @Inject constructor(
         enrollmentno: String,
         password: String
     ): Resource<Pair<UserEntity, String>> {
-        when (val blockedUsers = feedRepository.getBlockedUsers()) {
-            is Resource.Error -> {
-
-            }
-
-            is Resource.Success -> {
-                if (blockedUsers.data != null) {
-                    Log.d(TAG, "loginUser: ${blockedUsers.data}")
-                    val user = blockedUsers.data.find {
-                        it.enrollment == enrollmentno
-                    }
-                    if (user != null) {
-                        return Resource.Error(message = user.message)
-                    }
-                }
-            }
-        }
         val allUsers = dao.getUserByEnrollPass(enrollmentno, password)
         var token = "offline"
         var requiredUser: UserEntity? = null

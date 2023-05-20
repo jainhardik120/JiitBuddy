@@ -7,7 +7,9 @@ import androidx.compose.runtime.setValue
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
+import com.jainhardik120.jiitcompanion.data.remote.model.BlockedUserItem
 import com.jainhardik120.jiitcompanion.domain.model.LoginInfo
+import com.jainhardik120.jiitcompanion.domain.repository.FeedRepository
 import com.jainhardik120.jiitcompanion.domain.repository.PortalRepository
 import com.jainhardik120.jiitcompanion.ui.presentation.root.Screen
 import com.jainhardik120.jiitcompanion.util.Resource
@@ -22,7 +24,8 @@ import javax.inject.Inject
 
 @HiltViewModel
 class LoginViewModel @Inject constructor(
-    private val repository: PortalRepository
+    private val repository: PortalRepository,
+    private val feedRepository: FeedRepository
 ) : ViewModel() {
 
     var state by mutableStateOf(LoginState())
@@ -34,11 +37,28 @@ class LoginViewModel @Inject constructor(
         private const val TAG = "LoginViewModel"
     }
 
+    private var blockedUserList: List<BlockedUserItem> = emptyList()
+
     fun initialize() {
         Log.d(TAG, "LoginViewModel: Initialized")
         val lastUser = repository.lastUser()
-        if (!lastUser.data?.first.equals("null")) {
-            lastUser.data?.first?.let { lastUser.data.second.let { it1 -> login(it, it1) } }
+        if (lastUser.first != "null") {
+            login(lastUser.first, lastUser.second)
+        } else {
+            viewModelScope.launch(Dispatchers.IO) {
+                Log.d(TAG, "initialize: Block User Procedure Called")
+                when (val blockedUsers = feedRepository.getBlockedUsers()) {
+                    is Resource.Error -> {
+
+                    }
+
+                    is Resource.Success -> {
+                        if (blockedUsers.data != null) {
+                            blockedUserList = blockedUsers.data
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -55,11 +75,17 @@ class LoginViewModel @Inject constructor(
             is LoginScreenEvent.OnLoginClicked -> {
                 Log.d(TAG, "onEvent: Came Here")
                 if (state.enrollmentNo.isNotEmpty() && state.password.isNotEmpty()) {
-                    login(state.enrollmentNo, state.password)
+                    val user = blockedUserList.find {
+                        it.enrollment == state.enrollmentNo
+                    }
+                    if (user != null) {
+                        sendUiEvent(UiEvent.ShowSnackbar(user.message))
+                    } else {
+                        login(state.enrollmentNo, state.password)
+                    }
                 } else {
                     sendUiEvent(UiEvent.ShowSnackbar("Enter Enrollment No and Password"))
                 }
-
             }
         }
     }
@@ -86,8 +112,13 @@ class LoginViewModel @Inject constructor(
                         )
                     }
                 }
+
                 is Resource.Error -> {
-                    sendUiEvent(UiEvent.ShowSnackbar(message = result.message?:"Unknown Error Occurred"))
+                    sendUiEvent(
+                        UiEvent.ShowSnackbar(
+                            message = result.message ?: "Unknown Error Occurred"
+                        )
+                    )
                 }
             }
         }

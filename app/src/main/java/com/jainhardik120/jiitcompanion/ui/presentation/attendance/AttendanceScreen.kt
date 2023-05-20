@@ -20,29 +20,27 @@ import androidx.compose.foundation.lazy.itemsIndexed
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.text.KeyboardActions
 import androidx.compose.foundation.text.KeyboardOptions
-import androidx.compose.material3.ExperimentalMaterial3Api
-import androidx.compose.material3.Icon
-import androidx.compose.material3.Text
 import androidx.compose.material.icons.Icons
-import com.jainhardik120.jiitcompanion.ui.components.icons.NavigateBefore
-import com.jainhardik120.jiitcompanion.ui.components.icons.NavigateNext
 import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Divider
 import androidx.compose.material3.DropdownMenuItem
+import androidx.compose.material3.ExperimentalMaterial3Api
 import androidx.compose.material3.ExposedDropdownMenuBox
 import androidx.compose.material3.ExposedDropdownMenuDefaults
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.ModalBottomSheet
 import androidx.compose.material3.OutlinedTextField
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.SnackbarHost
 import androidx.compose.material3.SnackbarHostState
+import androidx.compose.material3.Text
 import androidx.compose.material3.rememberModalBottomSheetState
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
+import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
-import androidx.compose.runtime.getValue
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshotFlow
@@ -67,6 +65,8 @@ import androidx.compose.ui.unit.sp
 import androidx.hilt.navigation.compose.hiltViewModel
 import com.jainhardik120.jiitcompanion.data.remote.model.AttendanceEntry
 import com.jainhardik120.jiitcompanion.domain.model.AttendanceItem
+import com.jainhardik120.jiitcompanion.ui.components.icons.NavigateBefore
+import com.jainhardik120.jiitcompanion.ui.components.icons.NavigateNext
 import com.jainhardik120.jiitcompanion.ui.theme.dark_GreenContainer
 import com.jainhardik120.jiitcompanion.ui.theme.dark_onGreenContainer
 import com.jainhardik120.jiitcompanion.ui.theme.light_GreenContainer
@@ -182,7 +182,7 @@ fun AttendanceScreen(
                             }
                         }
                     }
-                    Spacer(Modifier.width(8.dp))
+                    Spacer(Modifier.width(12.dp))
                     OutlinedTextField(
                         value = if (viewModel.state.attendanceWarning == 0) {
                             ""
@@ -240,7 +240,7 @@ fun AttendanceScreen(
             viewModel.onEvent(AttendanceScreenEvent.DismissBottomSheet)
         }, sheetState = bottomSheetState) {
             if (state.isCalendarViewDataReady) {
-                val adjacentMonths: Long = 500
+                val adjacentMonths: Long = 12
                 val currentDate = remember { LocalDate.now() }
                 val currentMonth = remember(currentDate) {
                     if (state.lastAttendanceDate != null) {
@@ -286,8 +286,9 @@ fun AttendanceScreen(
                                     isMonthDate = (day.position == DayPosition.MonthDate),
                                     onClick = { clicked ->
                                         viewModel.onEvent(AttendanceScreenEvent.OnDayClicked(clicked))
-                                    })
-                            },
+                                    }
+                                )
+                            }
                         )
                     }
                     if (state.selectedDate != null) {
