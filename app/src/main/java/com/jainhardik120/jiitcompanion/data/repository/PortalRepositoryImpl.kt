@@ -51,8 +51,7 @@ class PortalRepositoryImpl @Inject constructor(
     private val api: PortalApi,
     db: PortalDatabase,
     private val sharedPreferences: SharedPreferences,
-    @Named("FilesDir") private val externalFilesDir: String,
-//    private val feedRepository: FeedRepository
+    @Named("FilesDir") private val externalFilesDir: String
 ) : PortalRepository {
 
     private val dao = db.dao
@@ -63,6 +62,11 @@ class PortalRepositoryImpl @Inject constructor(
 
     private fun RequestBody(jsonObject: JSONObject): RequestBody {
         return jsonObject.toString()
+            .toRequestBody("application/json".toMediaTypeOrNull())
+    }
+
+    private fun RequestBody(vararg pairs: Pair<String, String>): RequestBody {
+        return JSONObject(pairs.toMap()).toString()
             .toRequestBody("application/json".toMediaTypeOrNull())
     }
 
@@ -133,9 +137,14 @@ class PortalRepositoryImpl @Inject constructor(
         var isOnline = false
         var errorMessage = ""
         try {
-            var jsonObject =
-                JSONObject("{\"otppwd\":\"PWD\",\"username\":\"$enrollmentno\",\"passwordotpvalue\":\"$password\",\"Modulename\":\"STUDENTMODULE\"}")
-            val regdata = api.login(RequestBody(jsonObject), "Bearer")
+            val regdata = api.login(
+                RequestBody(
+                    Pair("otppwd", "PWD"),
+                    Pair("username", enrollmentno),
+                    Pair("passwordotpvalue", password),
+                    Pair("Modulename", "STUDENTMODULE")
+                ), "Bearer"
+            )
             val loginDetails =
                 JSONObject(regdata).getJSONObject("response").getJSONObject("regdata")
             token = loginDetails.getString("token")
@@ -144,14 +153,15 @@ class PortalRepositoryImpl @Inject constructor(
                 putString(SharedPreferencesKeys.LastPassword.key, password)
                 apply()
             }
-            jsonObject = JSONObject(
-                "{\"clientid\":\"SOAU\",\"memberid\":\"${loginDetails.getString("memberid")}\",\"instituteid\":\"${
-                    loginDetails.getJSONArray("institutelist").getJSONObject(0)
-                        .getString("value")
-                }\"}"
-            )
             val generalInfo = api.personalInformation(
-                RequestBody(jsonObject),
+                RequestBody(
+                    Pair("clientid", "SOAU"),
+                    Pair("memberid", loginDetails.getString("memberid")),
+                    Pair(
+                        "instituteid", loginDetails.getJSONArray("institutelist").getJSONObject(0)
+                            .getString("value")
+                    )
+                ),
                 "Bearer $token"
             )
             val generalInformation = JSONObject(generalInfo).getJSONObject("response")
@@ -236,11 +246,15 @@ class PortalRepositoryImpl @Inject constructor(
         val message: String
         val oldData = dao.getStudentAttendanceRegistrationDetails(studentid)
         try {
-            val payload = JSONObject(
-                "{\"clientid\":\"${clientid}\",\"instituteid\":\"${instituteid}\",\"studentid\":\"${studentid}\",\"membertype\":\"${membertype}\"}\n"
-            )
             val registrationData =
-                api.registrationForAttendance(RequestBody(payload), "Bearer $token")
+                api.registrationForAttendance(
+                    RequestBody(
+                        Pair("clientid", clientid),
+                        Pair("instituteid", instituteid),
+                        Pair("studentid", studentid),
+                        Pair("membertype", membertype),
+                    ), "Bearer $token"
+                )
             val data =
                 JSONObject(registrationData).getJSONObject("response").getJSONArray("semlist")
             val registrationList = List(data.length()) {
@@ -280,10 +294,15 @@ class PortalRepositoryImpl @Inject constructor(
         val message: String
         val oldData = dao.getStudentAttendanceOfRegistrationId(studentid, registrationid)
         try {
-            val payload = JSONObject(
-                "{\"clientid\":\"${clientid}\",\"instituteid\":\"${instituteid}\",\"studentid\":\"${studentid}\",\"stynumber\":\"$stynumber\",\"registrationid\":\"${registrationid}\"}"
+            val attendanceData = api.attendanceDetail(
+                RequestBody(
+                    Pair("clientid", clientid),
+                    Pair("instituteid", instituteid),
+                    Pair("studentid", studentid),
+                    Pair("stynumber", stynumber.toString()),
+                    Pair("registrationid", registrationid)
+                ), "Bearer $token"
             )
-            val attendanceData = api.attendanceDetail(RequestBody(payload), "Bearer $token")
             val array =
                 JSONObject(attendanceData).getJSONObject("response")
                     .getJSONArray("studentattendancelist")
@@ -390,7 +409,17 @@ class PortalRepositoryImpl @Inject constructor(
                     subjectId
                 }\",\"cmpidkey\":[${cmpidkey}]}"
             )
-            val data = api.subjectSubjectAttendanceDetail(RequestBody(postParams), "Bearer $token")
+            val data = api.subjectSubjectAttendanceDetail(
+                RequestBody(
+                    /*Pair("clientid",clientid),
+                    Pair("instituteid",instituteid),
+                    Pair("registrationid",registrationid),
+                    Pair("studentid",studentid),
+                    Pair("subjectid",subjectId),
+                    Pair("cmpidkey",),*/
+                    postParams
+                ), "Bearer $token"
+            )
             val array =
                 JSONObject(data).getJSONObject("response").getJSONArray("studentAttdsummarylist")
             val adapter = Moshi.Builder().build().adapter(AttendanceEntry::class.java).lenient()
@@ -420,21 +449,23 @@ class PortalRepositoryImpl @Inject constructor(
         try {
             val loadingData = api.sgpaLoadData(
                 RequestBody(
-                    JSONObject(
-                        "{\"instituteid\":\"${
-                            instituteid
-                        }\",\"studentid\":\"${studentid}\"}"
+                    Pair("instituteid", instituteid),
+                    Pair("studentid", studentid)
+                ), "Bearer $token"
+            )
+            val registrationData = api.studentResultData(
+                RequestBody(
+                    Pair("instituteid", instituteid),
+                    Pair("studentid", studentid),
+                    Pair(
+                        "stynumber",
+                        JSONObject(loadingData).getJSONObject("response")
+                            .getJSONArray("studentInfo")
+                            .getJSONObject(0)
+                            .getString("stynumber")
                     )
                 ), "Bearer $token"
             )
-            val payload = JSONObject(
-                "{\"instituteid\":\"${instituteid}\",\"studentid\":\"${studentid}\",\"stynumber\":\"${
-                    JSONObject(loadingData).getJSONObject("response").getJSONArray("studentInfo")
-                        .getJSONObject(0)
-                        .getString("stynumber")
-                }\"}\n"
-            )
-            val registrationData = api.studentResultData(RequestBody(payload), "Bearer $token")
             val array =
                 JSONObject(registrationData).getJSONObject("response").getJSONArray("semesterList")
             val adapter = Moshi.Builder().build().adapter(ResultEntity::class.java).lenient()
@@ -463,15 +494,14 @@ class PortalRepositoryImpl @Inject constructor(
     ): Resource<List<ResultDetailEntity>> {
         val errorMessage: String
         try {
-            val payload = JSONObject(
-                "{\"instituteid\":\"${
-                    instituteid
-                }\",\"studentid\":\"${studentid}\",\"stynumber\":\"${
-                    stynumber
-                }\"}"
-            )
             val registrationData =
-                api.resultDetail(RequestBody(payload), "Bearer $token")
+                api.resultDetail(
+                    RequestBody(
+                        Pair("instituteid", instituteid),
+                        Pair("studentid", studentid),
+                        Pair("stynumber", stynumber.toString())
+                    ), "Bearer $token"
+                )
             val data =
                 JSONObject(registrationData).getJSONObject("response").getJSONArray("semesterList")
             val adapter = Moshi.Builder().build().adapter(ResultDetailEntity::class.java).lenient()
@@ -499,11 +529,13 @@ class PortalRepositoryImpl @Inject constructor(
     ): Resource<List<MarksRegistration>> {
         val message: String
         try {
-            val payload = JSONObject(
-                "{\"instituteid\":\"${instituteid}\",\"studentid\":\"${studentid}\"}\n"
-            )
             val registrationData =
-                api.studentMarksRegistrations(RequestBody(payload), "Bearer $token")
+                api.studentMarksRegistrations(
+                    RequestBody(
+                        Pair("instituteid", instituteid),
+                        Pair("studentid", studentid)
+                    ), "Bearer $token"
+                )
             Log.d(TAG, "getMarksRegistration: $registrationData")
             val array: JSONArray =
                 JSONObject(registrationData).getJSONObject("response").getJSONArray("semestercode")
@@ -566,11 +598,14 @@ class PortalRepositoryImpl @Inject constructor(
         }
         val errorMessage: String
         try {
-            val payload = JSONObject(
-                "{\"clientid\":\"${clientid}\",\"instituteid\":\"${instituteid}\",\"memberid\":\"${studentid}\"}\n"
-            )
             val registrationData =
-                api.getSemesterCodeExams(RequestBody(payload), "Bearer $token")
+                api.getSemesterCodeExams(
+                    RequestBody(
+                        Pair("clientid", clientid),
+                        Pair("instituteid", instituteid),
+                        Pair("memberid", studentid),
+                    ), "Bearer $token"
+                )
             val data =
                 JSONObject(registrationData).getJSONObject("response")
                     .getJSONObject("semesterCodeinfo")
