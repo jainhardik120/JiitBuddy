@@ -48,20 +48,20 @@ class AttendanceViewModel @Inject constructor(
 
     init {
         val attendanceWarning = repository.getAttendanceWarning()
-        state= state.copy(attendanceWarning = attendanceWarning)
+        state = state.copy(attendanceWarning = attendanceWarning)
     }
 
     fun getRegistrations() {
         token = savedStateHandle.get<String>("token") ?: return
         user = Moshi.Builder().build().adapter(LoginInfo::class.java).lenient()
             .fromJson(savedStateHandle.get<String>("userInfo") ?: return)!!
-        state = state.copy(isOffline = (token=="offline"))
+        state = state.copy(isOffline = (token == "offline"))
         var lastRegistrationId = ""
         viewModelScope.launch(Dispatchers.IO) {
             Log.d(TAG, "UserInfo: ${savedStateHandle.get<String>("userInfo")}")
             val lastRegistrationInfo = repository.getLastAttendanceRegistration(user.enrollmentno)
-            if(lastRegistrationInfo is Resource.Success){
-                lastRegistrationId = lastRegistrationInfo.data?:""
+            if (lastRegistrationInfo is Resource.Success) {
+                lastRegistrationId = lastRegistrationInfo.data ?: ""
             }
             val result = repository.getAttendanceRegistrationDetails(
                 user.clientid,
@@ -85,7 +85,11 @@ class AttendanceViewModel @Inject constructor(
                 }
 
                 is Resource.Error -> {
-                    sendUiEvent(UiEvent.ShowSnackbar(message = result.message?:"Unknown Error Occurred"))
+                    sendUiEvent(
+                        UiEvent.ShowSnackbar(
+                            message = result.message ?: "Unknown Error Occurred"
+                        )
+                    )
                 }
             }
 
@@ -110,15 +114,19 @@ class AttendanceViewModel @Inject constructor(
             }
 
             is AttendanceScreenEvent.OnAttendanceItemClicked -> {
-                state = state.copy(isDetailDataReady = false, isBottomSheetExpanded = true, isCalendarViewDataReady = false)
+                state = state.copy(
+                    isDetailDataReady = false,
+                    isBottomSheetExpanded = true,
+                    isCalendarViewDataReady = false
+                )
                 loadSubjectAttendanceDetails(event.attendanceItem)
             }
 
             AttendanceScreenEvent.DismissBottomSheet -> {
                 state = state.copy(isBottomSheetExpanded = false)
-                if(!repository.getIsOpened()){
+                if (!repository.getIsOpened()) {
                     repository.incrementSheetOpening()
-                    if(repository.getOpenings()>5){
+                    if (repository.getOpenings() > 5) {
                         repository.updateOpened()
                         sendUiEvent(UiEvent.LaunchReview)
                     }
@@ -134,13 +142,14 @@ class AttendanceViewModel @Inject constructor(
                 if (event.warning.isEmpty()) {
                     state = state.copy(attendanceWarning = 0)
                 } else if (event.warning.toIntOrNull() != null) {
-                    state = if(event.warning.toInt()<=99){
+                    state = if (event.warning.toInt() <= 99) {
                         state.copy(attendanceWarning = event.warning.toInt())
-                    }else{
+                    } else {
                         state.copy(attendanceWarning = 99)
                     }
                 }
             }
+
             AttendanceScreenEvent.OnKeyboardDone -> {
                 repository.updateAttendanceWarning(state.attendanceWarning)
                 state = state.copy(attendanceWarningNumbers = calcWarnings(state.attendanceData))
@@ -172,17 +181,22 @@ class AttendanceViewModel @Inject constructor(
                 is Resource.Success -> {
                     if (result.data != null) {
                         state = state.copy(attendanceEntries = result.data)
-                        state = try{
+                        state = try {
                             convertMap()
                             state.copy(isDetailDataReady = true, isCalendarViewDataReady = true)
-                        }catch (e: Exception){
+                        } catch (e: Exception) {
                             e.printStackTrace()
                             state.copy(isDetailDataReady = true, isCalendarViewDataReady = false)
                         }
                     }
                 }
+
                 is Resource.Error -> {
-                    sendUiEvent(UiEvent.ShowSnackbar(message = result.message?:"Unknown Error Occurred"))
+                    sendUiEvent(
+                        UiEvent.ShowSnackbar(
+                            message = result.message ?: "Unknown Error Occurred"
+                        )
+                    )
                 }
             }
         }
@@ -291,17 +305,22 @@ class AttendanceViewModel @Inject constructor(
                                     Log.d("myApp", e.message.toString())
                                 }
                             }
-                            val absent = (attendanceEntity.abseent?:0.0).toInt()
+                            val absent = (attendanceEntity.abseent ?: 0.0).toInt()
                             if (attendanceEntity.Psubjectcomponentcode == "P") {
                                 try {
-                                    if (attendanceEntity.Ppercentage == 100.0 || absent == 0) {
+                                    if (attendanceEntity.Ppercentage == 0.0 && absent == 0) {
+                                        attendanceText += "Practical : " + "No Data\n"
+                                    } else if (attendanceEntity.Ppercentage == 100.0 || absent == 0) {
                                         attendanceText += "Practical : " + "100\n"
                                     } else {
                                         attendanceText += "Practical : " + attendanceEntity.Ppercentage
                                         totalPres +=
-                                            (((attendanceEntity.Ppercentage?:0.0) / ((100 - (attendanceEntity.Ppercentage?:0.0)) / absent)).roundToInt())
+                                            (((attendanceEntity.Ppercentage
+                                                ?: 0.0) / ((100 - (attendanceEntity.Ppercentage
+                                                ?: 0.0)) / absent)).roundToInt())
                                         totalClass +=
-                                            ((100 / ((100 - (attendanceEntity.Ppercentage?:0.0)) / absent)).roundToInt())
+                                            ((100 / ((100 - (attendanceEntity.Ppercentage
+                                                ?: 0.0)) / absent)).roundToInt())
                                         attendanceText += "\n"
                                     }
                                     attendanceEntity.Psubjectcomponentid?.let { it1 ->
@@ -329,7 +348,10 @@ class AttendanceViewModel @Inject constructor(
                             )
                         }
                         val warnings = calcWarnings(attendanceData)
-                        state = state.copy(attendanceData = attendanceData, attendanceWarningNumbers = warnings)
+                        state = state.copy(
+                            attendanceData = attendanceData,
+                            attendanceWarningNumbers = warnings
+                        )
                     }
                     Log.d(TAG, "loadAttendanceDetails: ${result.data}")
                 }
@@ -341,8 +363,8 @@ class AttendanceViewModel @Inject constructor(
         }
     }
 
-    private fun calcWarnings(attendanceData: List<AttendanceItem>) : List<Int>{
-        val warningNumbers=List(attendanceData.size){
+    private fun calcWarnings(attendanceData: List<AttendanceItem>): List<Int> {
+        val warningNumbers = List(attendanceData.size) {
             val attendanceWarning = state.attendanceWarning
             if (attendanceData[it].attendancePercentage >= attendanceWarning) {
                 0

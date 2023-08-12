@@ -29,3 +29,5 @@
  # is used.
  -keep,allowobfuscation,allowshrinking class kotlin.coroutines.Continuation
 
+ -keep class com.jainhardik120.jiitcompanion.data.** { *; }
+ -keep class com.jainhardik120.jiitcompanion.domain.model.** { *; }

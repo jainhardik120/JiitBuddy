@@ -145,6 +145,7 @@ class PortalRepositoryImpl @Inject constructor(
                     Pair("Modulename", "STUDENTMODULE")
                 ), "Bearer"
             )
+            Log.d(TAG, "loginUser: $regdata")
             val loginDetails =
                 JSONObject(regdata).getJSONObject("response").getJSONObject("regdata")
             token = loginDetails.getString("token")
