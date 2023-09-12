@@ -2,7 +2,7 @@
 <resources>
     <style name="Theme.JIITBuddy.Splash" parent="Theme.SplashScreen">
         <item name="windowSplashScreenBackground">#FFFFFF</item>
-        <item name="windowSplashScreenAnimatedIcon">@drawable/education</item>
+        <item name="windowSplashScreenAnimatedIcon">@drawable/splash_img</item>
         <item name="postSplashScreenTheme">@style/Theme.JIITBuddy</item>
     </style>
 </resources>

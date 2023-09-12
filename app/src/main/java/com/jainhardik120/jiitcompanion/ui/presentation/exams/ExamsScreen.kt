@@ -161,7 +161,7 @@ fun ExamsScreen(
     }
 }
 
-@Preview(showBackground = true)
+@Preview(showBackground = true, device = "spec:width=720px,height=1560px,dpi=240")
 @Composable
 fun ExamScheduleItemPreview() {
     ExamScheduleItem(
@@ -172,7 +172,7 @@ fun ExamScheduleItemPreview() {
             "G5",
             "A11",
             true,
-            ""
+            "Mon"
         )
     )
 }
@@ -183,7 +183,7 @@ fun ExamScheduleItem(item: ExamScheduleModel) {
         Column(
             modifier = Modifier
                 .fillMaxWidth()
-                .padding(8.dp)
+                .padding(vertical = 8.dp, horizontal = 16.dp)
         ) {
             Row(Modifier.fillMaxWidth()) {
                 Text(text = item.subjectdesc)
@@ -191,16 +191,16 @@ fun ExamScheduleItem(item: ExamScheduleModel) {
             Spacer(Modifier.height(4.dp))
             Row(
                 Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceAround,
                 verticalAlignment = Alignment.CenterVertically
             ) {
-                Text(
-                    text = "${item.day} ${item.datetime}",
-                    textAlign = TextAlign.Center
-                )
-                Text(text = item.datetimeupto)
-                Text(text = item.roomcode)
-                Text(text = item.seatno)
+                Column(Modifier.weight(1f).fillMaxWidth()){
+                    Text(
+                        text = "${item.day} ${item.datetime}",
+                        textAlign = TextAlign.Center
+                    )
+                    Text(text = item.datetimeupto)
+                }
+                Text(text = "${item.roomcode} ${item.seatno}")
             }
         }
     }

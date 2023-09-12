@@ -116,9 +116,11 @@ fun AttendanceScreen(
                 is UiEvent.LaunchReview -> {
                     onReview()
                 }
+
                 is UiEvent.ShowSnackbar -> {
                     hostState.showSnackbar(it.message)
                 }
+
                 else -> {
 
                 }
@@ -328,7 +330,7 @@ fun AttendanceScreen(
                 LazyColumn {
                     itemsIndexed(state.attendanceEntries) { index, item ->
                         AttendanceEntryItem(item)
-                        if (index != (state.attendanceEntries.size-1)
+                        if (index != (state.attendanceEntries.size - 1)
                         ) {
                             Divider()
                         }
