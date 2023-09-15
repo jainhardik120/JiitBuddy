@@ -17,6 +17,11 @@ import androidx.navigation.compose.rememberNavController
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 //import com.google.android.gms.ads.MobileAds
 import com.google.android.play.core.review.ReviewManagerFactory
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.remoteconfig.FirebaseRemoteConfig
+import com.google.firebase.remoteconfig.ktx.remoteConfig
+import com.google.firebase.remoteconfig.ktx.remoteConfigSettings
+import com.jainhardik120.jiitcompanion.R
 import com.jainhardik120.jiitcompanion.ui.presentation.root.RootNavigationGraph
 import com.jainhardik120.jiitcompanion.ui.theme.JIITBuddyTheme
 import dagger.hilt.android.AndroidEntryPoint
@@ -24,10 +29,14 @@ import dagger.hilt.android.AndroidEntryPoint
 @AndroidEntryPoint
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
-//        MobileAds.initialize(this){
-//
-//        }
         super.onCreate(savedInstanceState)
+        val remoteConfig: FirebaseRemoteConfig = Firebase.remoteConfig
+        val configSettings = remoteConfigSettings {
+            minimumFetchIntervalInSeconds = 3600
+        }
+        remoteConfig.setConfigSettingsAsync(configSettings)
+        remoteConfig.setDefaultsAsync(R.xml.remote_config)
+        remoteConfig.fetchAndActivate()
         installSplashScreen()
         setContent {
             JIITBuddyTheme {

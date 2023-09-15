@@ -1,7 +1,13 @@
 package com.jainhardik120.jiitcompanion.data.repository
 
 import android.content.SharedPreferences
+import android.os.Build
+import android.util.Base64
 import android.util.Log
+import androidx.annotation.RequiresApi
+import com.google.firebase.ktx.Firebase
+import com.google.firebase.remoteconfig.ktx.get
+import com.google.firebase.remoteconfig.ktx.remoteConfig
 import com.jainhardik120.jiitcompanion.data.local.PortalDatabase
 import com.jainhardik120.jiitcompanion.data.local.entity.ExamEventsEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.ExamRegistrationsEntity
@@ -34,6 +40,9 @@ import java.io.IOException
 import java.time.LocalDateTime
 import java.time.format.TextStyle
 import java.util.Locale
+import javax.crypto.Cipher
+import javax.crypto.spec.IvParameterSpec
+import javax.crypto.spec.SecretKeySpec
 import javax.inject.Inject
 import javax.inject.Named
 import javax.inject.Singleton
@@ -68,6 +77,20 @@ class PortalRepositoryImpl @Inject constructor(
     private fun RequestBody(vararg pairs: Pair<String, String>): RequestBody {
         return JSONObject(pairs.toMap()).toString()
             .toRequestBody("application/json".toMediaTypeOrNull())
+    }
+
+    private fun aes256Encryption(plainText: String): String {
+        val remoteConfig = Firebase.remoteConfig
+        val iv = remoteConfig.getString("enc_iv")
+        val encKey = remoteConfig.getString("enc_key")
+        val ivBytes = iv.toByteArray()
+        val secretKeyBytes = encKey.toByteArray()
+        val secretKeySpec = SecretKeySpec(secretKeyBytes, "AES")
+        val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+        val ivParameterSpec = IvParameterSpec(ivBytes)
+        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec)
+        val encryptedBytes = cipher.doFinal(plainText.toByteArray())
+        return Base64.encodeToString(encryptedBytes, Base64.DEFAULT)
     }
 
     override fun lastUser(): Pair<String, String> {
@@ -137,13 +160,15 @@ class PortalRepositoryImpl @Inject constructor(
         var isOnline = false
         var errorMessage = ""
         try {
+            val encryptedValue = aes256Encryption(JSONObject(mapOf(
+                Pair("otppwd", "PWD"),
+                Pair("username", enrollmentno),
+                Pair("passwordotpvalue", password),
+                Pair("Modulename", "STUDENTMODULE")
+            )).toString())
+            Log.d(TAG, "loginUser: $encryptedValue")
             val regdata = api.login(
-                RequestBody(
-                    Pair("otppwd", "PWD"),
-                    Pair("username", enrollmentno),
-                    Pair("passwordotpvalue", password),
-                    Pair("Modulename", "STUDENTMODULE")
-                ), "Bearer"
+                encryptedValue, "Bearer"
             )
             Log.d(TAG, "loginUser: $regdata")
             val loginDetails =

@@ -1,0 +1,39 @@
+{
+  "project_info": {
+    "project_number": "147683424100",
+    "project_id": "jiit-companion-374808",
+    "storage_bucket": "jiit-companion-374808.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:147683424100:android:57e6decc7515ebffe56c71",
+        "android_client_info": {
+          "package_name": "com.jainhardik120.jiitcompanion"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "147683424100-us8qp20nm6c2cf6d90v9i78ssldld2rg.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyCTGmo8eMg9l4G3ZDpvnxidD04TZj1k0rY"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "147683424100-us8qp20nm6c2cf6d90v9i78ssldld2rg.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

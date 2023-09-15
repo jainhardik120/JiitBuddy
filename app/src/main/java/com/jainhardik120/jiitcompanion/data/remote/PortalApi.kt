@@ -36,7 +36,7 @@ interface PortalApi {
     }
 
     @POST("token/generate-token1")
-    suspend fun login(@Body body: RequestBody, @Header("Authorization") authorization: String): String
+    suspend fun login(@Body body: String, @Header("Authorization") authorization: String): String
 
     @POST("studentpersinfo/getstudent-personalinformation")
     suspend fun personalInformation(@Body body: RequestBody, @Header("Authorization") authorization: String) : String
