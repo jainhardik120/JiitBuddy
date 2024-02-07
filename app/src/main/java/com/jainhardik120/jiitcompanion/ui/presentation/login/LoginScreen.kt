@@ -1,5 +1,9 @@
 package com.jainhardik120.jiitcompanion.ui.presentation.login
 
+import android.graphics.Bitmap
+import android.graphics.BitmapFactory
+import android.util.Base64
+import androidx.compose.foundation.Image
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Row
@@ -29,6 +33,30 @@ import com.jainhardik120.jiitcompanion.ui.components.icons.BugReport
 import com.jainhardik120.jiitcompanion.ui.components.icons.Visibility
 import com.jainhardik120.jiitcompanion.ui.components.icons.VisibilityOff
 import com.jainhardik120.jiitcompanion.util.UiEvent
+import androidx.compose.runtime.Composable
+import androidx.compose.ui.graphics.asImageBitmap
+import androidx.compose.ui.layout.ContentScale
+
+@Composable
+fun BitmapImage(bitmap: Bitmap) {
+    Image(
+        bitmap = bitmap.asImageBitmap(),
+        contentDescription = "Image Description",
+        modifier = Modifier.fillMaxWidth(),
+        contentScale = ContentScale.FillWidth
+    )
+}
+
+fun convertBase64ToBitmap(base64String: String): Bitmap {
+    val decodedBytes: ByteArray = Base64.decode(base64String, Base64.DEFAULT)
+    return BitmapFactory.decodeByteArray(decodedBytes, 0, decodedBytes.size)
+}
+
+@Composable
+fun Base64Image(base64String: String) {
+    val bitmap = convertBase64ToBitmap(base64String)
+    BitmapImage(bitmap)
+}
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -65,29 +93,57 @@ fun LoginScreen(
                 Icon(Icons.Filled.BugReport, contentDescription = "Report an issue")
             }
         })
-    },snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) {
+    }, snackbarHost = { SnackbarHost(hostState = snackbarHostState) }) {
         Column(
             Modifier
                 .padding(it)
-                .fillMaxSize(), verticalArrangement = Arrangement.Center) {
-            LoginCard(state = state, onEvent = {event->
+                .fillMaxSize(), verticalArrangement = Arrangement.Center
+        ) {
+            LoginCard(state = state, onEvent = { event ->
                 viewModel.onEvent(event)
             })
         }
     }
-    if(state.isLoading){
-        AlertDialog(onDismissRequest = {
+    if (state.isLoading) {
+        AlertDialog(
+            onDismissRequest = {
 
-        }, properties = DialogProperties(
-            dismissOnBackPress = false,
-            dismissOnClickOutside = false,
-        )) {
-            Row(Modifier.fillMaxWidth(), verticalAlignment = Alignment.CenterVertically, horizontalArrangement = Arrangement.Center) {
-                CircularProgressIndicator()
+            }, properties = DialogProperties(
+                dismissOnBackPress = false,
+                dismissOnClickOutside = false,
+            )
+        ) {
+            Row(
+                Modifier.fillMaxWidth(),
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.Center
+            ) {
+//                CircularProgressIndicator()
                 Spacer(modifier = Modifier.width(16.dp))
                 Text(text = "Logging in...")
             }
         }
+    }
+    if (state.isCaptchaDialogOpened) {
+        AlertDialog(onDismissRequest = {}, properties = DialogProperties(
+            dismissOnBackPress = false,
+            dismissOnClickOutside = false,
+        ), title = {
+            Text(text = "Verify Captcha")
+        }, text = {
+            Column(modifier = Modifier.fillMaxWidth()) {
+                Base64Image(base64String = state.captchaImageBase64)
+                OutlinedTextField(
+                    value = state.captchaText,
+                    onValueChange = { viewModel.onEvent(LoginScreenEvent.OnCaptchaChange(it)) })
+            }
+        }, confirmButton = {
+            TextButton(onClick = {
+                viewModel.onEvent(LoginScreenEvent.VerifyCaptchaClicked)
+            }) {
+                Text(text = "Verify")
+            }
+        })
     }
 }
 
@@ -109,7 +165,7 @@ fun LoginCard(state: LoginState, onEvent: (LoginScreenEvent) -> Unit) {
                 onDone = {
 
                 }
-            ),singleLine = true,
+            ), singleLine = true,
             onValueChange = {
                 onEvent(
                     LoginScreenEvent.OnEnrollmentNoChange(it)

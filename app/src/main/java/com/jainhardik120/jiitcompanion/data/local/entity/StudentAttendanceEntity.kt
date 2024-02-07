@@ -23,5 +23,6 @@ data class StudentAttendanceEntity(
     val abseent: Double? = 0.0,
     val slno: Int? = 0,
     val subjectcode: String,
-    val subjectid: String
+    val subjectid: String,
+    val indsubcode: String
 )

@@ -43,7 +43,8 @@ class LoginViewModel @Inject constructor(
         Log.d(TAG, "LoginViewModel: Initialized")
         val lastUser = repository.lastUser()
         if (lastUser.first != "null") {
-            login(lastUser.first, lastUser.second)
+            state = state.copy(enrollmentNo = lastUser.first, password = lastUser.second)
+            login()
         } else {
             viewModelScope.launch(Dispatchers.IO) {
                 Log.d(TAG, "initialize: Block User Procedure Called")
@@ -81,46 +82,102 @@ class LoginViewModel @Inject constructor(
                     if (user != null) {
                         sendUiEvent(UiEvent.ShowSnackbar(user.message))
                     } else {
-                        login(state.enrollmentNo, state.password)
+                        login()
                     }
                 } else {
                     sendUiEvent(UiEvent.ShowSnackbar("Enter Enrollment No and Password"))
                 }
             }
+
+            is LoginScreenEvent.OnCaptchaChange -> {
+                state = state.copy(captchaText = event.captcha)
+            }
+
+            LoginScreenEvent.VerifyCaptchaClicked -> {
+                state = state.copy(isCaptchaDialogOpened = false, isLoading = true)
+                viewModelScope.launch(Dispatchers.IO) {
+                    val captchaResponse = repository.validateCaptcha(
+                        state.enrollmentNo,
+                        state.captchaText,
+                        state.hiddenVal,
+                        state.captchaImageBase64
+                    )
+                    state = state.copy(isLoading = false)
+                    when (captchaResponse) {
+                        is Resource.Error -> {
+                            sendUiEvent(
+                                UiEvent.ShowSnackbar(
+                                    message = captchaResponse.message ?: "Unknown Error Occurred"
+                                )
+                            )
+                        }
+
+                        is Resource.Success -> {
+                            captchaResponse.data?.let {
+                                state = state.copy(isLoading = true)
+                                val result = repository.loginUser(state.enrollmentNo, state.password, it.random)
+                                state = state.copy(isLoading = false)
+                                when (result) {
+                                    is Resource.Success -> {
+                                        if (result.data != null) {
+                                            val json =
+                                                Moshi.Builder().build()
+                                                    .adapter(LoginInfo::class.java).lenient()
+                                                    .toJson(
+                                                        toLoginInfo(result.data.first)
+                                                    )
+                                            sendUiEvent(
+                                                UiEvent.Navigate(
+                                                    Screen.HomeScreen.withArgs(
+                                                        json,
+                                                        result.data.second
+                                                    )
+                                                )
+                                            )
+                                        }
+                                    }
+
+                                    is Resource.Error -> {
+                                        sendUiEvent(
+                                            UiEvent.ShowSnackbar(
+                                                message = result.message ?: "Unknown Error Occurred"
+                                            )
+                                        )
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+            }
         }
     }
 
-    fun login(enrollment: String, password: String) {
+    fun login() {
         state = state.copy(isLoading = true)
         viewModelScope.launch(Dispatchers.IO) {
-            val result = repository.loginUser(enrollment, password)
+            val captchaResponse = repository.getCaptcha()
             state = state.copy(isLoading = false)
-            when (result) {
-                is Resource.Success -> {
-                    if (result.data != null) {
-                        val json =
-                            Moshi.Builder().build().adapter(LoginInfo::class.java).lenient().toJson(
-                                toLoginInfo(result.data.first)
-                            )
-                        sendUiEvent(
-                            UiEvent.Navigate(
-                                Screen.HomeScreen.withArgs(
-                                    json,
-                                    result.data.second
-                                )
-                            )
-                        )
-                    }
-                }
-
+            when (captchaResponse) {
                 is Resource.Error -> {
                     sendUiEvent(
                         UiEvent.ShowSnackbar(
-                            message = result.message ?: "Unknown Error Occurred"
+                            message = captchaResponse.message ?: "Unknown Error Occurred"
                         )
                     )
                 }
+
+                is Resource.Success -> {
+                    captchaResponse.data?.let {
+                        state = state.copy(
+                            captchaImageBase64 = it.image,
+                            hiddenVal = it.hidden,
+                            isCaptchaDialogOpened = true
+                        )
+                    }
+                }
             }
+
         }
     }
 

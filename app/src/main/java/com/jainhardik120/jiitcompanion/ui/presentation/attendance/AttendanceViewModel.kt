@@ -175,6 +175,8 @@ class AttendanceViewModel @Inject constructor(
                 attendanceItem.subjectId,
                 state.selectedSemesterId,
                 componentIdString,
+                state.selectedSemesterCode,
+                attendanceItem.subjectCode,
                 token
             )
             when (result) {
@@ -255,7 +257,7 @@ class AttendanceViewModel @Inject constructor(
                 user.instituteValue,
                 user.memberid,
                 1,
-                state.selectedSemesterId,
+                state.selectedSemesterId,state.selectedSemesterCode,
                 token
             )
             when (result) {
@@ -344,7 +346,8 @@ class AttendanceViewModel @Inject constructor(
                                 totalClass,
                                 totalPres,
                                 attendanceText,
-                                componentIdText
+                                componentIdText,
+                                attendanceEntity.indsubcode
                             )
                         }
                         val warnings = calcWarnings(attendanceData)

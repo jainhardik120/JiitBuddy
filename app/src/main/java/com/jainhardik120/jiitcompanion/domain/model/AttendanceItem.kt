@@ -7,5 +7,6 @@ data class AttendanceItem(
     val totalClass:Int,
     val totalPres:Int,
     val attendanceDetailText: String,
-    val componentIdText : ArrayList<String>
+    val componentIdText : ArrayList<String>,
+    val subjectCode : String
 )

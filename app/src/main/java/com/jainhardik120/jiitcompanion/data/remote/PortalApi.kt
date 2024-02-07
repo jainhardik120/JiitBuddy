@@ -1,5 +1,6 @@
 package com.jainhardik120.jiitcompanion.data.remote
 
+import com.jainhardik120.jiitcompanion.data.repository.PortalRepositoryImpl
 import okhttp3.Interceptor
 import okhttp3.RequestBody
 import okhttp3.Response
@@ -9,8 +10,35 @@ import retrofit2.http.GET
 import retrofit2.http.Header
 import retrofit2.http.POST
 import retrofit2.http.Url
+import java.security.SecureRandom
+import java.time.LocalDate
 
 class RetrofitInterceptor : Interceptor {
+    private fun generateLocalName() : String{
+        val l = "0123456789ABCDEFGHIJKLMNOPQRSTUVWXTZabcdefghiklmnopqrstuvwxyz"
+        val random = SecureRandom()
+        val stringBuilder = StringBuilder()
+
+        repeat(9) {
+            val randomIndex = random.nextInt(l.length)
+            stringBuilder.append(l[randomIndex])
+        }
+
+        val o = stringBuilder.toString()
+        val r = o.substring(0, 4)
+        val u = o.substring(4, 9)
+
+        val s = LocalDate.now()
+        val d = s.dayOfMonth.toString().padStart(2, '0')
+        val c = (s.dayOfWeek.value % 7).toString()
+        val p = s.monthValue.toString().padStart(2, '0')
+        val h = s.year.toString().substring(2)
+
+        val v = "${d[0]}${p[0]}${h[0]}$c${d[1]}${p[1]}${h[1]}"
+        val loc= PortalRepositoryImpl.aes256Encryption(r+v+u)
+        println(loc)
+        return loc
+    }
     override fun intercept(chain: Interceptor.Chain): Response {
         val request = chain.request().newBuilder()
             .addHeader("Accept", "application/json, text/plain, */*")
@@ -25,6 +53,7 @@ class RetrofitInterceptor : Interceptor {
             .addHeader("Sec-Fetch-Dest", "empty")
             .addHeader("Sec-Fetch-Mode", "cors")
             .addHeader("Sec-Fetch-Site", "same-origin")
+            .addHeader("Localname", generateLocalName().trim())
             .build()
         return chain.proceed(request)
     }
@@ -34,6 +63,12 @@ interface PortalApi {
     companion object{
         const val BASE_URL = "https://webportal.jiit.ac.in:6011/StudentPortalAPI/"
     }
+
+    @GET("token/getcaptcha")
+    suspend fun getCaptcha(@Header("Authorization") authorization: String): String
+
+    @POST("token/pretoken-check")
+    suspend fun validateCaptcha(@Body body: String, @Header("Authorization") authorization: String) : String
 
     @POST("token/generate-token1")
     suspend fun login(@Body body: String, @Header("Authorization") authorization: String): String

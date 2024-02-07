@@ -8,7 +8,7 @@ sealed class HomeScreenEvent{
     object OfflineDialogConfirmed:HomeScreenEvent()
     object OfflineDialogDismissed:HomeScreenEvent()
     object OnLogOutDismissed:HomeScreenEvent()
-    object OnOfflineAlertClicked:HomeScreenEvent()
+    data object OnOfflineAlertClicked:HomeScreenEvent()
     data class BottomNavItemClicked(val screen:BottomBarScreen):HomeScreenEvent()
     object ButtonViewMarksClicked: HomeScreenEvent()
     object MarksDialogDismissed: HomeScreenEvent()

@@ -6,6 +6,8 @@ import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceRegistrationEntity
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.data.remote.model.AttendanceEntry
+import com.jainhardik120.jiitcompanion.data.remote.model.CaptchaResponse
+import com.jainhardik120.jiitcompanion.data.remote.model.CaptchaValidationResponse
 import com.jainhardik120.jiitcompanion.data.remote.model.MarksRegistration
 import com.jainhardik120.jiitcompanion.data.remote.model.RegisteredSubject
 import com.jainhardik120.jiitcompanion.data.remote.model.ResultDetailEntity
@@ -33,9 +35,13 @@ interface PortalRepository {
 
     suspend fun getLastAttendanceRegistration(enrollmentno: String):Resource<String>
 
+    suspend fun getCaptcha():Resource<CaptchaResponse>
+
+    suspend fun validateCaptcha(username : String, captcha : String, hidden : String, image : String) : Resource<CaptchaValidationResponse>
+
     suspend fun loginUser(
         enrollmentno: String,
-        password: String
+        password: String, random : String
     ): Resource<Pair<UserEntity, String>>
 
     suspend fun updateUserLastAttendanceRegistrationId(enrollmentno: String, registrationid: String)
@@ -56,14 +62,16 @@ interface PortalRepository {
         clientid: String,
         instituteid: String,
         studentid: String,
-        stynumber: Int, registrationid: String, token: String
+        stynumber: Int, registrationid: String,registrationCode: String, token: String
     ): Resource<List<StudentAttendanceEntity>>
 
     suspend fun getSubjectAttendanceDetails(
         clientid: String,
         instituteid: String,
         studentid: String,
-        subjectId: String, registrationid: String, cmpidkey: String, token: String
+        subjectId: String, registrationid: String, cmpidkey: String,
+        registrationCode: String,
+        subjectcode : String, token: String
     ): Resource<List<AttendanceEntry>>
 
     suspend fun getExamRegistrations(

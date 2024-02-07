@@ -17,6 +17,8 @@ import com.jainhardik120.jiitcompanion.data.local.entity.StudentAttendanceRegist
 import com.jainhardik120.jiitcompanion.data.local.entity.UserEntity
 import com.jainhardik120.jiitcompanion.data.remote.PortalApi
 import com.jainhardik120.jiitcompanion.data.remote.model.AttendanceEntry
+import com.jainhardik120.jiitcompanion.data.remote.model.CaptchaResponse
+import com.jainhardik120.jiitcompanion.data.remote.model.CaptchaValidationResponse
 import com.jainhardik120.jiitcompanion.data.remote.model.MarksRegistration
 import com.jainhardik120.jiitcompanion.data.remote.model.RegisteredSubject
 import com.jainhardik120.jiitcompanion.data.remote.model.ResultDetailEntity
@@ -34,9 +36,11 @@ import okhttp3.RequestBody.Companion.toRequestBody
 import org.json.JSONArray
 import org.json.JSONObject
 import retrofit2.HttpException
+import retrofit2.Response
 import java.io.File
 import java.io.FileOutputStream
 import java.io.IOException
+import java.time.LocalDate
 import java.time.LocalDateTime
 import java.time.format.TextStyle
 import java.util.Locale
@@ -67,6 +71,35 @@ class PortalRepositoryImpl @Inject constructor(
 
     companion object {
         private const val TAG = "PortalRepositoryDebug"
+
+        private fun generateKeyValue(): String {
+            val e = LocalDate.now()
+            val n = e.dayOfMonth
+            val t = e.dayOfWeek.value % 7
+            val l = e.monthValue
+            val o = e.year.toString().substring(2)
+
+            val i = if (n.toString().length < 2) n.toString().padStart(2, '0') else n.toString()
+            val a = if (l.toString().length < 2) l.toString().padStart(2, '0') else l.toString()
+
+            val r = "qa8y" + "${i[0]}${a[0]}${o[0]}$t${i[1]}${a[1]}${o[1]}" + "ty1pn"
+            println(r)
+            return r
+        }
+
+        fun aes256Encryption(plainText: String): String {
+            val remoteConfig = Firebase.remoteConfig
+            val iv = remoteConfig.getString("enc_iv")
+            val encKey = generateKeyValue()
+            val ivBytes = iv.toByteArray()
+            val secretKeyBytes = encKey.toByteArray()
+            val secretKeySpec = SecretKeySpec(secretKeyBytes, "AES")
+            val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
+            val ivParameterSpec = IvParameterSpec(ivBytes)
+            cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec)
+            val encryptedBytes = cipher.doFinal(plainText.toByteArray())
+            return Base64.encodeToString(encryptedBytes, Base64.DEFAULT)
+        }
     }
 
     private fun RequestBody(jsonObject: JSONObject): RequestBody {
@@ -79,19 +112,6 @@ class PortalRepositoryImpl @Inject constructor(
             .toRequestBody("application/json".toMediaTypeOrNull())
     }
 
-    private fun aes256Encryption(plainText: String): String {
-        val remoteConfig = Firebase.remoteConfig
-        val iv = remoteConfig.getString("enc_iv")
-        val encKey = remoteConfig.getString("enc_key")
-        val ivBytes = iv.toByteArray()
-        val secretKeyBytes = encKey.toByteArray()
-        val secretKeySpec = SecretKeySpec(secretKeyBytes, "AES")
-        val cipher = Cipher.getInstance("AES/CBC/PKCS5Padding")
-        val ivParameterSpec = IvParameterSpec(ivBytes)
-        cipher.init(Cipher.ENCRYPT_MODE, secretKeySpec, ivParameterSpec)
-        val encryptedBytes = cipher.doFinal(plainText.toByteArray())
-        return Base64.encodeToString(encryptedBytes, Base64.DEFAULT)
-    }
 
     override fun lastUser(): Pair<String, String> {
         return Pair(
@@ -147,9 +167,73 @@ class PortalRepositoryImpl @Inject constructor(
         }
     }
 
+    override suspend fun getCaptcha(): Resource<CaptchaResponse> {
+        val message: String
+        try {
+            val captchaData = api.getCaptcha("Bearer")
+            val data =
+                JSONObject(captchaData).getJSONObject("response").getJSONObject("captcha")
+            val captchaResponse = CaptchaResponse(data.getString("hidden"), data.getString("image"))
+            return Resource.Success(captchaResponse, true)
+        } catch (e: HttpException) {
+            Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
+            message = e.message() ?: ""
+        } catch (e: IOException) {
+            message = e.message ?: ""
+            Log.d(TAG, "loginUser: IO Exception : ${e.message}")
+        } catch (e: Exception) {
+            message = e.message ?: ""
+            Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
+        }
+        return Resource.Error(message = message)
+    }
+
+    override suspend fun validateCaptcha(
+        username: String,
+        captcha: String,
+        hidden: String,
+        image: String
+    ): Resource<CaptchaValidationResponse> {
+        val message: String
+        try {
+            val result = api.validateCaptcha(
+                aes256Encryption(JSONObject().apply {
+                    put("username", username)
+                    put("usertype", "S")
+                    put("captcha", JSONObject().apply {
+                        put("captcha", captcha)
+                        put("hidden", hidden)
+                        put("image", image)
+                    })
+                }.toString()),
+                "Bearer"
+            )
+            val data = JSONObject(result).getJSONObject("response")
+            return Resource.Success(
+                CaptchaValidationResponse(
+                    data.getString("random"),
+                    data.getString("otppwd"),
+                    data.getString("rejectedData"),
+                    data.getString("username")
+                ),
+                true
+            )
+        } catch (e: HttpException) {
+            Log.d(TAG, "loginUser: HTTP Exception : ${e.message()}")
+            message = e.message() ?: ""
+        } catch (e: IOException) {
+            message = e.message ?: ""
+            Log.d(TAG, "loginUser: IO Exception : ${e.message}")
+        } catch (e: Exception) {
+            message = e.message ?: ""
+            Log.d(TAG, "loginUser: Kotlin Exception : ${e.printStackTrace()}")
+        }
+        return Resource.Error(message = message)
+    }
+
     override suspend fun loginUser(
         enrollmentno: String,
-        password: String
+        password: String, random: String
     ): Resource<Pair<UserEntity, String>> {
         val allUsers = dao.getUserByEnrollPass(enrollmentno, password)
         var token = "offline"
@@ -160,12 +244,17 @@ class PortalRepositoryImpl @Inject constructor(
         var isOnline = false
         var errorMessage = ""
         try {
-            val encryptedValue = aes256Encryption(JSONObject(mapOf(
-                Pair("otppwd", "PWD"),
-                Pair("username", enrollmentno),
-                Pair("passwordotpvalue", password),
-                Pair("Modulename", "STUDENTMODULE")
-            )).toString())
+            val encryptedValue = aes256Encryption(
+                JSONObject(
+                    mapOf(
+                        Pair("otppwd", "PWD"),
+                        Pair("username", enrollmentno),
+                        Pair("passwordotpvalue", password),
+                        Pair("Modulename", "STUDENTMODULE"),
+                        Pair("random", random)
+                    )
+                ).toString()
+            )
             Log.d(TAG, "loginUser: $encryptedValue")
             val regdata = api.login(
                 encryptedValue, "Bearer"
@@ -315,6 +404,7 @@ class PortalRepositoryImpl @Inject constructor(
         studentid: String,
         stynumber: Int,
         registrationid: String,
+        registrationCode: String,
         token: String
     ): Resource<List<StudentAttendanceEntity>> {
         val message: String
@@ -326,7 +416,8 @@ class PortalRepositoryImpl @Inject constructor(
                     Pair("instituteid", instituteid),
                     Pair("studentid", studentid),
                     Pair("stynumber", stynumber.toString()),
-                    Pair("registrationid", registrationid)
+                    Pair("registrationid", registrationid),
+                    Pair("registrationcode", registrationCode)
                 ), "Bearer $token"
             )
             val array =
@@ -389,7 +480,8 @@ class PortalRepositoryImpl @Inject constructor(
                     (jsonObject.getString("abseent") ?: "0.0").toDouble(),
                     jsonObject.getInt("slno"),
                     jsonObject.getString("subjectcode") ?: "",
-                    jsonObject.getString("subjectid") ?: ""
+                    jsonObject.getString("subjectid") ?: "",
+                    jsonObject.getString("individualsubjectcode") ?: ""
                 )
             }
             dao.insertAttendanceEntities(resultList)
@@ -418,6 +510,8 @@ class PortalRepositoryImpl @Inject constructor(
         subjectId: String,
         registrationid: String,
         cmpidkey: String,
+        registrationCode: String,
+        subjectcode: String,
         token: String
     ): Resource<List<AttendanceEntry>> {
         val message: String
@@ -431,6 +525,10 @@ class PortalRepositoryImpl @Inject constructor(
                     registrationid
                 }\",\"studentid\":\"${
                     studentid
+                }\",\"registrationcode\":\"${
+                    registrationCode
+                }\",\"subjectcode\":\"${
+                    subjectcode
                 }\",\"subjectid\":\"${
                     subjectId
                 }\",\"cmpidkey\":[${cmpidkey}]}"

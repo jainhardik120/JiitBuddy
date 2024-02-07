@@ -42,6 +42,7 @@ class ProfileViewModel @Inject constructor(
     }
     
     fun initialize() {
+        Log.d(TAG, "initialize: ${savedStateHandle.get<String>("userInfo")}")
         val user = savedStateHandle.get<String>("userInfo")?.let {
             Moshi.Builder().build().adapter(LoginInfo::class.java).lenient()
                 .fromJson(it)
